@@ -1,0 +1,42 @@
+parameters:
+    level: 5
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - .docker
+        - logs
+    phpVersion: 80400
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
+
+    # Ignorierte Fehler für Legacy-Include-Pattern
+    ignoreErrors:
+        # Variablen aus pninc/config.inc.php
+        - message: '#Variable \$pn_config might not be defined#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+            - '*.php'
+        - message: '#Variable \$pn_handler might not be defined#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+            - '*.php'
+        # Variablen aus pnadmin/functions.inc.php
+        - message: '#Variable \$pnadmin might not be defined#'
+          paths:
+            - pnadmin/*
+        # Variablen aus pninc/head.inc.php
+        - message: '#Variable \$pnconfig might not be defined#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        - message: '#Variable \$pnuser might not be defined#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        # Global variable set by pn_news->details()
+        - message: '#Variable \$pn_newsexist might not be defined#'
+          paths:
+            - pninc/*

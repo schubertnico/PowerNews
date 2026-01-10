@@ -1,0 +1,29 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Dependencies
+vendor/
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Environment
+.docker/.env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# PHP
+composer.lock
+
+# Temp
+*.tmp
+*.bak
+*.swp

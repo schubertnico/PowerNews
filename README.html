@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerNews v3.0 - Dokumentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        code {
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .highlight {
+            background: #e8f4fc;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+        }
+        .warning {
+            background: #fdf2e3;
+            padding: 15px;
+            border-left: 4px solid #e67e22;
+            margin: 15px 0;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #bdc3c7;
+            text-align: center;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PowerNews v3.0</h1>
+        <p>Ein PHP- und MySQL-basiertes News-System.</p>
+
+        <h2>Beschreibung</h2>
+        <p>PowerNews ist ein leichtgewichtiges News-Management-System, das es ermöglicht, News-Artikel, Kategorien, Benutzer und Templates zu verwalten. Es wurde ursprünglich 2001 entwickelt und für PHP 8.4 modernisiert.</p>
+
+        <h2>Anforderungen</h2>
+        <ul>
+            <li>PHP 8.4 oder höher</li>
+            <li>MariaDB 10.3+ oder MySQL 8.0+</li>
+            <li>Apache mit mod_rewrite (optional)</li>
+        </ul>
+
+        <h2>Installation</h2>
+
+        <h3>Mit Docker (empfohlen)</h3>
+        <ol>
+            <li>Repository klonen:
+                <pre><code>git clone https://github.com/schubertnico/PowerNews.git
+cd PowerNews</code></pre>
+            </li>
+            <li>Composer-Abhängigkeiten installieren:
+                <pre><code>composer install</code></pre>
+            </li>
+            <li>Docker-Container starten:
+                <pre><code>cd .docker
+docker compose up -d --build</code></pre>
+            </li>
+            <li>Anwendung aufrufen:
+                <ul>
+                    <li>Hauptseite: <a href="http://localhost:8087/">http://localhost:8087/</a></li>
+                    <li>Admin-Panel: <a href="http://localhost:8087/pnadmin/">http://localhost:8087/pnadmin/</a></li>
+                    <li>Mailpit (E-Mail-Test): <a href="http://localhost:8033/">http://localhost:8033/</a></li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Manuelle Installation</h3>
+        <ol>
+            <li>Dateien auf den Webserver hochladen</li>
+            <li>Datenbank erstellen und <code>powernews.sql</code> importieren</li>
+            <li>Umgebungsvariablen konfigurieren oder <code>pninc/config.inc.php</code> anpassen</li>
+        </ol>
+
+        <h2>Konfiguration</h2>
+
+        <h3>Umgebungsvariablen</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Variable</th>
+                    <th>Beschreibung</th>
+                    <th>Standard</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>PN_DB_HOST</code></td>
+                    <td>Datenbank-Host</td>
+                    <td>localhost</td>
+                </tr>
+                <tr>
+                    <td><code>PN_DB_USER</code></td>
+                    <td>Datenbank-Benutzer</td>
+                    <td>root</td>
+                </tr>
+                <tr>
+                    <td><code>PN_DB_PASS</code></td>
+                    <td>Datenbank-Passwort</td>
+                    <td>(leer)</td>
+                </tr>
+                <tr>
+                    <td><code>PN_DB_NAME</code></td>
+                    <td>Datenbank-Name</td>
+                    <td>powernews</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Docker-Ports</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Dienst</th>
+                    <th>Port</th>
+                    <th>Beschreibung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Web</td>
+                    <td>8087</td>
+                    <td>Apache/PHP-Webserver</td>
+                </tr>
+                <tr>
+                    <td>MariaDB</td>
+                    <td>3317</td>
+                    <td>Datenbank</td>
+                </tr>
+                <tr>
+                    <td>Mailpit SMTP</td>
+                    <td>1033</td>
+                    <td>E-Mail-Empfang</td>
+                </tr>
+                <tr>
+                    <td>Mailpit Web</td>
+                    <td>8033</td>
+                    <td>E-Mail-Webinterface</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Nutzung</h2>
+
+        <h3>Admin-Login</h3>
+        <p>Nach der Installation können Sie sich im Admin-Panel anmelden. Der Standard-Admin wird bei der Installation der Datenbank erstellt.</p>
+        <p><strong>Standard-Zugangsdaten:</strong></p>
+        <ul>
+            <li>Benutzername: <code>powernews</code></li>
+            <li>Passwort: <code>powernews</code></li>
+        </ul>
+        <div class="warning">
+            <strong>Wichtig:</strong> Ändern Sie diese Daten sofort nach dem ersten Login über das Profil!
+        </div>
+
+        <h3>Funktionen</h3>
+        <ul>
+            <li><strong>News-Verwaltung:</strong> Erstellen, Bearbeiten und Löschen von News-Artikeln</li>
+            <li><strong>Kategorien:</strong> Organisation von News in Kategorien</li>
+            <li><strong>Benutzer-Verwaltung:</strong> Benutzerregistrierung und -verwaltung</li>
+            <li><strong>Templates:</strong> Anpassbare Ausgabe-Templates</li>
+            <li><strong>Kommentare:</strong> Benutzerkommentare zu News-Artikeln</li>
+            <li><strong>Archiv:</strong> Durchsuchbares News-Archiv</li>
+        </ul>
+
+        <h2>Entwicklung</h2>
+
+        <h3>Code-Qualität prüfen</h3>
+        <pre><code>composer run phpstan</code></pre>
+
+        <h3>Code modernisieren mit Rector</h3>
+        <pre><code># Vorschau der Änderungen
+composer run rector:dry
+
+# Änderungen anwenden
+composer run rector</code></pre>
+
+        <h2>Migration auf PHP 8.4</h2>
+        <p>Diese Version enthält umfassende Änderungen zur Modernisierung des Codes:</p>
+
+        <h3>Sicherheitsfixes</h3>
+        <ul>
+            <li><strong>SQL-Injection:</strong> Alle Datenbankabfragen verwenden jetzt Prepared Statements</li>
+            <li><strong>Passwort-Hashing:</strong> Umstellung von Base64 auf bcrypt (<code>password_hash</code>/<code>password_verify</code>)</li>
+            <li><strong>XSS-Prävention:</strong> Alle Ausgaben werden mit <code>htmlspecialchars()</code> escaped</li>
+            <li><strong>Cookie-Sicherheit:</strong> HttpOnly, Secure und SameSite-Flags aktiviert</li>
+            <li><strong>Path-Traversal:</strong> Pfad-Validierung in <code>convert.php</code></li>
+            <li><strong>Credentials:</strong> Datenbankzugangsdaten über Umgebungsvariablen statt Hardcoding</li>
+        </ul>
+
+        <h3>PHP 8.4-Kompatibilität</h3>
+        <ul>
+            <li><code>declare(strict_types=1)</code> in allen PHP-Dateien</li>
+            <li>Deprecated Functions ersetzt:
+                <ul>
+                    <li><code>strftime()</code> → <code>DateTime::format()</code></li>
+                    <li><code>srand()</code> entfernt (nicht mehr benötigt)</li>
+                    <li><code>rand()</code> → <code>random_int()</code></li>
+                </ul>
+            </li>
+            <li>Moderne PHP-Syntax und Type Hints</li>
+        </ul>
+
+        <div class="highlight">
+            <h3>Auto-Upgrade für Legacy-Passwörter</h3>
+            <p>Bestehende Benutzer mit Base64-kodierten Passwörtern werden automatisch beim nächsten Login auf bcrypt aktualisiert. Keine manuellen Migrationsschritte erforderlich.</p>
+        </div>
+
+        <h2>Lizenz</h2>
+        <p><strong>MIT License</strong> - siehe <a href="LICENSE">LICENSE</a> für Details.</p>
+        <p>Copyright (c) 2001-2024 PowerScripts</p>
+
+        <h2>Repository</h2>
+        <p><a href="https://github.com/schubertnico/PowerNews.git">https://github.com/schubertnico/PowerNews.git</a></p>
+
+        <footer>
+            <p>PowerNews v3.0 &copy; 2001-2024 PowerScripts</p>
+        </footer>
+    </div>
+</body>
+</html>

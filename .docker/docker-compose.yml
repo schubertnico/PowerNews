@@ -1,0 +1,64 @@
+name: powernews
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: powernews_web
+    ports:
+      - "8087:80"
+    volumes:
+      - ../:/var/www/html
+      - ../logs:/var/www/html/logs
+    environment:
+      - PN_DB_HOST=db
+      - PN_DB_USER=powernews
+      - PN_DB_PASS=powernews
+      - PN_DB_NAME=powernews
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - powernews_network
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    container_name: powernews_db
+    ports:
+      - "3317:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=powernews
+      - MYSQL_USER=powernews
+      - MYSQL_PASSWORD=powernews
+    volumes:
+      - powernews_db_data:/var/lib/mysql
+      - ../powernews.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - powernews_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: powernews_mailpit
+    ports:
+      - "1033:1025"
+      - "8033:8025"
+    networks:
+      - powernews_network
+    restart: unless-stopped
+
+networks:
+  powernews_network:
+    driver: bridge
+
+volumes:
+  powernews_db_data:
