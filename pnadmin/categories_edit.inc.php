@@ -1,39 +1,51 @@
 <?php
 declare(strict_types=1);
-/************************************************************************/
+
 /* PowerNews - PHP and MySQL based news script                         */
 /* Copyright (c) 2001-2024 PowerScripts                                 */
-/*                                                                      */
+
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
-/************************************************************************/
 
-  if ($pnadmin['canreadcategories'] == "YES" && $pnadmin['canwritecategories'] == "YES") {
-    if ($pnconfig['categories'] == "YES") {
-      if ($_GET['catid']) {
-        $editcat = new category;
-        $error = $editcat->checkcat($_GET['catid']);
-        if ($error !== '' && $error !== '0') {
-          ?><center><a href="index.php?page=categories&subpage=show"><?php echo pnadmin_escape($error); ?></a></center><?php
-        } else {
-          if ($_GET['edit'] == "YES") {
-            $uploadpic = $_POST['uploadpic'] ?? '';
-            if (!$_POST['name'] || !$_POST['description'] || $pnconfig['categories'] && $uploadpic == "YES" && !$_FILES['picture']) {
-              ?><center><a href="javascript:history.back()"><?php echo L_CAT_FILLALL; ?>
-          <?php if ($pnconfig['categorypics'] == "YES" && $uploadpic == "YES") { echo L_CAT_ANDPIC; } ?>!</a></center><?php
+// Validierte Parameter
+$catid = pn_get_id('catid');
+$edit = pn_get_string('edit', 10);
+
+if ($pnadmin['canreadcategories'] == 'YES' && $pnadmin['canwritecategories'] == 'YES') {
+    if ($pnconfig['categories'] == 'YES') {
+        if ($catid > 0) {
+            $editcat = new category();
+            $error = $editcat->checkcat($catid);
+
+            if ($error !== '' && $error !== '0') {
+                ?><center><a href="index.php?page=categories&subpage=show"><?php echo pnadmin_escape($error); ?></a></center><?php
             } else {
-              $error = $editcat->editcat($_POST['name'], $_POST['description'], $_POST['uploadpic'], $_FILES['picture'], $_POST['status'], $_GET['catid']);
-              if ($error !== '' && $error !== '0') {
-                ?><center><a href="javascript:history.back()"><?php echo pnadmin_escape($error); ?></a></center><?php
-              } else {
-                ?><center><a href="index.php?page=categories&subpage=show"><?php echo L_CAT_EDITED; ?></a></center><?php
-              }
-            }
-          } else {
-            $data = $editcat->getcatdata($_GET['catid']);
-            ?>
+                if ($edit === 'YES') {
+                    $name = pn_post_string('name', 100);
+                    $description = pn_post_string('description', 1000);
+                    $uploadpic = pn_validate_yesno($_POST['uploadpic'] ?? '');
+                    $picture = (isset($_FILES['picture']) && is_array($_FILES['picture']) && !empty($_FILES['picture']['tmp_name'])) ? $_FILES['picture'] : [];
+                    $status = pn_validate_status($_POST['status'] ?? '');
+
+                    if ($name === '' || $description === '' || ($pnconfig['categorypics'] == 'YES' && $uploadpic == 'YES' && empty($picture))) {
+                        ?><center><a href="javascript:history.back()"><?php echo L_CAT_FILLALL; ?>
+          <?php if ($pnconfig['categorypics'] == 'YES' && $uploadpic == 'YES') {
+              echo L_CAT_ANDPIC;
+          } ?>!</a></center><?php
+                    } else {
+                        $error = $editcat->editcat($name, $description, $uploadpic, $picture, $status, $catid);
+
+                        if ($error !== '' && $error !== '0') {
+                            ?><center><a href="javascript:history.back()"><?php echo pnadmin_escape($error); ?></a></center><?php
+                        } else {
+                            ?><center><a href="index.php?page=categories&subpage=show"><?php echo L_CAT_EDITED; ?></a></center><?php
+                        }
+                    }
+                } else {
+                    $data = $editcat->getcatdata($catid);
+                    ?>
             <center>
-            <form action="index.php?page=categories&subpage=edit&edit=YES&catid=<?php echo pnadmin_escape($_GET['catid']); ?>" method="post" enctype="multipart/form-data">
+            <form action="index.php?page=categories&subpage=edit&edit=YES&catid=<?php echo pn_int($catid); ?>" method="post" enctype="multipart/form-data">
             <table border="0" cellpadding="4" cellspacing="0">
             <tr><td colspan="2" align="center">
             <b><?php echo L_CAT_EDITCAT; ?></b>
@@ -50,7 +62,7 @@ declare(strict_types=1);
             </td><td>
             <textarea name="description" cols="50" rows="3"><?php echo pnadmin_escape($data['description']); ?></textarea>
             </td></tr>
-            <?php if ($pnconfig['categorypics'] == "YES") { ?>
+            <?php if ($pnconfig['categorypics'] == 'YES') { ?>
               <tr><td>
               <b><?php echo L_CAT_UPLOADPIC; ?></b><br>
               <small class="info"><?php echo L_CAT_UPLOADPICDESC; ?>
@@ -69,8 +81,12 @@ declare(strict_types=1);
             <small class="info"><?php echo L_CAT_STATUSDESC; ?></small>
             </td><td>
             <select name="status" size="1">
-              <option value="Activated" <?php if ($data['status'] == "Activated") { echo "selected"; } ?>><?php echo L_ALL_ACTIVATED; ?>
-              <option value="Deactivated" <?php if ($data['status'] == "Deactivated") { echo "selected"; } ?>><?php echo L_ALL_DEACTIVATED; ?>
+              <option value="Activated" <?php if ($data['status'] == 'Activated') {
+                  echo 'selected';
+              } ?>><?php echo L_ALL_ACTIVATED; ?>
+              <option value="Deactivated" <?php if ($data['status'] == 'Deactivated') {
+                  echo 'selected';
+              } ?>><?php echo L_ALL_DEACTIVATED; ?>
             </select>
             </td></tr>
             <tr><td colspan="2" align="center">
@@ -80,15 +96,15 @@ declare(strict_types=1);
             </form>
             </center>
             <?php
-          }
+                }
+            }
+        } else {
+            ?><center><a href="index.php?page=categories&subpage=show"><?php echo L_CAT_CHOOSECAT; ?></a></center><?php
         }
-      } else {
-        ?><center><a href="index.php?page=categories&subpage=show"><?php echo L_CAT_CHOOSECAT; ?></a></center><?php
-      }
     } else {
-      ?><center><?php echo L_CAT_CATSAREDEACTIVATED; ?></center><?php
+        ?><center><?php echo L_CAT_CATSAREDEACTIVATED; ?></center><?php
     }
-  } else {
+} else {
     ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
-  }
+}
 ?>

@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql zip
 
+# Install PCOV for code coverage (Infection)
+RUN pecl install pcov && docker-php-ext-enable pcov
+
 # Enable Apache modules
 RUN a2enmod rewrite headers
 

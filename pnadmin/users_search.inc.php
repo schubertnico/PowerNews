@@ -1,70 +1,63 @@
-<?PHP
-/************************************************************************/
-/* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
-/*                                                                      */
-/* This program is free software; you can redistribute it and/or modify */
-/* it under the terms of the GNU General Public License as published by */
-/* the Free Software Foundation; either version 2 of the License, or    */
-/* (at your option) any later version.                                  */
-/*                                                                      */
-/* This program is distributed in the hope that it will be useful,      */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
-/* GNU General Public License for more details.                         */
-/*                                                                      */
-/* You should have received a copy of the GNU General Public License    */
-/* along with this program; if not, write to the Free Software          */
-/* Foundation, Inc., 59 Temple Place, Suite 330, Boston,                */
-/* MA  02111-1307  USA                                                  */
-/************************************************************************/
+<?php
+declare(strict_types=1);
 
-  if ($pnadmin['canreadusers'] == "YES") {
-    if (isset($_GET['search']) && $_GET['search'] == "YES") {
-      if (!isset($_GET['searchstring'])) {
-        ?><center><a href="javascript:history.back()"><?PHP echo L_USR_SEARCHSTRINGNEEDED; ?></a></center><?PHP
-      } else {
-        ?>
+/* PowerNews - PHP and MySQL based news script                         */
+/* Copyright (c) 2001-2024 PowerScripts                                 */
+
+/* MIT License - See LICENSE file for full license text                 */
+/* https://github.com/schubertnico/PowerNews.git                        */
+
+// Validierte Parameter
+$search = pn_get_string('search', 10);
+$searchin = pn_validate_whitelist($_GET['searchin'] ?? '', ['nickname', 'email', 'id'], 'nickname');
+$searchstring = pn_get_string('searchstring', 250);
+$current = pn_validate_int_range($_GET['current'] ?? 0, 0, PHP_INT_MAX, 0);
+
+if ($pnadmin['canreadusers'] == 'YES') {
+    if ($search === 'YES') {
+        if ($searchstring === '') {
+            ?><center><a href="javascript:history.back()"><?php echo L_USR_SEARCHSTRINGNEEDED; ?></a></center><?php
+        } else {
+            ?>
         <center>
-        <?PHP
-          $searchuser = new user;
-          $searchuser->listsearchpages($_GET['searchin'], $_GET['searchstring']);
-        ?>
+        <?php
+              $searchuser = new user();
+            $searchuser->listsearchpages($searchin, $searchstring);
+            ?>
         <br><br>
         <table border="0" cellpadding="4" cellspacing="0">
         <tr><td>
-        <b><?PHP echo L_USR_NICKNAME; ?></b>
+        <b><?php echo L_USR_NICKNAME; ?></b>
         </td><td width="30">
         &nbsp;
         </td><td>
-        <b><?PHP echo L_USR_EMAIL; ?></b>
+        <b><?php echo L_USR_EMAIL; ?></b>
         </td><td width="30">
         &nbsp;
         </td><td>
-        <b><?PHP echo L_USR_SHOWEMAIL; ?></b>
+        <b><?php echo L_USR_SHOWEMAIL; ?></b>
         </td><td width="30">
         &nbsp;
         </td><td>
-        <b><?PHP echo L_USR_ADMIN; ?></b>
+        <b><?php echo L_USR_ADMIN; ?></b>
         </td><td width="30">
         &nbsp;
         </td><td>
-        <b><?PHP echo L_USR_STATUS; ?></b>
+        <b><?php echo L_USR_STATUS; ?></b>
         </td></tr>
-        <?PHP
-          if (!isset($_GET['current']) ) { $_GET['current'] = "0"; }
-          $searchuser->searchuser($_GET['searchin'], $_GET['searchstring'], $_GET['current']);
-        ?>
+        <?php
+              $searchuser->searchuser($searchin, $searchstring, $current);
+            ?>
         </table>
         <br>
-        <?PHP $searchuser->listsearchpages($_GET['searchin'], $_GET['searchstring']); ?>
+        <?php $searchuser->listsearchpages($searchin, $searchstring); ?>
         </center><br>
         <br>
-        <small><?PHP echo L_USR_SHOWUSR_DESC; ?></small>
-        <?PHP
-      }
+        <small><?php echo L_USR_SHOWUSR_DESC; ?></small>
+        <?php
+        }
     } else {
-      ?>
+        ?>
       <center>
       <form action="./" method="get">
       <input type="hidden" name="page" value="users">
@@ -72,33 +65,33 @@
       <input type="hidden" name="search" value="YES">
       <table border="0" cellpadding="4" cellspacing="0">
       <tr><td colspan="2" align="center">
-      <b><?PHP echo L_USR_SEARCHUSR; ?></b>
+      <b><?php echo L_USR_SEARCHUSR; ?></b>
       </td></tr>
       <tr><td>
-      <b><?PHP echo L_USR_SEARCHFIELD; ?></b><br>
-      <small class="info"><?PHP echo L_USR_SEARCHFIELD_DESC; ?></small>
+      <b><?php echo L_USR_SEARCHFIELD; ?></b><br>
+      <small class="info"><?php echo L_USR_SEARCHFIELD_DESC; ?></small>
       </td><td>
       <select name="searchin" size="1">
-        <option value="nickname"><?PHP echo L_USR_NICKNAME; ?></option>
-        <option value="email"><?PHP echo L_USR_EMAIL; ?></option>
-        <option value="id"><?PHP echo L_USR_USRID; ?></option>
+        <option value="nickname"><?php echo L_USR_NICKNAME; ?></option>
+        <option value="email"><?php echo L_USR_EMAIL; ?></option>
+        <option value="id"><?php echo L_USR_USRID; ?></option>
       </select>
       </td></tr>
       <tr><td>
-      <b><?PHP echo L_USR_SEARCHSTRING; ?></b><br>
-      <small class="info"><?PHP echo L_USR_SEARCHSTRING_DESC; ?></small>
+      <b><?php echo L_USR_SEARCHSTRING; ?></b><br>
+      <small class="info"><?php echo L_USR_SEARCHSTRING_DESC; ?></small>
       </td><td>
       <input name="searchstring" size="25" maxlength="250">
       </td></tr>
       <tr><td colspan="2" align="center">
-      <input type="submit" value="<?PHP echo L_USR_SEARCHUSR; ?>">
+      <input type="submit" value="<?php echo L_USR_SEARCHUSR; ?>">
       </td></tr>
       </table>
       </form>
       </center>
-      <?PHP
+      <?php
     }
-  } else {
-    ?><center><?PHP echo L_ALL_ACCESSDENIED; ?></center><?PHP
-  }
+} else {
+    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+}
 ?>

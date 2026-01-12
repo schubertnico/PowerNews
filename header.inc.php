@@ -1,9 +1,9 @@
-<?PHP
-  /*
-  Hier wird die head.inc.php in die Datei eingefügt.
-  Es ist wichtig, dass es vor dem <?PHP keine anderen Zeichen in der Datei gibt!
-  */
-  include(__DIR__ . "/pninc/head.inc.php");
+<?php
+/*
+Hier wird die head.inc.php in die Datei eingefügt.
+Es ist wichtig, dass es vor dem <?PHP keine anderen Zeichen in der Datei gibt!
+*/
+include __DIR__ . '/pninc/head.inc.php';
 ?>
 <html>
 <head>
@@ -66,12 +66,12 @@
   <br>
   <br>
   <b>Benutzer</b><br>
-  <?PHP
+  <?php
     /*
       Hier wird die usermenu.inc.php Datei eingefügt um das Benutzermenü anzeigen zu lassen.
     */
-    include(__DIR__ . "/pninc/usermenu.inc.php");
-  ?><br>
+    include __DIR__ . '/pninc/usermenu.inc.php';
+?><br>
   <br>
   &raquo; <a href="./pnadmin/">Adminbereich</a><br>
   <br>

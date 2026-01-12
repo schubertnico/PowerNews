@@ -6,9 +6,25 @@
 # Dependencies
 vendor/
 
-# Logs
+# Logs & Reports
 logs/*.log
+logs/*.html
+logs/*.xml
+logs/coverage/
 !logs/.gitkeep
+
+# PHPMD Reports
+phpmd-report.html
+phpmd_report.txt
+
+# Coverage Reports
+coverage/
+
+# Test configs
+infection_test.json5
+
+# Todos (local)
+todos/
 
 # Environment
 .docker/.env
@@ -20,8 +36,12 @@ logs/*.log
 Thumbs.db
 nul
 
-# PHP
+# PHP Tools Cache
 composer.lock
+.php-cs-fixer.cache
+.phpunit.result.cache
+.phpunit.cache/
+infection.log
 
 # Temp
 *.tmp

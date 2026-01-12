@@ -1,26 +1,30 @@
 <?php
 declare(strict_types=1);
-/************************************************************************/
+
 /* PowerNews - PHP and MySQL based news script                         */
 /* Copyright (c) 2001-2024 PowerScripts                                 */
-/*                                                                      */
+
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
-/************************************************************************/
 
-  if ($pnadmin['canreadtemplates'] == "YES" && $pnadmin['canwritetemplates'] == "YES") {
+if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'YES') {
 
     if ($_GET['templateid']) {
-      $edittemplate = new template;
-      $error = $edittemplate->checktemplate($_GET['templateid']);
-      if ($error !== '' && $error !== '0') {
-        ?><center><a href="index.php?page=templates&subpage=show"><?php echo pnadmin_escape($error); ?></a></center><?php
-      } else {
-        if (isset($_GET['edit']) && $_GET['edit'] == "YES") {
-          $edittemplate->edittemplate($_GET['templateid'], $_GET['delete'], $_GET['title'], $_GET['message'], $_GET['headline'], $_GET['news'], $_GET['comment'], $_GET['usermenu'], $_GET['usermenu2'], $_GET['relatedlinks'], $_GET['commentform'], $_GET['registerform'], $_GET['loginform'], $_GET['logout'], $_GET['senddataform'], $_GET['profileform'], $_GET['archive'], $_GET['sendnewsform'], $_GET['addemail'], $_GET['editemail'], $_GET['registeremail'], $_GET['dataemail']);
+        $edittemplate = new template();
+        $error = $edittemplate->checktemplate($_GET['templateid']);
+
+        if ($error !== '' && $error !== '0') {
+            ?><center><a href="index.php?page=templates&subpage=show"><?php echo pnadmin_escape($error); ?></a></center><?php
         } else {
-          $data = $edittemplate->gettemplatedata($_GET['templateid']);
-          ?>
+            if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
+                $edittemplate->edittemplate(
+                    (int) $_GET['templateid'],
+                    $_POST['delete'] ?? '',
+                    TemplateData::fromPost(),
+                );
+            } else {
+                $data = $edittemplate->gettemplatedata($_GET['templateid']);
+                ?>
           <center>
           <form action="index.php?page=templates&subpage=edit&edit=YES&templateid=<?php echo pnadmin_escape($_GET['templateid']); ?>" method="post">
           <table border="0" cellpadding="4" cellspacing="0">
@@ -223,13 +227,13 @@ declare(strict_types=1);
           </form>
           </center>
           <?php
+            }
         }
-      }
     } else {
-      ?><center><a href="index.php?page=templates&subpage=show"><?php echo L_TEMPL_CHOOSETEMPLATE; ?></a></center><?php
+        ?><center><a href="index.php?page=templates&subpage=show"><?php echo L_TEMPL_CHOOSETEMPLATE; ?></a></center><?php
     }
 
-  } else {
+} else {
     ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
-  }
+}
 ?>

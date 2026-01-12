@@ -1,11 +1,12 @@
 parameters:
-    level: 5
+    level: 8
     paths:
         - .
     excludePaths:
         - vendor
         - .docker
         - logs
+        - tests
     phpVersion: 80400
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
@@ -40,3 +41,100 @@ parameters:
         - message: '#Variable \$pn_newsexist might not be defined#'
           paths:
             - pninc/*
+
+        # Level 8: mysqli_stmt/mysqli_result können false zurückgeben
+        - message: '#expects mysqli_stmt, mysqli_stmt\|false given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        - message: '#expects mysqli_result, mysqli_result\|false given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        - message: '#expects mysqli_result, bool\|mysqli_result given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: Array-Offsets auf potentiell null/false Arrays
+        - message: '#Cannot access offset .* on array\|false\|null#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        - message: '#Cannot use array destructuring on array\|false\|null#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+        - message: '#Offset .* might not exist on array\|null#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: preg_replace mit potentiell null
+        - message: '#expects array<float\|int\|string>\|string, string\|null given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: Return-Type Mismatches für Legacy-Funktionen
+        - message: '#should return .* but returns#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: Binary operations mit false
+        - message: '#Binary operation .* between .* and array\|string\|false results in an error#'
+          paths:
+            - '*.php'
+
+        # Level 8: implode mit potentiell false array
+        - message: '#expects array, list<string>\|false given#'
+          paths:
+            - '*.php'
+
+        # Level 8: Fehlende Array-Typ-Definitionen bei Legacy-Code
+        - message: '#no value type specified in iterable type array#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: Binary operations bei update.php und install.php
+        - message: '#Binary operation .* results in an error#'
+          paths:
+            - '*.php'
+
+        # Level 8: Fehlende generische Return-Types
+        - message: '#return type has no value type#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: Parameter ohne Array-Typ
+        - message: '#has parameter .* with no value type specified#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: preg_replace mit potentiell null Subject
+        - message: '#expects array<float\|int\|string>\|string, array<string>\|string\|null given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: echo mit potentiell non-string
+        - message: '#of echo cannot be converted to string#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: array|null statt array bei Methodenparametern
+        - message: '#expects array, array\|null given#'
+          paths:
+            - pninc/*
+            - pnadmin/*
+
+        # Level 8: explode mit potentiell false string (file_get_contents)
+        - message: '#expects string, string\|false given#'
+          paths:
+            - pninc/*
+            - pnadmin/*

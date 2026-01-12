@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
+    phpVersion="8.4"
+    autoloader="vendor/autoload.php"
+>
+    <projectFiles>
+        <directory name="pninc"/>
+        <directory name="pnadmin"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+            <directory name="tests"/>
+            <directory name=".docker"/>
+            <directory name="logs"/>
+        </ignoreFiles>
+    </projectFiles>
+
+    <!-- Stubs für globale Funktionen aus Include-Dateien -->
+    <stubs>
+        <file name="pninc/validation.inc.php"/>
+        <file name="pninc/escape.inc.php"/>
+    </stubs>
+
+    <issueHandlers>
+        <!-- Legacy-Code: Globale Variablen aus Include-Dateien -->
+        <PossiblyUndefinedGlobalVariable>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </PossiblyUndefinedGlobalVariable>
+
+        <!-- Legacy-Code: Undefinierte Variablen aus Includes -->
+        <UndefinedGlobalVariable>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </UndefinedGlobalVariable>
+
+        <!-- Legacy-Code: Globale Konstanten aus Sprachdateien -->
+        <UndefinedConstant>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </UndefinedConstant>
+
+        <!-- Legacy-Code: Undefinierte Funktionen aus Includes -->
+        <UndefinedFunction>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </UndefinedFunction>
+
+        <!-- Legacy-Code: Undefinierte Klassen -->
+        <UndefinedClass>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </UndefinedClass>
+
+        <!-- Nullable Return Types - Legacy-Pattern -->
+        <NullableReturnStatement>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </NullableReturnStatement>
+
+        <InvalidNullableReturnType>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InvalidNullableReturnType>
+
+        <!-- Redundante Conditions - Legacy defensive coding -->
+        <RedundantCondition>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </RedundantCondition>
+
+        <!-- Mixed Types - Legacy ohne strikte Typen -->
+        <MixedAssignment>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MixedAssignment>
+
+        <MixedArgument>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MixedArgument>
+
+        <MixedArrayAccess>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MixedArrayAccess>
+
+        <MixedOperand>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MixedOperand>
+
+        <MixedReturnStatement>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MixedReturnStatement>
+
+        <!-- Readonly Properties bei DTOs -->
+        <InaccessibleProperty>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InaccessibleProperty>
+
+        <!-- Falsable Returns bei Legacy-Funktionen -->
+        <FalsableReturnStatement>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </FalsableReturnStatement>
+
+        <!-- Invalid Arguments bei Legacy-Code -->
+        <InvalidArgument>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InvalidArgument>
+
+        <InvalidScalarArgument>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InvalidScalarArgument>
+
+        <!-- Redundante Casts -->
+        <RedundantCast>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </RedundantCast>
+
+        <!-- Loop Invalidation -->
+        <LoopInvalidation>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </LoopInvalidation>
+
+        <!-- Return Type Issues -->
+        <InvalidReturnType>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InvalidReturnType>
+
+        <InvalidReturnStatement>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </InvalidReturnStatement>
+
+        <!-- Missing File bei Includes -->
+        <MissingFile>
+            <errorLevel type="suppress">
+                <directory name="pninc"/>
+                <directory name="pnadmin"/>
+            </errorLevel>
+        </MissingFile>
+    </issueHandlers>
+</psalm>
