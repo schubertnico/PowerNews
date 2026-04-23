@@ -90,6 +90,30 @@ $thisversion = '3.00';
                                   echo "Tabellenstruktur erstellt<br><br>\n";
                                   echo "Standardkonfiguration geladen<br><br>\n";
 
+                                  // Create admin user with random bcrypt password (BUG-003)
+                                  $adminNickname = 'admin';
+                                  $adminEmail = 'admin@localhost';
+                                  $adminPassword = bin2hex(random_bytes(8));
+                                  $adminHash = password_hash($adminPassword, PASSWORD_DEFAULT);
+                                  $nowTs = time();
+                                  $stmt = mysqli_prepare($pn_handler, "INSERT INTO pn_users (nickname, email, password, registered, showemail, status) VALUES (?, ?, ?, ?, 'NO', 'Activated')");
+                                  if ($stmt) {
+                                      mysqli_stmt_bind_param($stmt, 'sssi', $adminNickname, $adminEmail, $adminHash, $nowTs);
+                                      mysqli_stmt_execute($stmt);
+                                      $adminId = mysqli_insert_id($pn_handler);
+
+                                      $stmt2 = mysqli_prepare($pn_handler, "INSERT INTO pn_permissions (userid, canreadtemplates, canwritetemplates, canreadconfig, canwriteconfig, canreadusers, canwriteusers, canreadpermissions, canwritepermissions, canreadcategories, canwritecategories, canreadnews, canwritenews, canreadcomments, canwritecomments) VALUES (?, 'YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES')");
+                                      if ($stmt2) {
+                                          mysqli_stmt_bind_param($stmt2, 'i', $adminId);
+                                          mysqli_stmt_execute($stmt2);
+                                      }
+
+                                      echo '<b>Admin-Zugang erstellt:</b><br>';
+                                      echo 'Nickname: <code>' . htmlspecialchars($adminNickname) . '</code><br>';
+                                      echo 'Passwort: <code>' . htmlspecialchars($adminPassword) . '</code><br>';
+                                      echo '<b style="color:#cc0000">Bitte sofort notieren und nach erstem Login im Profil &auml;ndern.</b><br><br>';
+                                  }
+
                                   @file_put_contents($installLockFile, 'installed ' . date('c'));
 
                                   echo "<br>Installation erfolgreich! Bitte l&ouml;schen Sie die <b>install.php</b> und die <b>update.php</b> - <a href=\"./pnadmin/\">Adminbereich</a>\n";
