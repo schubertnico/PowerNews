@@ -24,6 +24,16 @@ error_reporting(E_ALL & ~E_NOTICE);
 @include __DIR__ . '/pninc/config.inc.php';
 @include __DIR__ . '/pnadmin/functions.inc.php';
 
+/* Require admin session (BUG-043) */
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+if (empty($_SESSION['pnadmin']) || $_SESSION['pnadmin'] !== 'YES') {
+    http_response_code(403);
+    echo '<center><b>Nur f&uuml;r Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
+    exit;
+}
+
 /* Needed PHP Version */
 $need_php_version = '4.1.0';
 

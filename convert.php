@@ -1,5 +1,15 @@
 <?php
 declare(strict_types=1);
+
+/* Require admin session (BUG-042) */
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+if (empty($_SESSION['pnadmin']) || $_SESSION['pnadmin'] !== 'YES') {
+    http_response_code(403);
+    echo '<center><b>Nur fuer Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
+    exit;
+}
 ?><html>
 <?php
 

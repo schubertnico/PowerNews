@@ -73,19 +73,27 @@ $thisversion = '3.00';
                         <td bgcolor="#C0C0C0">
 
                           <?php
+                          $installLockFile = __DIR__ . '/pninc/install.lock';
                           if (isset($_POST['install']) && $_POST['install'] == 'YES') {
 
-                              $sqlCommands = readDump('powernews.sql');
-                              $counter = count($sqlCommands);
+                              if (file_exists($installLockFile)) {
+                                  http_response_code(403);
+                                  echo '<b>Installation bereits erfolgt.</b><br>Zum Neuinstallieren bitte <code>pninc/install.lock</code> entfernen.';
+                              } else {
+                                  $sqlCommands = readDump('powernews.sql');
+                                  $counter = count($sqlCommands);
 
-                              for ($i = 0; $i < $counter; ++$i) {
-                                  mysqli_query($pn_handler, $sqlCommands[$i]);
+                                  for ($i = 0; $i < $counter; ++$i) {
+                                      mysqli_query($pn_handler, $sqlCommands[$i]);
+                                  }
+                                  echo count($sqlCommands) . " mySQL Befehle ausgef&uuml;hrt.<br><br>\n";
+                                  echo "Tabellenstruktur erstellt<br><br>\n";
+                                  echo "Standardkonfiguration geladen<br><br>\n";
+
+                                  @file_put_contents($installLockFile, 'installed ' . date('c'));
+
+                                  echo "<br>Installation erfolgreich! Bitte l&ouml;schen Sie die <b>install.php</b> und die <b>update.php</b> - <a href=\"./pnadmin/\">Adminbereich</a>\n";
                               }
-                              echo count($sqlCommands) . " mySQL Befehle ausgeführt.<br><br>\n";
-                              echo "Tabellenstruktur erstellt<br><br>\n";
-                              echo "Standardkonfiguration geladen<br><br>\n";
-
-                              echo "<br>Installation erfolgreich! Bitte l&ouml;schen Sie die <b>install.php</b> und die <b>update.php</b> - <a href=\"./pnadmin/\">Adminbereich</a>\n";
 
                           } else {
                               ?>

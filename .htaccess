@@ -1,0 +1,19 @@
+# Block dot-directories like .git, .docker
+RedirectMatch 404 /\.(git|idea|docker|phpunit)(/|$)
+
+# Block sensitive files
+<FilesMatch "^(composer\.(json|lock)|\.php-cs-fixer\.(php|cache)|phpstan\.neon|phpmd\.xml|psalm\.xml|rector\.php|infection\.json5|phpunit\.xml|.*\.sql|phpmd_report\.txt|\.phpunit\.result\.cache)$">
+    Require all denied
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    Header unset X-Powered-By
+</IfModule>
+
+ServerSignature Off
