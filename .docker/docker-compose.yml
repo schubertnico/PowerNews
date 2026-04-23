@@ -11,6 +11,7 @@ services:
     volumes:
       - ../:/var/www/html
       - ../logs:/var/www/html/logs
+      - ./msmtprc:/etc/msmtprc:ro
     environment:
       - PN_DB_HOST=db
       - PN_DB_USER=powernews

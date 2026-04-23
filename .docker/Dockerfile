@@ -5,6 +5,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    msmtp \
+    msmtp-mta \
+    ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
