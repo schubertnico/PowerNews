@@ -704,36 +704,47 @@ class pn_user
         mysqli_stmt_bind_param($stmt, 's', $nickname);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
 
-        if ($num == 1) {
-            $pnuser = mysqli_fetch_array($result);
-
-            if (pn_verify_password($password, $pnuser['password'], (int) $pnuser['id'])) {
-                // Reload user to get updated password hash
-                mysqli_data_seek($result, 0);
-                $pnuser = mysqli_fetch_array($result);
-
-                // Create secure token for cookie
-                $token = bin2hex(random_bytes(32));
-                $cookiestring = base64_encode($pnuser['id'] . '@@@@@' . $token);
-
-                // Set secure cookie
-                setcookie('pncookie', $cookiestring, [
-                    'expires' => time() + 3600 * 24 * 360,
-                    'path' => '/',
-                    'secure' => isset($_SERVER['HTTPS']),
-                    'httponly' => true,
-                    'samesite' => 'Strict',
-                ]);
-
-                $pnuser['loggedin'] = 'YES';
-
-                return $pnuser;
-            }
+        if (mysqli_num_rows($result) !== 1) {
+            return null;
         }
 
-        return null;
+        $pnuser = mysqli_fetch_array($result);
+
+        if (($pnuser['status'] ?? 'Activated') === 'Deactivated') {
+            return null;
+        }
+
+        if (!pn_verify_password($password, $pnuser['password'], (int) $pnuser['id'])) {
+            return null;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $now = time();
+        $expires = $now + 3600 * 24 * 30;
+        $userId = (int) $pnuser['id'];
+        $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+        $ip = substr((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
+        $ip = substr(explode(',', $ip)[0], 0, 64);
+
+        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'isiiss', $userId, $tokenHash, $now, $expires, $ua, $ip);
+        mysqli_stmt_execute($stmt);
+
+        $cookieValue = $userId . ':' . $token;
+
+        setcookie('pncookie', $cookieValue, [
+            'expires' => $expires,
+            'path' => '/',
+            'secure' => isset($_SERVER['HTTPS']),
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+
+        $pnuser['loggedin'] = 'YES';
+
+        return $pnuser;
     }
 
     // Check cookie of user
@@ -741,33 +752,38 @@ class pn_user
     {
         global $pn_config, $pn_handler;
 
-        if (!isset($_COOKIE['pncookie'])) {
+        if (empty($_COOKIE['pncookie'])) {
             return null;
         }
 
-        $cookiestring = base64_decode((string) $_COOKIE['pncookie'], true);
-        $parts = explode('@@@@@', $cookiestring);
-
-        if (count($parts) < 2) {
+        $parts = explode(':', (string) $_COOKIE['pncookie'], 2);
+        if (count($parts) !== 2) {
             return null;
         }
 
         $userId = (int) $parts[0];
+        $token = $parts[1];
 
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $userId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
-
-        if ($num == 1) {
-            $pnuser = mysqli_fetch_array($result);
-            $pnuser['loggedin'] = 'YES';
-
-            return $pnuser;
+        if ($userId <= 0 || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return null;
         }
 
-        return null;
+        $tokenHash = hash('sha256', $token);
+        $now = time();
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT u.* FROM ' . $pn_config['usertable'] . ' u INNER JOIN pn_sessions s ON s.userid = u.id WHERE u.id = ? AND s.token_hash = ? AND s.expires > ? AND u.status = ' . "'Activated'");
+        mysqli_stmt_bind_param($stmt, 'isi', $userId, $tokenHash, $now);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if (mysqli_num_rows($result) !== 1) {
+            return null;
+        }
+
+        $pnuser = mysqli_fetch_array($result);
+        $pnuser['loggedin'] = 'YES';
+
+        return $pnuser;
     }
 
     // Login user
@@ -940,7 +956,17 @@ class pn_user
     // Delete usercookie
     public function delusercookie(): void
     {
-        global $pn_config, $pnuser;
+        global $pn_config, $pn_handler, $pnuser;
+
+        if (!empty($_COOKIE['pncookie'])) {
+            $parts = explode(':', (string) $_COOKIE['pncookie'], 2);
+            if (count($parts) === 2 && preg_match('/^[a-f0-9]{64}$/', $parts[1])) {
+                $tokenHash = hash('sha256', $parts[1]);
+                $stmt = mysqli_prepare($pn_handler, 'DELETE FROM pn_sessions WHERE token_hash = ?');
+                mysqli_stmt_bind_param($stmt, 's', $tokenHash);
+                mysqli_stmt_execute($stmt);
+            }
+        }
 
         setcookie('pncookie', '', [
             'expires' => time() - 10,
