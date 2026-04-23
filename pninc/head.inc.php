@@ -20,7 +20,7 @@
 
 // Set error reporting
 error_reporting(E_ALL & ~E_NOTICE);
-header('Content-Type: text/html; charset=ISO-8859-15');
+header('Content-Type: text/html; charset=UTF-8');
 
 // Check if config file exists and include
 if (file_exists(__DIR__ . '/config.inc.php')) {
@@ -72,7 +72,12 @@ $pnuser['loggedin'] = 'NO';
 if (isset($_GET['page']) && $_GET['page'] == 'login' && isset($_GET['pndata']['login']) && $_GET['pndata']['login'] == 'YES' && !empty($_POST['pndata']['nickname']) && !empty($_POST['pndata']['password'])) {
     $pnuserlogin = new pn_user();
     $pnuser = $pnuserlogin->setusercookie();
-} elseif (isset($_GET['page']) && $_GET['page'] == 'logout' && isset($_COOKIE['pncookie']) && $_COOKIE['pncookie'] && isset($_GET['pndata']['logout']) && $_GET['pndata']['logout'] == 'YES') {
+} elseif (
+    isset($_GET['page']) && $_GET['page'] === 'logout'
+    && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+    && pn_csrf_verify($_POST['csrf_token'] ?? null)
+    && !empty($_COOKIE['pncookie'])
+) {
     $pnuserlogout = new pn_user();
     $pnuserlogout->delusercookie();
     unset($pnuser, $_COOKIE['pncookie']);

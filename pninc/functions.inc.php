@@ -934,7 +934,7 @@ class pn_user
         global $pnuser;
         $template = new pn_template();
 
-        if ($pnuser['loggedin'] == 'YES') {
+        if (isset($pnuser) && is_array($pnuser) && ($pnuser['loggedin'] ?? 'NO') === 'YES') {
             $template->usermenu2();
         } else {
             $template->usermenu();
@@ -1026,7 +1026,7 @@ class pn_user
         global $pnuser, $pn_config;
         $template = new pn_template();
 
-        if ($pnuser['loggedin'] == 'YES') {
+        if (isset($pnuser) && is_array($pnuser) && ($pnuser['loggedin'] ?? 'NO') === 'YES') {
             $template->logout($pnuser);
         } else {
             $template->message(L_USR_CANNOTLOGOUT, $pn_config['userfile'] . '?page=login');
@@ -1613,6 +1613,7 @@ class pn_template
             [$logout] = mysqli_fetch_array($result);
 
             $logout = preg_replace('!{NICKNAME}!', pn_escape($pnuser['nickname']), (string) $logout);
+            $logout = preg_replace('!{CSRF}!', pn_csrf_token(), $logout);
 
             echo $logout;
 
