@@ -20,12 +20,15 @@ declare(strict_types=1);
 /* Foundation, Inc., 59 Temple Place, Suite 330, Boston,                */
 /* MA  02111-1307  USA                                                  */
 
-$pn_news = new pn_news();
-$pn_news->details($_GET['newsid']);
+$newsid = (int) ($_GET['newsid'] ?? 0);
+$showcomments = (($_GET['showcomments'] ?? '') === 'YES');
 
-if ($pnconfig['comments'] == 'YES' && $pn_newsexist == 'YES' && $_GET['showcomments'] == 'YES') {
-    $pn_news->comments($_GET['newsid']);
-    $pn_news->commentform($_GET['newsid']);
+$pn_news = new pn_news();
+$pn_news->details($newsid);
+
+if (($pnconfig['comments'] ?? 'NO') === 'YES' && ($pn_newsexist ?? 'NO') === 'YES' && $showcomments) {
+    $pn_news->comments($newsid);
+    $pn_news->commentform($newsid);
 }
 
 pn_cpi();
