@@ -789,38 +789,72 @@ class pn_user
     // Login user
     public function login(): void
     {
-        global $pn_config, $pn_handler;
+        global $pn_config, $pn_handler, $pnuser;
 
         $template = new pn_template();
         $loginFlag = $_GET['pndata']['login'] ?? '';
 
-        if ($loginFlag == 'YES') {
-            $nickname = $_POST['pndata']['nickname'] ?? '';
-            $password = $_POST['pndata']['password'] ?? '';
+        if ($loginFlag !== 'YES') {
+            if (($pnuser['loggedin'] ?? 'NO') === 'YES') {
+                header('Location: ' . $pn_config['userfile'] . '?page=profile');
+                exit;
+            }
+            $template->loginform();
+            return;
+        }
 
-            if (!$nickname || !$password) {
-                $template->message(L_ALL_FILLALL, 'javascript:history.back()');
-            } else {
-                $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ?');
-                mysqli_stmt_bind_param($stmt, 's', $nickname);
-                mysqli_stmt_execute($stmt);
-                $result = mysqli_stmt_get_result($stmt);
-                $num = mysqli_num_rows($result);
+        $nickname = trim($_POST['pndata']['nickname'] ?? '');
+        $password = $_POST['pndata']['password'] ?? '';
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+        $ip = substr(explode(',', (string) $ip)[0], 0, 64);
 
-                if ($num == 1) {
-                    $row = mysqli_fetch_array($result);
+        if ($nickname === '' || $password === '') {
+            $template->message(L_ALL_FILLALL, 'javascript:history.back()');
+            return;
+        }
 
-                    if (pn_verify_password($password, $row['password'], (int) $row['id'])) {
-                        $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
-                    } else {
-                        $template->message(L_USR_WRONGPASSWORD, 'javascript:history.back()');
-                    }
-                } else {
-                    $template->message(L_USR_NOUSR, 'javascript:history.back()');
-                }
+        // Rate limit (BUG-011)
+        $window = time() - 900;
+        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM pn_login_attempts WHERE (ip = ? OR nickname = ?) AND success = ' . "'NO'" . ' AND attempted_at > ?');
+        mysqli_stmt_bind_param($stmt, 'ssi', $ip, $nickname, $window);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        [$failedCount] = mysqli_fetch_array($result);
+        if ((int) $failedCount >= 10) {
+            $template->message('Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.', 'javascript:history.back()');
+            return;
+        }
+
+        // Fetch user
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ?');
+        mysqli_stmt_bind_param($stmt, 's', $nickname);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $valid = false;
+        if (mysqli_num_rows($result) === 1) {
+            $row = mysqli_fetch_array($result);
+            if (($row['status'] ?? 'Activated') === 'Activated'
+                && pn_verify_password($password, $row['password'], (int) $row['id'])) {
+                $valid = true;
             }
         } else {
-            $template->loginform();
+            // Constant-time dummy to prevent timing-based user enumeration (BUG-046)
+            password_verify($password, '$2y$12$dummyhashdummyhashdummyhashdummyhashdummyhashdummy.');
+        }
+
+        // Log attempt
+        $now = time();
+        $success = $valid ? 'YES' : 'NO';
+        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_login_attempts (ip, nickname, success, attempted_at) VALUES (?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'sssi', $ip, $nickname, $success, $now);
+        mysqli_stmt_execute($stmt);
+
+        if ($valid) {
+            $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
+        } else {
+            // Unified message (BUG-010)
+            $template->message('Nickname oder Passwort ist nicht korrekt.', 'javascript:history.back()');
         }
     }
 
@@ -830,41 +864,60 @@ class pn_user
         global $pn_config, $pn_handler;
 
         $template = new pn_template();
-        $searchstring = $_POST['pndata']['searchstring'] ?? '';
+        $search = trim($_POST['pndata']['searchstring'] ?? '');
+        $genericMsg = 'Falls ein Account mit diesen Daten existiert, wurde eine E-Mail an die hinterlegte Adresse versendet.';
 
-        if ($searchstring) {
-            $stmt = mysqli_prepare($pn_handler, 'SELECT nickname, email FROM ' . $pn_config['usertable'] . ' WHERE nickname = ? OR email = ?');
-            mysqli_stmt_bind_param($stmt, 'ss', $searchstring, $searchstring);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            $num = mysqli_num_rows($result);
+        if ($search === '') {
+            $template->senddataform();
+            return;
+        }
 
-            if ($num == 0) {
-                $template->message(L_USR_NOUSRREGISTERED, 'javascript:history.back()');
-            } elseif ($num > 1) {
-                $template->message(L_USR_TOOMANYSEARCHRESULTS, 'javascript:history.back()');
-            } elseif ($num == 1) {
-                $row = mysqli_fetch_array($result);
-                // Generate new password instead of sending stored one
-                $newPassword = $this->generate_password();
+        // Rate limit per IP (BUG-020 partial)
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+        $ip = substr(explode(',', (string) $ip)[0], 0, 64);
+        $window = time() - 3600;
+        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM pn_login_attempts WHERE ip = ? AND success = ' . "'NO'" . ' AND attempted_at > ?');
+        mysqli_stmt_bind_param($stmt, 'si', $ip, $window);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        [$rpHourly] = mysqli_fetch_array($result);
+        if ((int) $rpHourly > 20) {
+            $template->message('Zu viele Anfragen. Bitte sp&auml;ter erneut versuchen.', 'javascript:history.back()');
+            return;
+        }
+
+        // Specific lookup: email if it contains @, else nickname (avoids BUG-022 collision)
+        $isEmail = filter_var($search, FILTER_VALIDATE_EMAIL) !== false;
+        $sql = $isEmail
+            ? 'SELECT nickname, email FROM ' . $pn_config['usertable'] . ' WHERE email = ?'
+            : 'SELECT nickname, email FROM ' . $pn_config['usertable'] . ' WHERE nickname = ?';
+        $stmt = mysqli_prepare($pn_handler, $sql);
+        mysqli_stmt_bind_param($stmt, 's', $search);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        // Log attempt
+        $now = time();
+        $stmt2 = mysqli_prepare($pn_handler, 'INSERT INTO pn_login_attempts (ip, nickname, success, attempted_at) VALUES (?, ?, ' . "'NO'" . ', ?)');
+        mysqli_stmt_bind_param($stmt2, 'ssi', $ip, $search, $now);
+        mysqli_stmt_execute($stmt2);
+
+        if (mysqli_num_rows($result) === 1) {
+            $row = mysqli_fetch_array($result);
+            $newPassword = $this->generate_password();
+            $pnemail = new pn_email();
+
+            // Mail FIRST, update password only on success (BUG-020)
+            if ($pnemail->dataemail($row['nickname'], $row['email'], $newPassword)) {
                 $hashedPassword = pn_hash_password($newPassword);
-
-                // Update password in database
                 $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET password = ? WHERE nickname = ?');
                 mysqli_stmt_bind_param($stmt, 'ss', $hashedPassword, $row['nickname']);
                 mysqli_stmt_execute($stmt);
-
-                $pnemail = new pn_email();
-
-                if ($pnemail->dataemail($row['nickname'], $row['email'], $newPassword)) {
-                    $template->message(L_USR_DATASENT, $pn_config['userfile'] . '?page=login');
-                } else {
-                    $template->message(L_USR_CANTSENDMAIL, 'javascript:history.back()');
-                }
             }
-        } else {
-            $template->senddataform();
         }
+
+        // Always reply generic (BUG-021)
+        $template->message($genericMsg, $pn_config['userfile'] . '?page=login');
     }
 
     // Print out usermenu
