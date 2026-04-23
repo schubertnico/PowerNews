@@ -280,3 +280,52 @@ function pn_input_whitelist(string $key, array $allowed, mixed $default, string 
 
     return pn_validate_whitelist($source[$key] ?? null, $allowed, $default);
 }
+
+/**
+ * Validiert einen Nickname: 3-30 Zeichen, erlaubte Zeichen: A-Z, a-z, 0-9, ._-,
+ * deutsche Umlaute und ß.
+ */
+function pn_validate_nickname(mixed $input): string
+{
+    if ($input === null) {
+        return '';
+    }
+    $trimmed = trim((string) $input);
+
+    if (!preg_match('/^[A-Za-z\x{00C4}\x{00D6}\x{00DC}\x{00E4}\x{00F6}\x{00FC}\x{00DF}0-9_.\-]{3,30}$/u', $trimmed)) {
+        return '';
+    }
+
+    return $trimmed;
+}
+
+/**
+ * Session-gebundener CSRF-Token (Getter + Verify).
+ */
+function pn_csrf_token(): string
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    if (empty($_SESSION['pn_csrf_token'])) {
+        $_SESSION['pn_csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['pn_csrf_token'];
+}
+
+function pn_csrf_verify(mixed $token): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $stored = $_SESSION['pn_csrf_token'] ?? '';
+
+    if ($stored === '' || !is_string($token)) {
+        return false;
+    }
+
+    return hash_equals($stored, $token);
+}

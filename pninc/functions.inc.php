@@ -653,42 +653,50 @@ class pn_user
         $template = new pn_template();
         $sendFlag = $_GET['pndata']['send'] ?? '';
 
-        if ($sendFlag == 'YES') {
-            $nickname = $_POST['pndata']['nickname'] ?? '';
-            $email = $_POST['pndata']['email'] ?? '';
-
-            if (!$nickname || !$email) {
-                $template->message(L_ALL_FILLALL, 'javascript:history.back()');
-            } else {
-                $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ? OR email = ?');
-                mysqli_stmt_bind_param($stmt, 'ss', $nickname, $email);
-                mysqli_stmt_execute($stmt);
-                $result = mysqli_stmt_get_result($stmt);
-                $num = mysqli_num_rows($result);
-
-                if ($num != 0) {
-                    $template->message(L_USR_USRALREADYEXISTS, 'javascript:history.back()');
-                } else {
-                    if (!preg_match("!^[_a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$!", (string) $email)) {
-                        $template->message(L_USR_WRONGEMAIL, 'javascript:history.back()');
-                    } else {
-                        $password = $this->generate_password();
-                        $hashedPassword = pn_hash_password($password);
-                        $now = time();
-                        $showemail = $_POST['pndata']['showemail'] ?? 'NO';
-
-                        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail) VALUES(?, ?, ?, ?, ?)');
-                        mysqli_stmt_bind_param($stmt, 'sssis', $nickname, $email, $hashedPassword, $now, $showemail);
-                        mysqli_stmt_execute($stmt);
-
-                        $pemail = new pn_email();
-                        $pemail->registeremail($nickname, $email, $password);
-                        $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login');
-                    }
-                }
-            }
-        } else {
+        if ($sendFlag !== 'YES') {
             $template->registerform();
+            return;
+        }
+
+        $nickname = pn_validate_nickname($_POST['pndata']['nickname'] ?? '');
+        $email = pn_validate_email($_POST['pndata']['email'] ?? '');
+        $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
+
+        if ($nickname === '' || $email === '') {
+            $template->message('Ungueltige Eingabe. Nickname: 3-30 Zeichen (Buchstaben/Ziffern/._-), E-Mail muss gueltig sein.', 'javascript:history.back()');
+            return;
+        }
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['usertable'] . ' WHERE nickname = ? OR email = ?');
+        mysqli_stmt_bind_param($stmt, 'ss', $nickname, $email);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if (mysqli_num_rows($result) !== 0) {
+            $template->message(L_USR_USRALREADYEXISTS, 'javascript:history.back()');
+            return;
+        }
+
+        $password = $this->generate_password();
+        $hashedPassword = pn_hash_password($password);
+        $now = time();
+
+        mysqli_begin_transaction($pn_handler);
+        try {
+            $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail) VALUES(?, ?, ?, ?, ?)');
+            mysqli_stmt_bind_param($stmt, 'sssis', $nickname, $email, $hashedPassword, $now, $showemail);
+            mysqli_stmt_execute($stmt);
+
+            $pemail = new pn_email();
+            if (!$pemail->registeremail($nickname, $email, $password)) {
+                throw new RuntimeException('mail send failed');
+            }
+            mysqli_commit($pn_handler);
+            $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login');
+        } catch (Throwable $e) {
+            mysqli_rollback($pn_handler);
+            error_log('[register] ' . $e->getMessage());
+            $template->message('Registrierung fehlgeschlagen. Bitte sp&auml;ter erneut versuchen.', 'javascript:history.back()');
         }
     }
 
@@ -940,57 +948,76 @@ class pn_user
 
         $template = new pn_template();
 
-        if ($pnuser['loggedin'] == 'YES') {
-            $sendFlag = $_GET['pndata']['send'] ?? '';
-
-            if ($sendFlag == 'YES') {
-                $nickname = $_POST['pndata']['nickname'] ?? '';
-                $email = $_POST['pndata']['email'] ?? '';
-                $password = $_POST['pndata']['password'] ?? '';
-                $password2 = $_POST['pndata']['password2'] ?? '';
-
-                if (!$nickname || !$email || !$password || !$password2) {
-                    $template->message(L_ALL_FILLALL, 'javascript:history.back()');
-                } else {
-                    if (!preg_match("!^[_a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}!", (string) $email)) {
-                        $template->message(L_USR_WRONGEMAIL, 'javascript:history.back()');
-                    } else {
-                        if ($password == $password2) {
-                            $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE (nickname = ? OR email = ?) AND id != ?');
-                            $userId = (int) $pnuser['id'];
-                            mysqli_stmt_bind_param($stmt, 'ssi', $nickname, $email, $userId);
-                            mysqli_stmt_execute($stmt);
-                            $result = mysqli_stmt_get_result($stmt);
-                            $num = mysqli_num_rows($result);
-
-                            if ($num == 0) {
-                                $hashedPassword = pn_hash_password($password);
-                                $showemail = $_POST['pndata']['showemail'] ?? 'NO';
-                                $realname = $_POST['pndata']['realname'] ?? '';
-                                $city = $_POST['pndata']['city'] ?? '';
-                                $age = $_POST['pndata']['age'] ?? '';
-                                $homepage = $_POST['pndata']['homepage'] ?? '';
-                                $icq = $_POST['pndata']['icq'] ?? '';
-
-                                $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET nickname = ?, email = ?, password = ?, showemail = ?, realname = ?, city = ?, age = ?, homepage = ?, icq = ? WHERE id = ?');
-                                mysqli_stmt_bind_param($stmt, 'sssssssssi', $nickname, $email, $hashedPassword, $showemail, $realname, $city, $age, $homepage, $icq, $userId);
-                                mysqli_stmt_execute($stmt);
-
-                                $template->message(L_USR_PROFILEEDITED, $pn_config['userfile'] . '?page=profile');
-                            } else {
-                                $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, 'javascript:history.back()');
-                            }
-                        } else {
-                            $template->message(L_USR_PASSNOTEQUAL, 'javascript:history.back()');
-                        }
-                    }
-                }
-            } else {
-                $template->profileform($pnuser);
-            }
-        } else {
+        if (!isset($pnuser) || ($pnuser['loggedin'] ?? 'NO') !== 'YES') {
             $template->message(L_USR_NOTLOGGEDIN, $pn_config['userfile'] . '?page=login');
+            return;
         }
+
+        $sendFlag = $_GET['pndata']['send'] ?? '';
+
+        if ($sendFlag !== 'YES') {
+            $template->profileform($pnuser);
+            return;
+        }
+
+        $nickname = pn_validate_nickname($_POST['pndata']['nickname'] ?? '');
+        $email = pn_validate_email($_POST['pndata']['email'] ?? '');
+        $password = (string) ($_POST['pndata']['password'] ?? '');
+        $password2 = (string) ($_POST['pndata']['password2'] ?? '');
+        $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
+        $realname = pn_validate_string($_POST['pndata']['realname'] ?? '', 100);
+        $city = pn_validate_string($_POST['pndata']['city'] ?? '', 100);
+        $age = pn_validate_int_range($_POST['pndata']['age'] ?? 0, 0, 150, 0);
+        $homepage = pn_validate_url($_POST['pndata']['homepage'] ?? '');
+        $homepageInput = trim((string) ($_POST['pndata']['homepage'] ?? ''));
+        $icq = pn_validate_int_range($_POST['pndata']['icq'] ?? 0, 0, 2147483647, 0);
+
+        if ($nickname === '' || $email === '' || ($homepageInput !== '' && $homepage === '')) {
+            $template->message('Ungueltige Eingabe. Bitte Nickname, E-Mail und Homepage pruefen.', 'javascript:history.back()');
+            return;
+        }
+
+        // Passwort-Felder sind optional
+        $updatePw = false;
+        $hashedPassword = '';
+        if ($password !== '' || $password2 !== '') {
+            if ($password !== $password2) {
+                $template->message(L_USR_PASSNOTEQUAL, 'javascript:history.back()');
+                return;
+            }
+            if (strlen($password) < 8) {
+                $template->message('Passwort muss mindestens 8 Zeichen haben.', 'javascript:history.back()');
+                return;
+            }
+            $hashedPassword = pn_hash_password($password);
+            $updatePw = true;
+        }
+
+        $userId = (int) $pnuser['id'];
+        $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['usertable'] . ' WHERE (nickname = ? OR email = ?) AND id != ?');
+        mysqli_stmt_bind_param($stmt, 'ssi', $nickname, $email, $userId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if (mysqli_num_rows($result) !== 0) {
+            $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, 'javascript:history.back()');
+            return;
+        }
+
+        if ($updatePw) {
+            $sql = 'UPDATE ' . $pn_config['usertable']
+                . ' SET nickname = ?, email = ?, password = ?, showemail = ?, realname = ?, city = ?, age = ?, homepage = ?, icq = ? WHERE id = ?';
+            $stmt = mysqli_prepare($pn_handler, $sql);
+            mysqli_stmt_bind_param($stmt, 'ssssssissi', $nickname, $email, $hashedPassword, $showemail, $realname, $city, $age, $homepage, $icq, $userId);
+        } else {
+            $sql = 'UPDATE ' . $pn_config['usertable']
+                . ' SET nickname = ?, email = ?, showemail = ?, realname = ?, city = ?, age = ?, homepage = ?, icq = ? WHERE id = ?';
+            $stmt = mysqli_prepare($pn_handler, $sql);
+            mysqli_stmt_bind_param($stmt, 'sssssisii', $nickname, $email, $showemail, $realname, $city, $age, $homepage, $icq, $userId);
+        }
+        mysqli_stmt_execute($stmt);
+
+        $template->message(L_USR_PROFILEEDITED, $pn_config['userfile'] . '?page=profile');
     }
 
     // Logout
