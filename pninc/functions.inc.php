@@ -1096,9 +1096,8 @@ class pn_template
         if ($num == 1) {
             [$headline] = mysqli_fetch_array($result);
 
-            if ($pnconfig['html'] == 'Comments' || $pnconfig['html'] == 'NO') {
-                $title = htmlentities($title);
-            }
+            // Always escape user-provided content (BUG-025)
+            $title = htmlspecialchars((string) $title, ENT_QUOTES, 'UTF-8');
 
             if ($pnconfig['bbcode'] == 'Comments/News' || $pnconfig['bbcode'] == 'News') {
                 $title = $this->bbreplace($title);
@@ -1144,11 +1143,10 @@ class pn_template
         if ($num == 1) {
             [$news] = mysqli_fetch_array($result);
 
-            if ($pnconfig['html'] == 'Comments' || $pnconfig['html'] == 'NO') {
-                $title = htmlentities($title);
-                $text = htmlentities($text);
-                $moretext = htmlentities($moretext);
-            }
+            // Always escape user-provided content (BUG-025)
+            $title = htmlspecialchars((string) $title, ENT_QUOTES, 'UTF-8');
+            $text = htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+            $moretext = htmlspecialchars((string) $moretext, ENT_QUOTES, 'UTF-8');
 
             if ($pnconfig['bbcode'] == 'Comments/News' || $pnconfig['bbcode'] == 'News') {
                 $title = $this->bbreplace($title);
