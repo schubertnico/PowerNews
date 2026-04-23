@@ -13,9 +13,10 @@ CREATE TABLE `pn_categories` (
 ) ENGINE=MyISAM AUTO_INCREMENT=1 ;
 
 #
-# Daten f�r Tabelle `pn_categories`
+# Daten fuer Tabelle `pn_categories`
 #
 
+INSERT INTO `pn_categories` (`id`, `name`, `description`, `picture`, `status`) VALUES (1, 'Allgemein', 'Standardkategorie', '', 'Activated');
 
 # --------------------------------------------------------
 
@@ -73,7 +74,7 @@ CREATE TABLE `pn_config` (
 # Daten f�r Tabelle `pn_config`
 #
 
-INSERT INTO `pn_config` VALUES ('YES', 'NO', 'YES', 'Guests/Registered', 'NO', 'YES', 'Guests/Registered', 'Comments', 'Comments/News', 'News', '%d.%m.%Y', '%H:%M', 1, 'http://www.powerscripts.org', 'daemon@powerscripts.org', 10, 10, 30, 'NO', 5);
+INSERT INTO `pn_config` VALUES ('YES', 'NO', 'YES', 'Registered', 'NO', 'YES', 'Registered', 'Comments', 'Comments', 'Comments', '%d.%m.%Y', '%H:%M', 1, 'http://www.powerscripts.org', 'daemon@powerscripts.org', 10, 10, 30, 'NO', 5);
 
 # --------------------------------------------------------
 

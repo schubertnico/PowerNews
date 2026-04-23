@@ -331,60 +331,67 @@ class pn_news
     {
         global $pn_config, $pnconfig, $pnuser, $pn_handler;
 
-        $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
         $template = new pn_template();
+        $text = trim($text);
 
-        if (trim($text) !== '' && trim($text) !== '0') {
-            $now = time();
-            $spamprotectiontime = $now - (int) $pnconfig['spamprotection'];
-
-            $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE ip = ? AND time >= ?');
-            mysqli_stmt_bind_param($stmt, 'si', $remoteAddr, $spamprotectiontime);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            $num = mysqli_num_rows($result);
-
-            if ($num == 0) {
-                $text = addslashes($text);
-                $query = '';
-
-                if ($pnconfig['commentwriting'] == 'Registered') {
-                    if ($pnuser['loggedin'] == 'YES') {
-                        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['commenttable'] . ' (newsid, userid, time, text, ip) VALUES(?, ?, ?, ?, ?)');
-                        mysqli_stmt_bind_param($stmt, 'iiiss', $newsid, $pnuser['id'], $now, $text, $remoteAddr);
-                        mysqli_stmt_execute($stmt);
-                        $query = 'done';
-                    } else {
-                        $template->message(L_NEWS_CANNOTPOSTCOMMENTS, $pn_config['userfile'] . '?page=login');
-                    }
-                } else {
-                    $userId = ($pnuser['loggedin'] == 'YES') ? (int) $pnuser['id'] : 0;
-                    $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['commenttable'] . ' (newsid, userid, time, text, ip) VALUES(?, ?, ?, ?, ?)');
-                    mysqli_stmt_bind_param($stmt, 'iiiss', $newsid, $userId, $now, $text, $remoteAddr);
-                    mysqli_stmt_execute($stmt);
-                    $query = 'done';
-                }
-
-                if ($query !== '') {
-                    $template->message(L_NEWS_COMMENTPOSTED, $pn_config['detailfile'] . "?newsid={$newsid}&showcomments=YES");
-                }
-            } else {
-                if ($pnconfig['spamprotection'] >= 3600) {
-                    $sp_time = round($pnconfig['spamprotection'] / 3600, 1);
-                    $sp_unit = L_NEWS_HOURS;
-                } elseif ($pnconfig['spamprotection'] >= 60) {
-                    $sp_time = round($pnconfig['spamprotection'] / 60, 1);
-                    $sp_unit = L_NEWS_MINUTES;
-                } else {
-                    $sp_time = $pnconfig['spamprotection'];
-                    $sp_unit = L_NEWS_SECONDS;
-                }
-
-                $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", 'javascript:history.back()');
-            }
-        } else {
+        if ($text === '' || $text === '0') {
             $template->message(L_ALL_FILLALL, 'javascript:history.back()');
+            return;
         }
+
+        // Length limit (BUG-038)
+        $maxLen = 5000;
+        if (mb_strlen($text) > $maxLen) {
+            $template->message('Kommentar zu lang (max. ' . $maxLen . ' Zeichen).', 'javascript:history.back()');
+            return;
+        }
+
+        // Validate newsid exists and is activated (BUG-029)
+        $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['newstable'] . " WHERE id = ? AND status = 'Activated'");
+        mysqli_stmt_bind_param($stmt, 'i', $newsid);
+        mysqli_stmt_execute($stmt);
+        if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) !== 1) {
+            $template->message('News nicht gefunden.', 'javascript:history.back()');
+            return;
+        }
+
+        // X-Forwarded-For (BUG-030)
+        $remoteAddr = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+        $remoteAddr = substr(explode(',', (string) $remoteAddr)[0], 0, 64);
+
+        $now = time();
+        $spamprotectiontime = $now - (int) $pnconfig['spamprotection'];
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['commenttable'] . ' WHERE ip = ? AND time >= ?');
+        mysqli_stmt_bind_param($stmt, 'si', $remoteAddr, $spamprotectiontime);
+        mysqli_stmt_execute($stmt);
+
+        if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) > 0) {
+            if ($pnconfig['spamprotection'] >= 3600) {
+                $sp_time = round($pnconfig['spamprotection'] / 3600, 1);
+                $sp_unit = L_NEWS_HOURS;
+            } elseif ($pnconfig['spamprotection'] >= 60) {
+                $sp_time = round($pnconfig['spamprotection'] / 60, 1);
+                $sp_unit = L_NEWS_MINUTES;
+            } else {
+                $sp_time = $pnconfig['spamprotection'];
+                $sp_unit = L_NEWS_SECONDS;
+            }
+            $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", 'javascript:history.back()');
+            return;
+        }
+
+        if (($pnconfig['commentwriting'] ?? '') === 'Registered' && (($pnuser['loggedin'] ?? 'NO') !== 'YES')) {
+            $template->message(L_NEWS_CANNOTPOSTCOMMENTS, $pn_config['userfile'] . '?page=login');
+            return;
+        }
+
+        $userId = (($pnuser['loggedin'] ?? 'NO') === 'YES') ? (int) $pnuser['id'] : 0;
+        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['commenttable'] . ' (newsid, userid, time, text, ip) VALUES(?, ?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'iiiss', $newsid, $userId, $now, $text, $remoteAddr);
+        mysqli_stmt_execute($stmt);
+
+        $template->message(L_NEWS_COMMENTPOSTED, $pn_config['detailfile'] . "?newsid={$newsid}&showcomments=YES");
     }
 
     // print archive
@@ -540,27 +547,33 @@ class pn_news
                 $catselect = L_NEWS_CATSDEACTIVATED;
             }
 
-            $title = $text = $moretext = $catid = $relatedlinks = '';
+            $title = $text = $moretext = $relatedlinks = '';
+            $catid = 0;
 
             if (isset($_POST['pndata'])) {
-                $title = addslashes($_POST['pndata']['title'] ?? '');
-                $text = addslashes($_POST['pndata']['text'] ?? '');
-                $moretext = addslashes($_POST['pndata']['moretext'] ?? '');
+                $title = pn_validate_string($_POST['pndata']['title'] ?? '', 250);
+                $text = pn_validate_string($_POST['pndata']['text'] ?? '', 65000);
+                $moretext = pn_validate_string($_POST['pndata']['moretext'] ?? '', 65000);
                 $catid = (int) ($_POST['pndata']['catid'] ?? 0);
 
+                $links = [];
                 if (isset($_POST['pndata']['rl_title']) && is_array($_POST['pndata']['rl_title'])) {
                     $counter = count($_POST['pndata']['rl_title']);
 
                     for ($i = 0; $i < $counter; ++$i) {
-                        if (trim((string) $_POST['pndata']['rl_title'][$i]) && trim((string) $_POST['pndata']['rl_url'][$i])) {
-                            $relatedlinks .= $_POST['pndata']['rl_title'][$i] . '!@!@!' . $_POST['pndata']['rl_url'][$i] . '!@!@!' . $_POST['pndata']['rl_target'][$i] . "\n";
+                        $t = trim((string) ($_POST['pndata']['rl_title'][$i] ?? ''));
+                        $u = trim((string) ($_POST['pndata']['rl_url'][$i] ?? ''));
+                        $target = (($_POST['pndata']['rl_target'][$i] ?? '_self') === '_blank') ? '_blank' : '_self';
+                        if ($t !== '' && $u !== '' && preg_match('#^https?://#i', $u) && filter_var($u, FILTER_VALIDATE_URL)) {
+                            $links[] = ['title' => mb_substr($t, 0, 100), 'url' => mb_substr($u, 0, 250), 'target' => $target];
                         }
                     }
                 }
+                $relatedlinks = json_encode($links, JSON_UNESCAPED_UNICODE);
             }
 
             // Check who can send news
-            if ($pnconfig['newssending'] == 'Registered' && $pnuser['loggedin'] == 'NO') {
+            if (($pnconfig['newssending'] ?? 'Registered') === 'Registered' && (($pnuser['loggedin'] ?? 'NO') !== 'YES')) {
                 $template->message(L_NEWS_CANNOTSENDNEWS, $pn_config['userfile'] . '?page=login');
             } elseif ($noCategoriesAvailable) {
                 // Show error message when categories are required but none exist
@@ -1134,16 +1147,32 @@ class pn_template
     // BB replacements
     public function bbreplace(string $text): string
     {
+        global $pnconfig;
+
         $text = preg_replace("!\[(?i)b\]!", '<b>', $text);
         $text = preg_replace("!\[/(?i)b\]!", '</b>', (string) $text);
         $text = preg_replace("!\[(?i)u\]!", '<u>', (string) $text);
         $text = preg_replace("!\[/(?i)u\]!", '</u>', (string) $text);
         $text = preg_replace("!\[(?i)i\]!", '<i>', (string) $text);
         $text = preg_replace("!\[/(?i)i\]!", '</i>', (string) $text);
-        $text = preg_replace("!\[(?i)url\](http://|ftp://)([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="\\1\\2" target="_blank">\\1\\2</a>', (string) $text);
-        $text = preg_replace("!\[(?i)url\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="http://\\1" target="_blank">\\1</a>', (string) $text);
+        $text = preg_replace("!\[(?i)url\](http://|ftp://)([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="\\1\\2" target="_blank" rel="noopener noreferrer">\\1\\2</a>', (string) $text);
+        $text = preg_replace("!\[(?i)url\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="http://\\1" target="_blank" rel="noopener noreferrer">\\1</a>', (string) $text);
         $text = preg_replace("!\[(?i)email\]([a-zA-Z0-9-._]+@[a-zA-Z0-9-.]+)\[/(?i)email\]!", '<a href="mailto:\\1">\\1</a>', (string) $text);
-        $text = preg_replace("!\[(?i)img\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[(?i)/img\]!", '<img src="\\1" border="0">', (string) $text);
+
+        // Whitelist [img] to own host only (BUG-048)
+        $ownHost = parse_url((string) ($pnconfig['url'] ?? ''), PHP_URL_HOST) ?: 'localhost';
+        $allowedImgHosts = '#^https?://(localhost|127\.0\.0\.1|' . preg_quote($ownHost, '#') . ')(/.*)?$#i';
+        $text = preg_replace_callback(
+            "!\[(?i)img\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[(?i)/img\]!",
+            static function ($m) use ($allowedImgHosts) {
+                $url = $m[1];
+                if (preg_match($allowedImgHosts, $url)) {
+                    return '<img src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" alt="" border="0">';
+                }
+                return '[img]' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '[/img]';
+            },
+            (string) $text
+        );
 
         return preg_replace("!\n!", '<br>', (string) $text);
     }
