@@ -1,49 +1,197 @@
-# IDE
+# ==============================================================
+# PowerNews – .gitignore
+# Alles hier wird NICHT ins Repository übernommen und damit auch
+# nicht auf den Live-Server ausgerollt.
+# ==============================================================
+
+# --------------------------------------------------------------
+# IDE / Editor
+# --------------------------------------------------------------
 .idea/
-*.iml
 .vscode/
+*.iml
+*.sublime-workspace
+*.sublime-project
+.history/
+nbproject/
+*.code-workspace
 
-# Dependencies
+# --------------------------------------------------------------
+# AI-Tools / lokale Assistenten-Sessions
+# --------------------------------------------------------------
+.claude/
+.cursor/
+.copilot/
+
+# --------------------------------------------------------------
+# Composer / PHP-Abhängigkeiten
+# --------------------------------------------------------------
 vendor/
+composer.lock
+composer.phar
+composer.bak
 
-# Logs & Reports
+# --------------------------------------------------------------
+# Node / Frontend-Build (falls künftig genutzt)
+# --------------------------------------------------------------
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+dist/
+build/
+release/
+
+# --------------------------------------------------------------
+# Test-, Lint- und Analyse-Caches
+# --------------------------------------------------------------
+.php-cs-fixer.cache
+.phpunit.result.cache
+.phpunit.cache/
+.rector/
+.rector-cache/
+.rector.cache
+.psalm/
+psalm-cache/
+.psalm.cache/
+.phpstan-cache/
+phpstan-cache/
+tmp/phpstan/
+.infection/
+infection.log
+infection-summary.log
+infection_test.json5
+coverage/
+logs/coverage/
+
+# --------------------------------------------------------------
+# Berichte (werden lokal generiert, kein Commit)
+# --------------------------------------------------------------
+phpmd-report.html
+phpmd-report.xml
+phpmd_report.txt
+phpstan-report.*
+psalm-report.*
+*.diff
+
+# --------------------------------------------------------------
+# Logs
+# --------------------------------------------------------------
+*.log
+error_log
 logs/*.log
 logs/*.html
 logs/*.xml
 logs/coverage/
+# Ausnahmen: Verzeichnis-Marker und Apache-Deny behalten
 !logs/.gitkeep
+!logs/.htaccess
 
-# PHPMD Reports
-phpmd-report.html
-phpmd_report.txt
-
-# Coverage Reports
-coverage/
-
-# Test configs
-infection_test.json5
-
-# Todos (local)
+# --------------------------------------------------------------
+# Projekt-interne Todos (nicht produktionsrelevant)
+# --------------------------------------------------------------
 todos/
 
-# Environment
-.docker/.env
+# --------------------------------------------------------------
+# Installations-/Runtime-Flags (pro Server eigen)
+# --------------------------------------------------------------
+pninc/install.lock
+pninc/*.lock
+
+# --------------------------------------------------------------
+# Lokale Konfiguration und Secrets (niemals committen!)
+# --------------------------------------------------------------
+# Alle Varianten: .env, .env.local, production.env, secrets.env, ...
+*.env
 .env
-.env.local
+.env.*
+!.env.example
+.docker/.env
+.docker/*.local.yml
+.docker/docker-compose.override.yml
+docker-compose.override.yml
+.docker/data/
+.docker/volumes/
+.docker/db-data/
 
-# OS
-.DS_Store
-Thumbs.db
-nul
+# --------------------------------------------------------------
+# Claude Code (nur User-spezifische Settings)
+# --------------------------------------------------------------
+.claude/settings.local.json
 
-# PHP Tools Cache
-composer.lock
-.php-cs-fixer.cache
-.phpunit.result.cache
-.phpunit.cache/
-infection.log
+# --------------------------------------------------------------
+# Security-sensible Dateien – niemals committen!
+# --------------------------------------------------------------
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+# Debug-Skript darf nicht wieder ins Repo wandern
+phpinfo.php
 
-# Temp
+# --------------------------------------------------------------
+# Lokale Datenbank-Dumps / Backups
+# --------------------------------------------------------------
+# Alle SQL-Dumps standardmäßig ignorieren, nur die beiden offiziellen freigeben.
+*.sql
+!powernews.sql
+!pn_update.sql
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+
+# --------------------------------------------------------------
+# Release-Archive / Build-Artefakte
+# --------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# --------------------------------------------------------------
+# Temporäre Dateien
+# --------------------------------------------------------------
 *.tmp
+*.temp
 *.bak
+*.orig
+*.rej
 *.swp
+*.swo
+*~
+*.pid
+tmp/
+temp/
+_temp/
+
+# --------------------------------------------------------------
+# OS-spezifische Dateien
+# --------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+._*
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.stackdump
+$RECYCLE.BIN/
+nul
+NUL
+# Linux
+.directory
+.Trash-*
+.nfs*
