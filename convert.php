@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 
-/* Require admin session (BUG-042) */
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-if (empty($_SESSION['pnadmin']) || $_SESSION['pnadmin'] !== 'YES') {
+/* Include config und pnadmin-Funktionen (Fehler sichtbar lassen). */
+include __DIR__ . '/pninc/config.inc.php';
+include __DIR__ . '/pnadmin/functions.inc.php';
+
+/* Admin-Auth (BUG-042): pncookie via pn_sessions verifizieren und canwriteconfig=YES verlangen. */
+$adminInfo = pnadmin_auth_check();
+if ($adminInfo === null || ($adminInfo['canwriteconfig'] ?? 'NO') !== 'YES') {
     http_response_code(403);
-    echo '<center><b>Nur fuer Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
+    echo '<center><b>Nur f&uuml;r Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
     exit;
 }
 ?><html>
@@ -56,8 +58,7 @@ function validate_path(string $requestedPath, string $baseDir): string|false
     return $realRequestedPath;
 }
 
-/* Include config file */
-include __DIR__ . '/pninc/config.inc.php';
+/* Config bereits oben inkludiert (vor dem Auth-Gate). */
 ?>
 <head>
 <title>PowerNews Converter</title>

@@ -59,6 +59,81 @@ function pnadmin_hash_password(string $password): string
     return password_hash($password, PASSWORD_DEFAULT);
 }
 
+/**
+ * Prueft, ob der aktuelle pncookie einen eingeloggten Admin mit canwriteconfig=YES
+ * in pn_permissions hinterlegt. Gibt das kombinierte User+Permissions-Array zurueck
+ * oder null.
+ *
+ * Wird von update.php und convert.php genutzt, um den Admin-Zugriff zu verifizieren,
+ * ohne dass der volle phpheader-Flow benoetigt wird.
+ */
+function pnadmin_auth_check(): ?array
+{
+    global $pn_config, $pn_handler;
+
+    if (empty($_COOKIE['pncookie'])) {
+        return null;
+    }
+
+    $decoded = base64_decode((string) $_COOKIE['pncookie'], true);
+    if ($decoded === false) {
+        return null;
+    }
+
+    $parts = explode('@@@@@', $decoded, 2);
+    if (count($parts) !== 2) {
+        return null;
+    }
+
+    $userId = (int) $parts[0];
+    $token = $parts[1];
+
+    if ($userId <= 0 || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+        return null;
+    }
+
+    $tokenHash = hash('sha256', $token);
+    $now = time();
+
+    // User muss Activated sein UND eine gueltige, nicht abgelaufene Session in pn_sessions haben.
+    $stmt = mysqli_prepare(
+        $pn_handler,
+        'SELECT u.* FROM ' . $pn_config['usertable'] . ' u '
+        . 'INNER JOIN pn_sessions s ON s.userid = u.id '
+        . 'WHERE u.id = ? AND s.token_hash = ? AND s.expires > ? AND u.status = ' . "'Activated'"
+    );
+    if (!$stmt) {
+        return null;
+    }
+    mysqli_stmt_bind_param($stmt, 'isi', $userId, $tokenHash, $now);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if (mysqli_num_rows($result) !== 1) {
+        return null;
+    }
+    $user = mysqli_fetch_array($result);
+
+    // Permissions laden.
+    $pstmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
+    if (!$pstmt) {
+        return null;
+    }
+    mysqli_stmt_bind_param($pstmt, 'i', $userId);
+    mysqli_stmt_execute($pstmt);
+    $presult = mysqli_stmt_get_result($pstmt);
+    if (mysqli_num_rows($presult) !== 1) {
+        return null;
+    }
+    $perms = mysqli_fetch_array($presult);
+
+    // Admin-Kriterium fuer update/convert: canwriteconfig=YES ist Pflicht (admins haben eh alle YES).
+    if (($perms['canwriteconfig'] ?? 'NO') !== 'YES') {
+        return null;
+    }
+
+    return array_merge(is_array($user) ? $user : [], is_array($perms) ? $perms : []);
+}
+
 // Function for checking logindata
 class login
 {
@@ -112,13 +187,27 @@ class login
 
     public function logincookie(int $userid, string $password): void
     {
-        global $pncookie;
+        global $pncookie, $pn_handler;
 
-        // Store password hash in cookie for session validation
-        $cookiestring = base64_encode($userid . '@@@@@' . $password);
+        // Neue Session (analog pn_user::setusercookie): userId:token in pn_sessions speichern,
+        // Cookie weiterhin als base64(userid@@@@@token) schreiben, damit phpheader.inc.php
+        // das Format parsen kann. Das Passwort-Argument wird nicht mehr im Cookie abgelegt.
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $now = time();
+        $expires = $now + 360 * 24 * 3600;
+        $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+        $ip = substr((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
+        $ip = substr(explode(',', $ip)[0], 0, 64);
+
+        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'isiiss', $userid, $tokenHash, $now, $expires, $ua, $ip);
+        mysqli_stmt_execute($stmt);
+
+        $cookiestring = base64_encode($userid . '@@@@@' . $token);
 
         setcookie('pncookie', $cookiestring, [
-            'expires' => time() + 360 * 24 * 3600,
+            'expires' => $expires,
             'path' => '/',
             'secure' => isset($_SERVER['HTTPS']),
             'httponly' => true,
@@ -130,6 +219,24 @@ class login
 
     public function logout(): void
     {
+        global $pn_handler;
+
+        // Session-Row in pn_sessions entfernen, falls Cookie vorhanden.
+        if (!empty($_COOKIE['pncookie'])) {
+            $decoded = base64_decode((string) $_COOKIE['pncookie'], true);
+            if ($decoded !== false) {
+                $parts = explode('@@@@@', $decoded, 2);
+                if (count($parts) === 2 && preg_match('/^[a-f0-9]{64}$/', $parts[1])) {
+                    $tokenHash = hash('sha256', $parts[1]);
+                    $stmt = mysqli_prepare($pn_handler, 'DELETE FROM pn_sessions WHERE token_hash = ?');
+                    if ($stmt) {
+                        mysqli_stmt_bind_param($stmt, 's', $tokenHash);
+                        mysqli_stmt_execute($stmt);
+                    }
+                }
+            }
+        }
+
         setcookie('pncookie', '', [
             'expires' => time() - 10,
             'path' => '/',
@@ -284,29 +391,49 @@ class template
                     ?><center><a href="index.php?page=templates&subpage=show"><?php echo L_TEMPL_TEMPLATEDELETED; ?></a></center><?php
                 } else {
                     $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['templatetable'] . ' SET title = ?, message = ?, headline = ?, news = ?, comment = ?, usermenu = ?, usermenu2 = ?, relatedlinks = ?, commentform = ?, registerform = ?, loginform = ?, logout = ?, senddataform = ?, profileform = ?, archive = ?, sendnewsform = ?, addemail = ?, editemail = ?, registeremail = ?, dataemail = ? WHERE id = ?');
+                    $title = $data->title;
+                    $message = $data->message;
+                    $headline = $data->headline;
+                    $news = $data->news;
+                    $comment = $data->comment;
+                    $usermenu = $data->usermenu;
+                    $usermenu2 = $data->usermenu2;
+                    $relatedlinks = $data->relatedlinks;
+                    $commentform = $data->commentform;
+                    $registerform = $data->registerform;
+                    $loginform = $data->loginform;
+                    $logout = $data->logout;
+                    $senddataform = $data->senddataform;
+                    $profileform = $data->profileform;
+                    $archive = $data->archive;
+                    $sendnewsform = $data->sendnewsform;
+                    $addemail = $data->addemail;
+                    $editemail = $data->editemail;
+                    $registeremail = $data->registeremail;
+                    $dataemail = $data->dataemail;
                     mysqli_stmt_bind_param(
                         $stmt,
                         'ssssssssssssssssssssi',
-                        $data->title,
-                        $data->message,
-                        $data->headline,
-                        $data->news,
-                        $data->comment,
-                        $data->usermenu,
-                        $data->usermenu2,
-                        $data->relatedlinks,
-                        $data->commentform,
-                        $data->registerform,
-                        $data->loginform,
-                        $data->logout,
-                        $data->senddataform,
-                        $data->profileform,
-                        $data->archive,
-                        $data->sendnewsform,
-                        $data->addemail,
-                        $data->editemail,
-                        $data->registeremail,
-                        $data->dataemail,
+                        $title,
+                        $message,
+                        $headline,
+                        $news,
+                        $comment,
+                        $usermenu,
+                        $usermenu2,
+                        $relatedlinks,
+                        $commentform,
+                        $registerform,
+                        $loginform,
+                        $logout,
+                        $senddataform,
+                        $profileform,
+                        $archive,
+                        $sendnewsform,
+                        $addemail,
+                        $editemail,
+                        $registeremail,
+                        $dataemail,
                         $templateid,
                     );
                     mysqli_stmt_execute($stmt);
@@ -390,6 +517,13 @@ class email
 
 class getadmin
 {
+    /**
+     * Holt User-Daten und validiert die Session.
+     * Der zweite Parameter ist entweder (neu) ein 64-hex Session-Token, dessen sha256
+     * in pn_sessions existieren und nicht abgelaufen sein muss, oder (legacy) der
+     * bcrypt-Passwort-Hash aus der DB - Abwaertskompatibilitaet fuer aeltere Tests
+     * und etwaige bestehende Cookies.
+     */
     public function getuserdata(int $userid, string $password): array
     {
         global $pn_config, $pn_handler;
@@ -404,7 +538,30 @@ class getadmin
 
         if ($num == 1) {
             $user = mysqli_fetch_array($result);
-            $user['loggedin'] = ($password == $user['password']) ? 'YES' : 'NO';
+            $user['loggedin'] = 'NO';
+
+            // User muss aktiviert sein.
+            if (($user['status'] ?? 'Activated') !== 'Activated') {
+                return $user;
+            }
+
+            // Neuer Pfad: 64-hex Token, Session-Row in pn_sessions pruefen.
+            if (preg_match('/^[a-f0-9]{64}$/', $password)) {
+                $tokenHash = hash('sha256', $password);
+                $now = time();
+                $sstmt = mysqli_prepare($pn_handler, 'SELECT id FROM pn_sessions WHERE userid = ? AND token_hash = ? AND expires > ?');
+                if ($sstmt) {
+                    mysqli_stmt_bind_param($sstmt, 'isi', $userid, $tokenHash, $now);
+                    mysqli_stmt_execute($sstmt);
+                    $sres = mysqli_stmt_get_result($sstmt);
+                    if (mysqli_num_rows($sres) === 1) {
+                        $user['loggedin'] = 'YES';
+                    }
+                }
+            } elseif ($password !== '' && $password === $user['password']) {
+                // Legacy-Pfad: Vergleich mit gespeichertem Passwort-Hash.
+                $user['loggedin'] = 'YES';
+            }
         }
 
         return $user;
@@ -949,24 +1106,38 @@ class permissions
         if ($userid !== false) {
             if (!$this->checkadmin($userid)) {
                 $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['permissionstable'] . ' (userid, canreadtemplates, canwritetemplates, canreadconfig, canwriteconfig, canreadusers, canwriteusers, canreadpermissions, canwritepermissions, canreadcategories, canwritecategories, canreadnews, canwritenews, canreadcomments, canwritecomments) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                $canreadtemplates = $perms->canreadtemplates;
+                $canwritetemplates = $perms->canwritetemplates;
+                $canreadconfig = $perms->canreadconfig;
+                $canwriteconfig = $perms->canwriteconfig;
+                $canreadusers = $perms->canreadusers;
+                $canwriteusers = $perms->canwriteusers;
+                $canreadpermissions = $perms->canreadpermissions;
+                $canwritepermissions = $perms->canwritepermissions;
+                $canreadcategories = $perms->canreadcategories;
+                $canwritecategories = $perms->canwritecategories;
+                $canreadnews = $perms->canreadnews;
+                $canwritenews = $perms->canwritenews;
+                $canreadcomments = $perms->canreadcomments;
+                $canwritecomments = $perms->canwritecomments;
                 mysqli_stmt_bind_param(
                     $stmt,
-                    'isssssssssssssss',
+                    'issssssssssssss',
                     $userid,
-                    $perms->canreadtemplates,
-                    $perms->canwritetemplates,
-                    $perms->canreadconfig,
-                    $perms->canwriteconfig,
-                    $perms->canreadusers,
-                    $perms->canwriteusers,
-                    $perms->canreadpermissions,
-                    $perms->canwritepermissions,
-                    $perms->canreadcategories,
-                    $perms->canwritecategories,
-                    $perms->canreadnews,
-                    $perms->canwritenews,
-                    $perms->canreadcomments,
-                    $perms->canwritecomments,
+                    $canreadtemplates,
+                    $canwritetemplates,
+                    $canreadconfig,
+                    $canwriteconfig,
+                    $canreadusers,
+                    $canwriteusers,
+                    $canreadpermissions,
+                    $canwritepermissions,
+                    $canreadcategories,
+                    $canwritecategories,
+                    $canreadnews,
+                    $canwritenews,
+                    $canreadcomments,
+                    $canwritecomments,
                 );
 
                 if (!mysqli_stmt_execute($stmt)) {
@@ -1116,23 +1287,37 @@ class permissions
                 }
             } else {
                 $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['permissionstable'] . ' SET canreadtemplates = ?, canwritetemplates = ?, canreadconfig = ?, canwriteconfig = ?, canreadusers = ?, canwriteusers = ?, canreadpermissions = ?, canwritepermissions = ?, canreadcategories = ?, canwritecategories = ?, canreadnews = ?, canwritenews = ?, canreadcomments = ?, canwritecomments = ? WHERE userid = ?');
+                $canreadtemplates = $perms->canreadtemplates;
+                $canwritetemplates = $perms->canwritetemplates;
+                $canreadconfig = $perms->canreadconfig;
+                $canwriteconfig = $perms->canwriteconfig;
+                $canreadusers = $perms->canreadusers;
+                $canwriteusers = $perms->canwriteusers;
+                $canreadpermissions = $perms->canreadpermissions;
+                $canwritepermissions = $perms->canwritepermissions;
+                $canreadcategories = $perms->canreadcategories;
+                $canwritecategories = $perms->canwritecategories;
+                $canreadnews = $perms->canreadnews;
+                $canwritenews = $perms->canwritenews;
+                $canreadcomments = $perms->canreadcomments;
+                $canwritecomments = $perms->canwritecomments;
                 mysqli_stmt_bind_param(
                     $stmt,
                     'ssssssssssssssi',
-                    $perms->canreadtemplates,
-                    $perms->canwritetemplates,
-                    $perms->canreadconfig,
-                    $perms->canwriteconfig,
-                    $perms->canreadusers,
-                    $perms->canwriteusers,
-                    $perms->canreadpermissions,
-                    $perms->canwritepermissions,
-                    $perms->canreadcategories,
-                    $perms->canwritecategories,
-                    $perms->canreadnews,
-                    $perms->canwritenews,
-                    $perms->canreadcomments,
-                    $perms->canwritecomments,
+                    $canreadtemplates,
+                    $canwritetemplates,
+                    $canreadconfig,
+                    $canwriteconfig,
+                    $canreadusers,
+                    $canwriteusers,
+                    $canreadpermissions,
+                    $canwritepermissions,
+                    $canreadcategories,
+                    $canwritecategories,
+                    $canreadnews,
+                    $canwritenews,
+                    $canreadcomments,
+                    $canwritecomments,
                     $userid,
                 );
 
@@ -1164,30 +1349,52 @@ class configuration
                 $error = L_CONF_WRONGURL;
             }
         } else {
+            // Extract to local variables for bind_param (requires references, incompatible with readonly)
+            $categories = $config->categories;
+            $categorypics = $config->categorypics;
+            $comments = $config->comments;
+            $commentwriting = $config->commentwriting;
+            $moretext = $config->moretext;
+            $sendnews = $config->sendnews;
+            $newssending = $config->newssending;
+            $smilies = $config->smilies;
+            $bbcode = $config->bbcode;
+            $html = $config->html;
+            $dateformat = $config->dateformat;
+            $timeformat = $config->timeformat;
+            $template = $config->template;
+            $url = $config->url;
+            $email = $config->email;
+            $headlines = $config->headlines;
+            $news = $config->news;
+            $spamprotection = $config->spamprotection;
+            $relatedlinks = $config->relatedlinks;
+            $relatedlinks_num = $config->relatedlinks_num;
+
             $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['configtable'] . ' SET categories = ?, categorypics = ?, comments = ?, commentwriting = ?, moretext = ?, sendnews = ?, newssending = ?, smilies = ?, bbcode = ?, html = ?, dateformat = ?, timeformat = ?, template = ?, url = ?, email = ?, headlines = ?, news = ?, spamprotection = ?, relatedlinks = ?, relatedlinks_num = ?');
             mysqli_stmt_bind_param(
                 $stmt,
                 'ssssssssssssississsi',
-                $config->categories,
-                $config->categorypics,
-                $config->comments,
-                $config->commentwriting,
-                $config->moretext,
-                $config->sendnews,
-                $config->newssending,
-                $config->smilies,
-                $config->bbcode,
-                $config->html,
-                $config->dateformat,
-                $config->timeformat,
-                $config->template,
-                $config->url,
-                $config->email,
-                $config->headlines,
-                $config->news,
-                $config->spamprotection,
-                $config->relatedlinks,
-                $config->relatedlinks_num,
+                $categories,
+                $categorypics,
+                $comments,
+                $commentwriting,
+                $moretext,
+                $sendnews,
+                $newssending,
+                $smilies,
+                $bbcode,
+                $html,
+                $dateformat,
+                $timeformat,
+                $template,
+                $url,
+                $email,
+                $headlines,
+                $news,
+                $spamprotection,
+                $relatedlinks,
+                $relatedlinks_num,
             );
 
             if (!mysqli_stmt_execute($stmt)) {

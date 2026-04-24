@@ -20,15 +20,13 @@
 
 error_reporting(E_ALL & ~E_NOTICE);
 
-/* Include config file */
-@include __DIR__ . '/pninc/config.inc.php';
-@include __DIR__ . '/pnadmin/functions.inc.php';
+/* Include config und pnadmin-Funktionen (Fehler sichtbar lassen). */
+include __DIR__ . '/pninc/config.inc.php';
+include __DIR__ . '/pnadmin/functions.inc.php';
 
-/* Require admin session (BUG-043) */
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-if (empty($_SESSION['pnadmin']) || $_SESSION['pnadmin'] !== 'YES') {
+/* Admin-Auth (BUG-043): pncookie via pn_sessions verifizieren und canwriteconfig=YES verlangen. */
+$adminInfo = pnadmin_auth_check();
+if ($adminInfo === null || ($adminInfo['canwriteconfig'] ?? 'NO') !== 'YES') {
     http_response_code(403);
     echo '<center><b>Nur f&uuml;r Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
     exit;
