@@ -123,7 +123,7 @@ class pn_news
             while ($row = mysqli_fetch_array($result)) {
                 $category = $this->getcatname((int) $row['catid']);
 
-                if (!$template->headline((int) $row['id'], (int) $row['time'], $category, stripslashes((string) $row['title']))) {
+                if (!$template->headline((int) $row['id'], (int) $row['time'], $category, (string) $row['title'])) {
                     die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
                 }
             }
@@ -159,7 +159,7 @@ class pn_news
                 $author = $this->getauthor((int) $row['userid']);
                 $comments = $this->getcommentnum((int) $row['id']);
 
-                if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, stripslashes((string) $row['title']), stripslashes((string) $row['text']), $comments, 'NO', stripslashes((string) $row['moretext']), $row['relatedlinks'])) {
+                if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
                     die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
                 }
             }
@@ -188,7 +188,7 @@ class pn_news
             $author = $this->getauthor((int) $row['userid']);
             $comments = $this->getcommentnum((int) $row['id']);
 
-            if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, stripslashes((string) $row['title']), stripslashes((string) $row['text']), $comments, 'YES', stripslashes((string) $row['moretext']), $row['relatedlinks'])) {
+            if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'YES', (string) $row['moretext'], $row['relatedlinks'])) {
                 die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
             }
         } else {
@@ -230,7 +230,7 @@ class pn_news
                         $userdata['id'] = '0';
                         $userdata['nickname'] = L_NEWS_GUEST;
                     }
-                    $template->comment((int) $crow['id'], (int) $crow['newsid'], $userdata, (int) $crow['time'], stripslashes((string) $crow['text']));
+                    $template->comment((int) $crow['id'], (int) $crow['newsid'], $userdata, (int) $crow['time'], (string) $crow['text']);
                 }
             } else {
                 ?><p align="center"><?php echo L_NEWS_NOCOMMENTS; ?></p><?php
@@ -294,8 +294,8 @@ class pn_news
         if ($num == 1) {
             $category = mysqli_fetch_array($result);
             $category['pic'] = '<img src="./pngfx/categories/' . pn_escape($category['picture']) . '" border="0" alt="' . pn_escape($category['name']) . '">';
-            $category['name'] = stripslashes((string) $category['name']);
-            $category['description'] = stripslashes(((isset($category['description']) && trim($category['description']) !== '') ? trim($category['description']) : ''));
+            $category['name'] = (string) $category['name'];
+            $category['description'] = ((isset($category['description']) && trim($category['description']) !== '') ? trim($category['description']) : '');
 
             return $category;
         }
@@ -332,6 +332,13 @@ class pn_news
         global $pn_config, $pnconfig, $pnuser, $pn_handler;
 
         $template = new pn_template();
+
+        // CSRF-Token pruefen (IMP-003)
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            return;
+        }
+
         $text = trim($text);
 
         if ($text === '' || $text === '0') {
@@ -435,7 +442,7 @@ class pn_news
                         $author = $this->getauthor((int) $row['userid']);
                         $comments = $this->getcommentnum((int) $row['id']);
 
-                        if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, stripslashes((string) $row['title']), stripslashes((string) $row['text']), $comments, 'NO', stripslashes((string) $row['moretext']), $row['relatedlinks'])) {
+                        if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
                             die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
                         }
                     }
@@ -476,7 +483,7 @@ class pn_news
                         $author = $this->getauthor((int) $row['userid']);
                         $comments = $this->getcommentnum((int) $row['id']);
 
-                        if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, stripslashes((string) $row['title']), stripslashes((string) $row['text']), $comments, 'NO', stripslashes((string) $row['moretext']), $row['relatedlinks'])) {
+                        if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
                             die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
                         }
                     }
@@ -536,7 +543,7 @@ class pn_news
                     $catselect .= '<option value="">' . L_NEWS_CHOOSECAT . "</option>\n";
 
                     while ($catrow = mysqli_fetch_array($catresult)) {
-                        $catselect .= '<option value="' . (int) $catrow['id'] . '">' . pn_escape(stripslashes((string) $catrow['name'])) . "</option>\n";
+                        $catselect .= '<option value="' . (int) $catrow['id'] . '">' . pn_escape((string) $catrow['name']) . "</option>\n";
                     }
                     $catselect .= '</select>';
                 } else {
@@ -582,6 +589,12 @@ class pn_news
                 $sendFlag = $_GET['pndata']['send'] ?? '';
 
                 if ($sendFlag == 'YES') {
+                    // CSRF-Token pruefen (IMP-003)
+                    if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+                        $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+                        return;
+                    }
+
                     if (!trim($title) || !trim($text) || ($pnconfig['categories'] == 'YES' && !$catid)) {
                         // Specific error message for missing category
                         if ($pnconfig['categories'] == 'YES' && !$catid && trim($title) && trim($text)) {
@@ -668,6 +681,12 @@ class pn_user
 
         if ($sendFlag !== 'YES') {
             $template->registerform();
+            return;
+        }
+
+        // CSRF-Token pruefen (IMP-003)
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
             return;
         }
 
@@ -824,6 +843,12 @@ class pn_user
             return;
         }
 
+        // CSRF-Token pruefen (IMP-003)
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            return;
+        }
+
         $nickname = trim($_POST['pndata']['nickname'] ?? '');
         $password = $_POST['pndata']['password'] ?? '';
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
@@ -890,6 +915,12 @@ class pn_user
 
         if ($search === '') {
             $template->senddataform();
+            return;
+        }
+
+        // CSRF-Token pruefen (IMP-003)
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
             return;
         }
 
@@ -970,6 +1001,12 @@ class pn_user
 
         if ($sendFlag !== 'YES') {
             $template->profileform($pnuser);
+            return;
+        }
+
+        // CSRF-Token pruefen (IMP-003)
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
             return;
         }
 
@@ -1338,9 +1375,8 @@ class pn_template
         if ($num == 1) {
             [$comment] = mysqli_fetch_array($result);
 
-            if ($pnconfig['html'] == 'News' || $pnconfig['html'] == 'NO') {
-                $text = htmlentities($text);
-            }
+            // Always escape user-provided content (BUG-025)
+            $text = htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
 
             if ($pnconfig['bbcode'] == 'Comments/News' || $pnconfig['bbcode'] == 'Comments') {
                 $text = $this->bbreplace($text);
