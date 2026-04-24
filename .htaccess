@@ -1,12 +1,12 @@
-# Block dot-directories like .git, .docker
-RedirectMatch 404 /\.(git|idea|docker|phpunit)(/|$)
+# ==============================================================
+# PowerNews – Apache-Absicherung (Web-Root)
+# Ziel: Nur die tatsächlich benötigten Einstiegspunkte bleiben
+# erreichbar. Alle anderen Dateien/Verzeichnisse werfen 404.
+# ==============================================================
 
-# Block sensitive files
-<FilesMatch "^(composer\.(json|lock)|\.php-cs-fixer\.(php|cache)|phpstan\.neon|phpmd\.xml|psalm\.xml|rector\.php|infection\.json5|phpunit\.xml|.*\.sql|phpmd_report\.txt|\.phpunit\.result\.cache)$">
-    Require all denied
-</FilesMatch>
-
-# Security headers
+# ------------------------------------------------------------------
+# 1) HTTP-Security-Header
+# ------------------------------------------------------------------
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "SAMEORIGIN"
@@ -17,3 +17,75 @@ RedirectMatch 404 /\.(git|idea|docker|phpunit)(/|$)
 </IfModule>
 
 ServerSignature Off
+
+# ------------------------------------------------------------------
+# 2) Kein Directory-Listing, keine Multiviews
+# ------------------------------------------------------------------
+Options -Indexes -MultiViews
+
+# Default-Dokumente (erstes Match)
+DirectoryIndex index.php index.html
+
+# ------------------------------------------------------------------
+# 3) Dot-Directories komplett sperren (.git, .idea, .docker, .claude, ...)
+#    Egal auf welcher Ebene sie auftauchen.
+# ------------------------------------------------------------------
+RedirectMatch 404 /\.(git|idea|docker|phpunit|phpunit\.cache|claude|cursor|copilot|vscode|history|infection|rector-cache|rector|psalm|phpstan-cache)(/|$)
+
+# Dotfiles im Root (z.B. .env, .gitignore, .php-cs-fixer.*, .phpunit.result.cache).
+# .htaccess und .htpasswd bleiben funktional.
+<FilesMatch "(?i)^\.(?!htaccess$|htpasswd$)">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------
+# 4) Sensible Verzeichnisse projektweit sperren
+# ------------------------------------------------------------------
+RedirectMatch 404 ^/(tests|docs|todos|vendor|node_modules|logs|src|database|config|bin|scripts)(/|$)
+RedirectMatch 404 ^/pninc(/|$)
+
+# pnadmin: nur /pnadmin/index.php und /pnadmin/gfx/** bleiben erreichbar;
+# alle Include-Dateien, Sprach-Dateien, License-Text darüber blocken.
+RedirectMatch 404 ^/pnadmin/lang(/|$)
+RedirectMatch 404 ^/pnadmin/[^/]+\.inc\.php$
+RedirectMatch 404 ^/pnadmin/gnulicense\.txt$
+
+# ------------------------------------------------------------------
+# 5) Include-Dateien global blockieren (*.inc, *.inc.php, *.tpl, *.phtml.inc)
+# ------------------------------------------------------------------
+<FilesMatch "\.(inc|inc\.php|tpl|phtml\.inc|twig\.cache|dist)$">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------
+# 6) Sensible Einzeldateien / Datei-Endungen
+# ------------------------------------------------------------------
+<FilesMatch "(?i)^(composer\.(json|lock|phar)|package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|phpstan\.neon|phpmd\.xml|psalm\.xml|rector\.php|infection\.json5|phpunit\.xml|phpunit\.dist\.xml|phpmd_report\.txt|phpinfo\.php|README\.md|CHANGELOG\.md|CHANGELOG|LICENSE|LICENSE\.md|Makefile|Dockerfile|docker-compose\.ya?ml|\.gitignore|\.gitattributes|\.editorconfig|\.env|\.env\..*|Thumbs\.db|\.DS_Store|desktop\.ini|nul|NUL)$">
+    Require all denied
+</FilesMatch>
+
+# Endungen, die sicher nicht öffentlich ausgeliefert werden sollen
+<FilesMatch "(?i)\.(sql|sqlite|sqlite3|db|dump|bak|backup|old|orig|rej|swp|swo|tmp|temp|log|lock|ini|cache|neon|toml|yml|yaml|json5|pem|key|crt|cer|p12|pfx|jks|pub|rsa|ed25519|md|markdown|ase|psd|ai|svg\.gz|tar|tar\.gz|tgz|zip|rar|7z|pid|stackdump)$">
+    Require all denied
+</FilesMatch>
+
+# Source-Map- und Build-Tool-Artefakte
+<FilesMatch "(?i)\.(map|scss|less|sass|ts|tsx|coffee|vue)$">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------
+# 7) Backup-/Editor-Spuren (Tilde, Zahl-Suffixe)
+# ------------------------------------------------------------------
+<FilesMatch "~$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.php\.[0-9]+$">
+    Require all denied
+</FilesMatch>
+
+# ------------------------------------------------------------------
+# 8) Output-Kontrolle für ausgelieferte Dateien
+# ------------------------------------------------------------------
+# UTF-8 als Default-Charset für nicht-PHP-Outputs
+AddDefaultCharset UTF-8

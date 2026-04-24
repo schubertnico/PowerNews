@@ -1,0 +1,2 @@
+# PowerNews – Interne Include-Dateien, niemals direkt per HTTP ausliefern.
+Require all denied
