@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerNews v3.0 - Dokumentation</title>
+    <title>PowerNews v3.0 – Dokumentation</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             line-height: 1.6;
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
@@ -21,12 +21,13 @@
         }
         h2 {
             color: #34495e;
-            margin-top: 30px;
+            margin-top: 32px;
             border-bottom: 1px solid #bdc3c7;
             padding-bottom: 5px;
         }
         h3 {
             color: #7f8c8d;
+            margin-top: 24px;
         }
         table {
             width: 100%;
@@ -36,9 +37,10 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         th, td {
-            padding: 12px;
+            padding: 10px 12px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
         }
         th {
             background: #3498db;
@@ -68,15 +70,15 @@
         }
         .container {
             background: white;
-            padding: 30px;
+            padding: 30px 35px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        ul {
+        ul, ol {
             padding-left: 20px;
         }
         li {
-            margin: 8px 0;
+            margin: 6px 0;
         }
         a {
             color: #3498db;
@@ -87,15 +89,34 @@
         }
         .highlight {
             background: #e8f4fc;
-            padding: 15px;
+            padding: 15px 18px;
             border-left: 4px solid #3498db;
-            margin: 15px 0;
+            margin: 18px 0;
+            border-radius: 0 5px 5px 0;
         }
         .warning {
             background: #fdf2e3;
-            padding: 15px;
+            padding: 15px 18px;
             border-left: 4px solid #e67e22;
-            margin: 15px 0;
+            margin: 18px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .ok {
+            background: #eafaf1;
+            padding: 15px 18px;
+            border-left: 4px solid #27ae60;
+            margin: 18px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .contact {
+            background: #f4f6f8;
+            padding: 20px 25px;
+            border-radius: 6px;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        .contact strong {
+            color: #2c3e50;
         }
         footer {
             margin-top: 40px;
@@ -103,199 +124,250 @@
             border-top: 1px solid #bdc3c7;
             text-align: center;
             color: #7f8c8d;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>PowerNews v3.0</h1>
-        <p>Ein PHP- und MySQL-basiertes News-System.</p>
+<div class="container">
 
-        <h2>Beschreibung</h2>
-        <p>PowerNews ist ein leichtgewichtiges News-Management-System, das es ermöglicht, News-Artikel, Kategorien, Benutzer und Templates zu verwalten. Es wurde ursprünglich 2001 entwickelt und für PHP 8.4 modernisiert.</p>
+    <h1>PowerNews v3.0</h1>
+    <p>Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung.</p>
 
-        <h2>Anforderungen</h2>
-        <ul>
-            <li>PHP 8.4 oder höher</li>
-            <li>MariaDB 10.3+ oder MySQL 8.0+</li>
-            <li>Apache mit mod_rewrite (optional)</li>
-        </ul>
+    <h2>Schnellstart (Docker, in 60 Sekunden)</h2>
 
-        <h2>Installation</h2>
+    <pre><code># 1. Repository klonen
+git clone https://github.com/schubertnico/PowerNews.git
+cd PowerNews
 
-        <h3>Mit Docker (empfohlen)</h3>
-        <ol>
-            <li>Repository klonen:
-                <pre><code>git clone https://github.com/schubertnico/PowerNews.git
-cd PowerNews</code></pre>
-            </li>
-            <li>Composer-Abhängigkeiten installieren:
-                <pre><code>composer install</code></pre>
-            </li>
-            <li>Docker-Container starten:
-                <pre><code>cd .docker
-docker compose up -d --build</code></pre>
-            </li>
-            <li>Anwendung aufrufen:
-                <ul>
-                    <li>Hauptseite: <a href="http://localhost:8087/">http://localhost:8087/</a></li>
-                    <li>Admin-Panel: <a href="http://localhost:8087/pnadmin/">http://localhost:8087/pnadmin/</a></li>
-                    <li>Mailpit (E-Mail-Test): <a href="http://localhost:8033/">http://localhost:8033/</a></li>
-                </ul>
-            </li>
-        </ol>
+# 2. (optional) Composer-Abhängigkeiten für Entwicklungswerkzeuge
+composer install
 
-        <h3>Manuelle Installation</h3>
-        <ol>
-            <li>Dateien auf den Webserver hochladen</li>
-            <li>Datenbank erstellen und <code>powernews.sql</code> importieren</li>
-            <li>Umgebungsvariablen konfigurieren oder <code>pninc/config.inc.php</code> anpassen</li>
-        </ol>
+# 3. Container bauen &amp; starten
+cd .docker
+docker compose up -d --build
 
-        <h2>Konfiguration</h2>
+# 4. Browser öffnen
+# Hauptseite: http://localhost:8087/
+# Admin:      http://localhost:8087/pnadmin/
+# Mailpit:    http://localhost:8033/</code></pre>
 
-        <h3>Umgebungsvariablen</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Variable</th>
-                    <th>Beschreibung</th>
-                    <th>Standard</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>PN_DB_HOST</code></td>
-                    <td>Datenbank-Host</td>
-                    <td>localhost</td>
-                </tr>
-                <tr>
-                    <td><code>PN_DB_USER</code></td>
-                    <td>Datenbank-Benutzer</td>
-                    <td>root</td>
-                </tr>
-                <tr>
-                    <td><code>PN_DB_PASS</code></td>
-                    <td>Datenbank-Passwort</td>
-                    <td>(leer)</td>
-                </tr>
-                <tr>
-                    <td><code>PN_DB_NAME</code></td>
-                    <td>Datenbank-Name</td>
-                    <td>powernews</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h3>Docker-Ports</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Dienst</th>
-                    <th>Port</th>
-                    <th>Beschreibung</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Web</td>
-                    <td>8087</td>
-                    <td>Apache/PHP-Webserver</td>
-                </tr>
-                <tr>
-                    <td>MariaDB</td>
-                    <td>3317</td>
-                    <td>Datenbank</td>
-                </tr>
-                <tr>
-                    <td>Mailpit SMTP</td>
-                    <td>1033</td>
-                    <td>E-Mail-Empfang</td>
-                </tr>
-                <tr>
-                    <td>Mailpit Web</td>
-                    <td>8033</td>
-                    <td>E-Mail-Webinterface</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Nutzung</h2>
-
-        <h3>Admin-Login</h3>
-        <p>Nach der Installation können Sie sich im Admin-Panel anmelden. Der Standard-Admin wird bei der Installation der Datenbank erstellt.</p>
-        <p><strong>Standard-Zugangsdaten:</strong></p>
-        <ul>
-            <li>Benutzername: <code>powernews</code></li>
-            <li>Passwort: <code>powernews</code></li>
-        </ul>
-        <div class="warning">
-            <strong>Wichtig:</strong> Ändern Sie diese Daten sofort nach dem ersten Login über das Profil!
-        </div>
-
-        <h3>Funktionen</h3>
-        <ul>
-            <li><strong>News-Verwaltung:</strong> Erstellen, Bearbeiten und Löschen von News-Artikeln</li>
-            <li><strong>Kategorien:</strong> Organisation von News in Kategorien</li>
-            <li><strong>Benutzer-Verwaltung:</strong> Benutzerregistrierung und -verwaltung</li>
-            <li><strong>Templates:</strong> Anpassbare Ausgabe-Templates</li>
-            <li><strong>Kommentare:</strong> Benutzerkommentare zu News-Artikeln</li>
-            <li><strong>Archiv:</strong> Durchsuchbares News-Archiv</li>
-        </ul>
-
-        <h2>Entwicklung</h2>
-
-        <h3>Code-Qualität prüfen</h3>
-        <pre><code>composer run phpstan</code></pre>
-
-        <h3>Code modernisieren mit Rector</h3>
-        <pre><code># Vorschau der Änderungen
-composer run rector:dry
-
-# Änderungen anwenden
-composer run rector</code></pre>
-
-        <h2>Migration auf PHP 8.4</h2>
-        <p>Diese Version enthält umfassende Änderungen zur Modernisierung des Codes:</p>
-
-        <h3>Sicherheitsfixes</h3>
-        <ul>
-            <li><strong>SQL-Injection:</strong> Alle Datenbankabfragen verwenden jetzt Prepared Statements</li>
-            <li><strong>Passwort-Hashing:</strong> Umstellung von Base64 auf bcrypt (<code>password_hash</code>/<code>password_verify</code>)</li>
-            <li><strong>XSS-Prävention:</strong> Alle Ausgaben werden mit <code>htmlspecialchars()</code> escaped</li>
-            <li><strong>Cookie-Sicherheit:</strong> HttpOnly, Secure und SameSite-Flags aktiviert</li>
-            <li><strong>Path-Traversal:</strong> Pfad-Validierung in <code>convert.php</code></li>
-            <li><strong>Credentials:</strong> Datenbankzugangsdaten über Umgebungsvariablen statt Hardcoding</li>
-        </ul>
-
-        <h3>PHP 8.4-Kompatibilität</h3>
-        <ul>
-            <li><code>declare(strict_types=1)</code> in allen PHP-Dateien</li>
-            <li>Deprecated Functions ersetzt:
-                <ul>
-                    <li><code>strftime()</code> → <code>DateTime::format()</code></li>
-                    <li><code>srand()</code> entfernt (nicht mehr benötigt)</li>
-                    <li><code>rand()</code> → <code>random_int()</code></li>
-                </ul>
-            </li>
-            <li>Moderne PHP-Syntax und Type Hints</li>
-        </ul>
-
-        <div class="highlight">
-            <h3>Auto-Upgrade für Legacy-Passwörter</h3>
-            <p>Bestehende Benutzer mit Base64-kodierten Passwörtern werden automatisch beim nächsten Login auf bcrypt aktualisiert. Keine manuellen Migrationsschritte erforderlich.</p>
-        </div>
-
-        <h2>Lizenz</h2>
-        <p><strong>MIT License</strong> - siehe <a href="LICENSE">LICENSE</a> für Details.</p>
-        <p>Copyright (c) 2001-2024 PowerScripts</p>
-
-        <h2>Repository</h2>
-        <p><a href="https://github.com/schubertnico/PowerNews.git">https://github.com/schubertnico/PowerNews.git</a></p>
-
-        <footer>
-            <p>PowerNews v3.0 &copy; 2001-2024 PowerScripts</p>
-        </footer>
+    <div class="highlight">
+        Beim ersten Aufruf von <code>http://localhost:8087/install.php</code> (<strong>einmalig</strong>) wird ein frischer Admin-Zugang mit zufälligem Passwort erzeugt und auf der Seite angezeigt. Passwort bitte notieren und anschließend im Adminbereich ändern. Danach wird automatisch <code>pninc/install.lock</code> gesetzt, sodass die Datenbank nicht mehr überschrieben werden kann.
     </div>
+
+    <h3>Schnellcheck nach der Installation</h3>
+    <table>
+        <thead>
+            <tr><th>Check</th><th>Erwartetes Ergebnis</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>curl -I http://localhost:8087/</code></td><td><code>HTTP/1.1 200</code>, <code>Server: Apache</code> (ohne Version)</td></tr>
+            <tr><td><code>curl -X POST http://localhost:8087/install.php -d "install=YES"</code></td><td>Hinweis „Installation bereits erfolgt"</td></tr>
+            <tr><td>Registrier-Mail</td><td>landet im Mailpit (<a href="http://localhost:8033/">http://localhost:8033/</a>)</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Anforderungen</h2>
+    <ul>
+        <li>PHP 8.4 (oder höher)</li>
+        <li>MariaDB 10.3+ / MySQL 8.0+</li>
+        <li>Apache 2.4 mit <code>mod_rewrite</code> + <code>mod_headers</code></li>
+        <li>Für Mailversand: <code>msmtp</code> oder ein SMTP-Relay (im Docker-Setup automatisch via Mailpit)</li>
+    </ul>
+
+    <h2>Installation ohne Docker</h2>
+    <ol>
+        <li>Dateien ins Web-Root hochladen.</li>
+        <li>MariaDB-/MySQL-Datenbank anlegen.</li>
+        <li>Zugangsdaten per Umgebungsvariablen (siehe unten) oder direkt in <code>pninc/config.inc.php</code> hinterlegen.</li>
+        <li><code>http://&lt;dein-host&gt;/install.php</code> einmalig aufrufen – das Skript legt Tabellen an und erzeugt einen Admin mit Random-Passwort.</li>
+        <li><code>install.php</code>, <code>update.php</code>, <code>convert.php</code> nach der Installation löschen (oder hinter Admin-Auth lassen – sie sind im Auslieferungszustand bereits auth-gegated).</li>
+    </ol>
+
+    <h2>Konfiguration</h2>
+
+    <h3>Umgebungsvariablen</h3>
+    <table>
+        <thead>
+            <tr><th>Variable</th><th>Beschreibung</th><th>Standard</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>PN_DB_HOST</code></td><td>Datenbank-Host</td><td>localhost</td></tr>
+            <tr><td><code>PN_DB_USER</code></td><td>Datenbank-Benutzer</td><td>root</td></tr>
+            <tr><td><code>PN_DB_PASS</code></td><td>Datenbank-Passwort</td><td>(leer)</td></tr>
+            <tr><td><code>PN_DB_NAME</code></td><td>Datenbank-Name</td><td>powernews</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Docker-Ports</h3>
+    <table>
+        <thead>
+            <tr><th>Dienst</th><th>Port</th><th>Beschreibung</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Web</td><td>8087</td><td>Apache/PHP</td></tr>
+            <tr><td>MariaDB</td><td>3317</td><td>Datenbank</td></tr>
+            <tr><td>Mailpit SMTP</td><td>1033</td><td>E-Mail-Empfang intern</td></tr>
+            <tr><td>Mailpit Web</td><td>8033</td><td>Web-UI für Test-Mails</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Sichere Defaults in <code>pn_config</code></h3>
+    <table>
+        <thead>
+            <tr><th>Option</th><th>Default</th><th>Bedeutung</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>newssending</code></td><td>Registered</td><td>Nur eingeloggte Nutzer dürfen News einreichen</td></tr>
+            <tr><td><code>commentwriting</code></td><td>Registered</td><td>Kommentare nur für eingeloggte Nutzer</td></tr>
+            <tr><td><code>html</code></td><td>Comments</td><td>Kommentare HTML-escaped, News werden zusätzlich immer escaped</td></tr>
+            <tr><td><code>bbcode</code></td><td>Comments</td><td>BBCode nur in Kommentaren</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Funktionen</h2>
+    <ul>
+        <li><strong>News-Verwaltung</strong>: Erstellen, Bearbeiten, Aktivieren und Löschen von Einträgen</li>
+        <li><strong>Kategorien</strong>: Seed-Kategorie „Allgemein" beim Install</li>
+        <li><strong>Benutzer-Verwaltung</strong>: Registrierung, Profil, Passwort-vergessen mit serverseitigem Token</li>
+        <li><strong>Kommentare</strong>: Rate-Limit pro IP (<code>X-Forwarded-For</code>-aware), Längenbegrenzung</li>
+        <li><strong>Templates</strong>: anpassbare HTML-Templates, CSRF-<code>{CSRF}</code>-Platzhalter automatisch ersetzt</li>
+        <li><strong>Archiv</strong>: durchsuchbares News-Archiv</li>
+        <li><strong>Mail</strong>: via <code>msmtp</code> → Mailpit (Docker) oder beliebigem SMTP-Relay</li>
+    </ul>
+
+    <h2>Sicherheitsstand (2026-04-24)</h2>
+
+    <div class="ok">
+        Nach Audit und Fix-Sweep vom April 2026 sind folgende Härtungen eingebaut. Details siehe <code>docs/2026-04-23-Userbereichs-bugs.md</code>.
+    </div>
+
+    <h3>Authentifizierung &amp; Sessions</h3>
+    <ul>
+        <li>Server-seitige Session-Validierung über <code>pn_sessions</code> (SHA-256-Token). Cookie-Format: <code>userId:hex-token</code>.</li>
+        <li>Logout löscht den Token serverseitig – gestohlene Cookies werden sofort ungültig.</li>
+        <li>Login bei <code>status = 'Deactivated'</code> abgewiesen.</li>
+        <li>Konstante Antwortzeit bei Login (Dummy-<code>password_verify</code>) gegen Timing-Enumeration.</li>
+        <li>IP- und Nickname-basiertes Rate-Limit (10 Fehlversuche / 15 min) in <code>pn_login_attempts</code>.</li>
+    </ul>
+
+    <h3>CSRF</h3>
+    <ul>
+        <li>Session-gebundener CSRF-Token (<code>pn_csrf_token()</code> / <code>pn_csrf_verify()</code>).</li>
+        <li>Alle User-Formulare (Register, Login, Profil, Senddata, Comment, Sendnews, Logout) enthalten ein Hidden-<code>csrf_token</code>-Feld.</li>
+        <li>Logout nur per POST.</li>
+        <li>Login-Verify zusätzlich in <code>pninc/head.inc.php</code> vor dem Cookie-Setzen.</li>
+    </ul>
+
+    <h3>Input-Validierung</h3>
+    <ul>
+        <li>Whitelist-Regex für Nicknames (3–30 Zeichen, Buchstaben/Ziffern/._-, Umlaute erlaubt).</li>
+        <li>E-Mail: <code>FILTER_VALIDATE_EMAIL</code> + Maxlength.</li>
+        <li>URL: nur <code>http(s)://…</code>, <code>FILTER_VALIDATE_URL</code>.</li>
+        <li>Age: 0–150 geclampt.</li>
+        <li>Kommentare: max. 5 000 Zeichen.</li>
+        <li>Sendnews-Relatedlinks: strukturiert als JSON (kein Delimiter-Injection mehr).</li>
+    </ul>
+
+    <h3>Output-Escape</h3>
+    <ul>
+        <li>News-Titel, -Text und -Moretext werden immer HTML-escaped (unabhängig von Config).</li>
+        <li>Kommentare werden immer escaped.</li>
+        <li>BBCode <code>[img]</code> lässt nur die eigene Host-Domain (<code>pnconfig.url</code>) zu – externe Tracking-Pixel werden nicht gerendert.</li>
+        <li>Alle Ausgaben via <code>pn_escape()</code> (= <code>htmlspecialchars(ENT_QUOTES, 'UTF-8')</code>).</li>
+    </ul>
+
+    <h3>HTTP / Apache</h3>
+    <ul>
+        <li><code>Content-Type: text/html; charset=UTF-8</code> (end-to-end).</li>
+        <li><code>Accept-Charset="UTF-8"</code> auf allen Formularen.</li>
+        <li>Security-Header in <code>.htaccess</code>: <code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, <code>Referrer-Policy</code>, <code>Permissions-Policy</code>, <code>Content-Security-Policy</code>.</li>
+        <li><code>ServerTokens Prod</code> und <code>ServerSignature Off</code> via Apache-Conf (<code>zz-security-hardening.conf</code>).</li>
+        <li><code>.htaccess</code> blockiert Zugriffe auf <code>.git/</code>, <code>logs/</code>, <code>composer.*</code>, <code>*.sql</code>, Linter-Configs.</li>
+        <li><code>phpinfo.php</code> wurde entfernt.</li>
+    </ul>
+
+    <h3>Installer / Infrastruktur</h3>
+    <ul>
+        <li><code>install.php</code> wird nach dem ersten Lauf durch Lockfile (<code>pninc/install.lock</code>) gesperrt.</li>
+        <li><code>update.php</code> und <code>convert.php</code> erfordern Admin-Login (<code>canwriteconfig = 'YES'</code>).</li>
+        <li>Kein hardcodierter <code>powernews/powernews</code>-Default-Account mehr.</li>
+    </ul>
+
+    <h3>Datenbank</h3>
+    <ul>
+        <li>Prepared Statements durchgängig.</li>
+        <li>Bcrypt-Passwort-Hashes (Auto-Upgrade von Legacy-Base64 beim ersten Login).</li>
+        <li>Neue Tabellen: <code>pn_sessions</code>, <code>pn_login_attempts</code>.</li>
+        <li>Seed-Kategorie „Allgemein" wird beim Install angelegt, sodass News-Einsendung direkt funktioniert.</li>
+    </ul>
+
+    <h2>Entwicklung</h2>
+
+    <h3>Tests</h3>
+    <pre><code># Unit-Tests (PHPUnit 11)
+docker exec powernews_web bash -c "cd /var/www/html &amp;&amp; vendor/bin/phpunit --testsuite Unit"
+
+# Integration-Tests
+docker exec powernews_web bash -c "cd /var/www/html &amp;&amp; vendor/bin/phpunit --testsuite Integration"</code></pre>
+
+    <h3>Statische Analyse</h3>
+    <pre><code>composer run phpstan</code></pre>
+
+    <h3>Rector (Modernisierung)</h3>
+    <pre><code>composer run rector:dry    # Vorschau
+composer run rector        # Anwenden</code></pre>
+
+    <h3>Pre-Commit-Hook</h3>
+    <p>Der Pre-Commit-Hook führt automatisch aus: PHPStan, Superglobal-Scan und PHPUnit-Unit-Tests. Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.</p>
+
+    <h2>Migration von PowerNews ≤ 2.x auf 3.0</h2>
+    <ol>
+        <li>Backup von Datenbank + Dateien anlegen.</li>
+        <li>Dateien durch die 3.0-Version ersetzen.</li>
+        <li><code>http://&lt;host&gt;/update.php</code> als eingeloggter Admin aufrufen (Auth-Gate greift automatisch).</li>
+        <li>Bestehende Nutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt hochgehasht.</li>
+        <li><code>update.php</code> nach dem Update löschen.</li>
+    </ol>
+    <p>Details siehe <a href="changelog.html">changelog.html</a>.</p>
+
+    <h2>Dokumentation</h2>
+    <ul>
+        <li>Audit-Report: <code>docs/2026-04-23-Userbereichs-bugs.md</code></li>
+        <li>Improvements: <code>docs/2026-04-23-Userbereichs-improvements.md</code> (Alias <code>…-verbesserungen.md</code>)</li>
+        <li>Testabdeckung: <code>docs/2026-04-23-Userbereichs-test-coverage.md</code> (Alias <code>…-testabdeckung.md</code>)</li>
+        <li>Implementierungsplan: <code>docs/superpowers/plans/2026-04-23-userbereich-bugfixes.md</code></li>
+    </ul>
+
+    <h2>Lizenz</h2>
+    <p>MIT License – siehe <a href="LICENSE">LICENSE</a>.<br>
+    Copyright © 2001–2026 PowerScripts / SchubertMedia.</p>
+
+    <h2>Projekt &amp; Links</h2>
+    <ul>
+        <li>Website: <a href="https://www.powerscripts.org">https://www.powerscripts.org</a></li>
+        <li>Projektübersicht: <a href="https://www.powerscripts.org/projects-1.html">https://www.powerscripts.org/projects-1.html</a></li>
+        <li>Quellcode: <a href="https://github.com/schubertnico/PowerNews">https://github.com/schubertnico/PowerNews</a></li>
+        <li>Issues / Bugs: <a href="https://github.com/schubertnico/PowerNews/issues">https://github.com/schubertnico/PowerNews/issues</a></li>
+    </ul>
+
+    <h2>Kontakt</h2>
+    <div class="contact">
+        <strong>SchubertMedia</strong><br>
+        Inhaber: Nico Schubert<br>
+        Stauffenbergallee 57<br>
+        D – 99085 Erfurt<br>
+        <br>
+        Telefon: <a href="tel:+4936123002247">+49 (0) 3612 3002247</a> · Mo.–Fr. 9–12 und 13–18 Uhr<br>
+        Telefax: +49 (0) 3612 3004636<br>
+        E-Mail: <a href="mailto:info@schubertmedia.de">info@schubertmedia.de</a>
+    </div>
+
+    <footer>
+        PowerNews v3.0 · © 2001–2026 PowerScripts / SchubertMedia · MIT License
+    </footer>
+
+</div>
 </body>
 </html>
