@@ -20,6 +20,11 @@ RUN pecl install pcov && docker-php-ext-enable pcov
 # Enable Apache modules
 RUN a2enmod rewrite headers
 
+# Harden Apache: hide version/OS in Server header and disable signature.
+# Must load AFTER Debian's security.conf, hence the zz- prefix.
+RUN printf 'ServerTokens Prod\nServerSignature Off\n' > /etc/apache2/conf-available/zz-security-hardening.conf \
+    && a2enconf zz-security-hardening
+
 # Configure Apache
 RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
