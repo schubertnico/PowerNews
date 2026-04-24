@@ -1456,6 +1456,7 @@ class pn_template
 
             $commentform = preg_replace('!{NEWSID}!', (string) $newsid, (string) $commentform);
             $commentform = preg_replace('!{NAME}!', pn_escape($name), $commentform);
+            $commentform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $commentform);
 
             echo $commentform;
 
@@ -1479,6 +1480,7 @@ class pn_template
 
         if ($num == 1) {
             [$registerform] = mysqli_fetch_array($result);
+            $registerform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $registerform);
             echo $registerform;
 
             return true;
@@ -1526,6 +1528,7 @@ class pn_template
 
         if ($num == 1) {
             [$loginform] = mysqli_fetch_array($result);
+            $loginform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $loginform);
             echo $loginform;
 
             return true;
@@ -1548,6 +1551,7 @@ class pn_template
 
         if ($num == 1) {
             [$senddataform] = mysqli_fetch_array($result);
+            $senddataform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $senddataform);
             echo $senddataform;
 
             return true;
@@ -1653,6 +1657,7 @@ class pn_template
             $profileform = preg_replace('!{AGE}!', pn_escape($pnuser['age'] ?? ''), $profileform);
             $profileform = preg_replace('!{HOMEPAGE}!', pn_escape($pnuser['homepage'] ?? ''), $profileform);
             $profileform = preg_replace('!{ICQ}!', pn_escape($pnuser['icq'] ?? ''), $profileform);
+            $profileform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $profileform);
 
             echo $profileform;
 
@@ -1765,6 +1770,7 @@ class pn_template
                 $relatedlinks .= '</table>';
             }
             $sendnewsform = preg_replace('!{RELATEDLINKS}!', $relatedlinks, $sendnewsform);
+            $sendnewsform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $sendnewsform);
 
             echo $sendnewsform;
 
