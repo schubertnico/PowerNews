@@ -7,7 +7,7 @@ Base-URL Admin: http://localhost:8087/
 Mailpit: http://localhost:8033
 User-Area-Endpoint: /user.php
 
-Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Keine Fixes. Nur Dokumentation.
+Hinweis: Dieses Dokument dokumentiert den Audit-Stand vom 2026-04-23. Alle Bugs sind mittlerweile behoben worden (siehe git log 2026-04-23 bis 2026-04-24). Die Einträge bleiben als Audit-Referenz erhalten.
 
 ---
 
@@ -28,7 +28,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** keine PHP-Fehler im Log, `mail()` gibt nur bool zurück (return value wird nicht ausgewertet bei Register)
 - **Netzwerkhinweise:** keine SMTP-Verbindungen von `powernews_web` → `powernews_mailpit:1025`
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -46,7 +45,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -65,7 +63,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -83,7 +80,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** Response-Header unvollständig
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -102,7 +98,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** Header
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -121,7 +116,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** HTTP 200 trotz Fehlschlag
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -140,7 +134,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -158,7 +151,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -186,7 +178,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** keine besondere Auffälligkeit, nur der Cookie-Header ist manipuliert
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -204,7 +195,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -222,7 +212,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -243,7 +232,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** siehe PHP-Log `logs/php-error.log`
 - **Netzwerkhinweise:** leere Response, HTTP 500 in manchen Konstellationen
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -266,7 +254,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** PHP-Log
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -285,7 +272,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -305,7 +291,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -327,7 +312,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** siehe Log
 - **Netzwerkhinweise:** HTTP 200, aber Antwortkörper abgebrochen
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -345,7 +329,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** PHP-Log
 - **Netzwerkhinweise:** HTTP 200, Body abgebrochen
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -363,7 +346,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -381,7 +363,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -401,7 +382,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -419,7 +399,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -439,7 +418,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -459,7 +437,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -478,7 +455,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -497,7 +473,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** `<script>alert('xss')</script>` im gelieferten HTML
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -516,7 +491,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** DB-Ausgabe: `<script>alert(\'xss\')</script>` (Comment id=1)
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -534,7 +508,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -552,7 +525,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -570,7 +542,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -589,7 +560,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** alle Kommentare mit IP `192.168.0.1` gespeichert
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -607,7 +577,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -624,7 +593,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -641,7 +609,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -662,7 +629,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** siehe `logs/php-error.log`
 - **Netzwerkhinweise:** HTTP 200, Body abgebrochen
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -681,7 +647,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** Header vs Meta divergieren
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -701,7 +666,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -724,7 +688,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -743,7 +706,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -761,7 +723,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** siehe Log
 - **Netzwerkhinweise:** HTTP 200, abgebrochener Body
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -781,7 +742,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -799,7 +759,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -817,7 +776,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -835,7 +793,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -853,7 +810,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** HTTP 200 mit 9907 Byte Log-Inhalt
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -870,7 +826,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -889,7 +844,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** HTTP-Response-Timing messbar
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -907,7 +861,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 
@@ -926,7 +879,6 @@ Hinweis: Dieses Dokument enthält ausschließlich Bugs. Keine Verbesserungen. Ke
 - **Konsole / Stacktrace:** –
 - **Netzwerkhinweise:** –
 - **Status:** Fixed
-- **Nicht beheben** (Audit-Regel; Fix nachträglich durchgeführt, siehe git log)
 
 ---
 

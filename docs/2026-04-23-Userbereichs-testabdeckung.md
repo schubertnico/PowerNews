@@ -257,7 +257,21 @@ Der Userbereich ist funktional grob lauffähig, aber:
 - **Encoding-Kette** (HTTP-Header ↔ Meta-Tag ↔ DB) inkonsistent → Umlaute in Formularen zerstören den Registrier-Flow
 - News-Detail-Seite `news.php` ist durch strict_types+string-Argument permanent kaputt
 
-Eine produktive Nutzung in der aktuellen Form ist nicht empfehlenswert, ohne dass die kritischen Befunde adressiert werden. Hier wird jedoch **ausdrücklich nichts behoben**, nur dokumentiert.
+Eine produktive Nutzung in der aktuellen Form ist nicht empfehlenswert, ohne dass die kritischen Befunde adressiert werden. Mit dem Fix-Sweep vom 2026-04-24 sind die kritischen Punkte adressiert; empfohlen: Fresh-Install + funktionaler Re-Audit.
+
+---
+
+### Umsetzungs-Stand (2026-04-24)
+
+- BUG-001: Mail-Relay via msmtp → 9bd2104
+- BUG-003: Default-Admin entfernt (Initial-SQL + Live-DB) → 2b98dab, Agent D (6c40e15)
+- BUG-009/023/036: Server-seitige Session-Validierung via pn_sessions → 12f0e71
+- BUG-025: News-Escape immer → c93ac5c + Comment-Escape → a58406b
+- BUG-039: news.php int-Cast → 10e2be3
+- BUG-040/044/045: Installer-Lockfile aktiv, .htaccess-Deny, Debug-Tools entfernt → 6e9c4ea, 6c40e15
+- BUG-042/043: update/convert Auth-Gate korrekt implementiert → 7c99c69
+- IMP-003: CSRF auf allen Forms → a58406b + 6ddde28 + (Agent E head.inc.php)
+- IMP-006: Server-Header ohne Version → 6c40e15
 
 ---
 

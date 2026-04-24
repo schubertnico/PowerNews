@@ -20,6 +20,13 @@
 
 // Set error reporting
 error_reporting(E_ALL & ~E_NOTICE);
+
+// Session early-start so CSRF-Token survives GET->POST form-roundtrip.
+// Without this, pn_csrf_token() might try to session_start() after output began.
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 header('Content-Type: text/html; charset=UTF-8');
 
 // Check if config file exists and include
@@ -69,7 +76,10 @@ if ($cnum == 1) {
 
 $pnuser['loggedin'] = 'NO';
 
-if (isset($_GET['page']) && $_GET['page'] == 'login' && isset($_GET['pndata']['login']) && $_GET['pndata']['login'] == 'YES' && !empty($_POST['pndata']['nickname']) && !empty($_POST['pndata']['password'])) {
+if (isset($_GET['page']) && $_GET['page'] == 'login'
+    && isset($_GET['pndata']['login']) && $_GET['pndata']['login'] == 'YES'
+    && !empty($_POST['pndata']['nickname']) && !empty($_POST['pndata']['password'])
+    && pn_csrf_verify($_POST['csrf_token'] ?? null)) {
     $pnuserlogin = new pn_user();
     $pnuser = $pnuserlogin->setusercookie();
 } elseif (
