@@ -1,5 +1,10 @@
 # PowerNews v3.0
 
+[![PHP](https://img.shields.io/badge/PHP-8.4-blue)](https://www.php.net/)
+[![tests](https://img.shields.io/badge/tests-451%20passing-brightgreen)](#tests)
+[![coverage](https://img.shields.io/badge/coverage-14%25-red)](#tests)
+[![license](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+
 Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung.
 
 ---
