@@ -11,24 +11,27 @@
     <testsuite name="Unit">
       <directory suffix="Test.php">tests/Unit</directory>
     </testsuite>
+    <testsuite name="Integration">
+      <directory suffix="Test.php">tests/Integration</directory>
+    </testsuite>
     <testsuite name="Feature">
       <directory suffix="Test.php">tests/Feature</directory>
     </testsuite>
   </testsuites>
   <source>
     <include>
-      <directory suffix=".php">pninc</directory>
-      <directory suffix=".php">pnadmin</directory>
+      <file>pninc/escape.inc.php</file>
+      <file>pninc/validation.inc.php</file>
+      <file>pninc/functions.inc.php</file>
+      <file>pnadmin/dto.inc.php</file>
+      <file>pnadmin/functions.inc.php</file>
     </include>
-    <exclude>
-      <directory>vendor</directory>
-      <directory>tests</directory>
-    </exclude>
   </source>
   <php>
     <env name="PN_DB_HOST" value="db"/>
-    <env name="PN_DB_USER" value="powernews_test"/>
-    <env name="PN_DB_PASS" value="powernews_test"/>
-    <env name="PN_DB_NAME" value="powernews_test"/>
+    <env name="PN_DB_PORT" value="3306"/>
+    <env name="PN_DB_USER" value="powernews"/>
+    <env name="PN_DB_PASS" value="powernews"/>
+    <env name="PN_DB_NAME" value="powernews"/>
   </php>
 </phpunit>
