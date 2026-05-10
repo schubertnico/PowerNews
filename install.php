@@ -30,7 +30,7 @@ $need_php_version = '8.2.0';
 $need_mysql_version = '10.3';
 
 /* Current PowerNews version */
-$thisversion = '3.10';
+$thisversion = '3.11';
 ?>
 <!doctype html>
 <html lang="de">

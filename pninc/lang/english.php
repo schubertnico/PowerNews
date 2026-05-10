@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 /* This is the extern language file - you can edit all outputs from here */
 
-/* German language file written by PowerScripts (Stefan Kraemer) */
+/* English language file written by PowerScripts (Stefan Kraemer) */
 
 /* Users */
 define('L_USR_WRONGEMAIL', 'Your E-Mail adress seems to be incorrect!');

@@ -34,7 +34,7 @@ if ($pn_config['acpuffer'] == true) {
 }
 
 $psdesignscript = 'PowerNews';
-$psdesignversion = '3.10';
+$psdesignversion = '3.11';
 
 // Determine current page for active navigation state
 $currentPage = $_GET['page'] ?? 'main';

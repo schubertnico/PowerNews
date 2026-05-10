@@ -1,4 +1,4 @@
-# PowerNews v3.10
+# PowerNews v3.11
 
 [![PHP](https://img.shields.io/badge/PHP-8.4-blue)](https://www.php.net/)
 [![tests](https://img.shields.io/badge/tests-734%20passing-brightgreen)](#tests)
@@ -112,7 +112,7 @@ Beim Fresh-Install sind folgende Defaults gesetzt:
 ## Stand 2026-05-10 – Bootstrap-5-Refactor + Folgekorrekturen
 
 Mit der Iteration vom 10.05.2026 sind Frontend und Adminbereich vollständig auf
-Bootstrap 5.3.3 umgestellt. Aktuelle Version: **3.10**. Highlights:
+Bootstrap 5.3.3 umgestellt. Aktuelle Version: **3.11**. Highlights:
 
 **UI & Layout:**
 - **Self-hosted Bootstrap** unter `assets/bootstrap/` (kein CDN, CSP unverändert restriktiv).
@@ -266,6 +266,7 @@ Details siehe [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootst
 
 - **Bootstrap-5-Migration & UI-Hardening (2026-05-10):** [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md)
 - **Folgekorrekturen (Pt 2, 2026-05-10):** [`docs/2026-05-10-Pt2-Followup.md`](docs/2026-05-10-Pt2-Followup.md) – Login-Status sichtbar, echte Breadcrumb-Navigation, Default-Template editierbar, Version 3.10, `{RELATEDLINKS}`-Bug, doppeltes Copyright entfernt
+- **i18n-Konsolidierung (Pt 3, 2026-05-10):** [`docs/2026-05-10-Pt3-I18n.md`](docs/2026-05-10-Pt3-I18n.md) – 77 deutsche Strings in `pnadmin/lang/english.php` übersetzt, doppelte Konstanten entfernt, alle drei Sprachdateien deckungsgleich (Version 3.11)
 - Audit-Report (April 2026): [`docs/2026-04-23-Userbereichs-bugs.md`](docs/2026-04-23-Userbereichs-bugs.md)
 - Improvements: [`docs/2026-04-23-Userbereichs-improvements.md`](docs/2026-04-23-Userbereichs-improvements.md) (Alias `…-verbesserungen.md`)
 - Testabdeckung: [`docs/2026-04-23-Userbereichs-test-coverage.md`](docs/2026-04-23-Userbereichs-test-coverage.md) (Alias `…-testabdeckung.md`)

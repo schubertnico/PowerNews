@@ -59,7 +59,7 @@ $pn_config['rltargets'] = ['_blank', '_main'];
 
 // Please DO NOT EDIT the following code
 
-$pn_config['version'] = '3.10';
+$pn_config['version'] = '3.11';
 
 // Connect to mySQL Server and select database
 if (!isset($pn_handler)) {

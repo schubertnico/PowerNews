@@ -57,6 +57,7 @@ define('L_CAT_CANNOTDELETEOLDPIC', 'Das alte Bild konnte nicht gel&ouml;scht wer
 define('L_CAT_PICRENAMEERROR', 'Das Bild konnte nicht umbenannt werden!');
 define('L_CAT_CATEDITERROR', 'Die Kategorie konnte nicht editiert werden!');
 define('L_CAT_CLICKFORDETAILS', 'Per Klick auf den Titel einer Kategorie kann diese editiert werden!');
+define('L_CAT_PICSONLYINTHISFORMAT', 'Bilder d&uuml;rfen nur im GIF/JPG/JPEG/PNG Format hochgeladen werden!');
 
 /* Configuration */
 define('L_TITLE_CONFIGURATION', 'K O N F I G U R A T I O N');
@@ -96,7 +97,6 @@ define('L_CONF_EMAIL', 'E-Mail');
 define('L_CONF_EMAIL_DESC', 'Die E-Mail Adresse des Webmasters');
 define('L_CONF_HEADLINES', 'Headlines');
 define('L_CONF_HEADLINES_DESC', 'Die Anzahl der Headlines pro Seite');
-define('L_CONF_NEWS', 'News');
 define('L_CONF_NEWS_DESC', 'Die Anzahl der Newseintr&auml;ge pro Seite');
 define('L_CONF_SPAMPROTECT', 'Spamschutz');
 define('L_CONF_SPAMPROTECT_DESC', 'Wie lange ist die Zwangspause zwischen 2 Kommentarposts (in Sekunden)');

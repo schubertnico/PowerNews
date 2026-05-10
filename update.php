@@ -42,7 +42,7 @@ $need_mysql_version = '3.00';
 $need_pn_version = '2.5.5';
 
 /* Current PowerNews version */
-$thisversion = '3.10';
+$thisversion = '3.11';
 
 /* Current installed PowerNews version */
 $currentversion = $pn_config['version'];
