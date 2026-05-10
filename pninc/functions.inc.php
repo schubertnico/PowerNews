@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                          */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -13,6 +13,57 @@ declare(strict_types=1);
 function pn_escape(string|int|float|null $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Konvertiert ein strftime-aehnliches Datums-/Zeitformat (z.B. "%d.%m.%Y", "%H:%M")
+ * in ein PHP-date()-kompatibles Format. Wird benoetigt, da die Konfiguration historisch
+ * im strftime-Format abgelegt wurde, aber DateTime::format() das PHP-date-Format erwartet.
+ * Bereits PHP-date-Formate (ohne %) werden unveraendert zurueckgegeben.
+ */
+function pn_convert_date_format(string $format): string
+{
+    if ($format === '' || strpos($format, '%') === false) {
+        return $format;
+    }
+
+    $map = [
+        '%d' => 'd', '%e' => 'j', '%j' => 'z',
+        '%a' => 'D', '%A' => 'l', '%w' => 'w',
+        '%m' => 'm', '%n' => 'n',
+        '%b' => 'M', '%B' => 'F', '%h' => 'M',
+        '%y' => 'y', '%Y' => 'Y',
+        '%H' => 'H', '%k' => 'G', '%I' => 'h', '%l' => 'g',
+        '%M' => 'i', '%S' => 's',
+        '%p' => 'A', '%P' => 'a',
+        '%T' => 'H:i:s', '%R' => 'H:i', '%r' => 'h:i:s A',
+        '%D' => 'm/d/y', '%F' => 'Y-m-d',
+        '%s' => 'U', '%z' => 'O', '%Z' => 'T',
+        '%U' => 'W', '%V' => 'W', '%W' => 'W',
+        '%C' => '', '%g' => 'y', '%G' => 'Y',
+        '%%' => '%',
+    ];
+
+    $result = '';
+    $len = strlen($format);
+    for ($i = 0; $i < $len; ++$i) {
+        if ($format[$i] === '%' && $i + 1 < $len) {
+            $token = substr($format, $i, 2);
+            if (isset($map[$token])) {
+                $result .= $map[$token];
+                ++$i;
+                continue;
+            }
+        }
+        // Escape literal characters that have meaning in date()
+        if (strpos('dDjlNSwzWFmMntLoYyaABgGhHisuveIOPpTZcrU', $format[$i]) !== false) {
+            $result .= '\\' . $format[$i];
+        } else {
+            $result .= $format[$i];
+        }
+    }
+
+    return $result;
 }
 
 /**
@@ -116,7 +167,7 @@ class pn_news
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            echo '<center>' . L_NEWS_NOHEADLINES . '</center>';
+            echo '<p class="text-center text-muted mb-0">' . L_NEWS_NOHEADLINES . '</p>';
         } else {
             $template = new pn_template();
 
@@ -124,7 +175,7 @@ class pn_news
                 $category = $this->getcatname((int) $row['catid']);
 
                 if (!$template->headline((int) $row['id'], (int) $row['time'], $category, (string) $row['title'])) {
-                    die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
+                    die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
                 }
             }
         }
@@ -150,7 +201,7 @@ class pn_news
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            echo '<center>' . L_NEWS_NONEWS . '</center>';
+            echo '<div class="alert alert-info" role="alert">' . L_NEWS_NONEWS . '</div>';
         } else {
             $template = new pn_template();
 
@@ -160,7 +211,7 @@ class pn_news
                 $comments = $this->getcommentnum((int) $row['id']);
 
                 if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
-                    die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
+                    die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
                 }
             }
         }
@@ -189,7 +240,7 @@ class pn_news
             $comments = $this->getcommentnum((int) $row['id']);
 
             if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'YES', (string) $row['moretext'], $row['relatedlinks'])) {
-                die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
+                die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
             }
         } else {
             $pn_newsexist = 'NO';
@@ -233,7 +284,7 @@ class pn_news
                     $template->comment((int) $crow['id'], (int) $crow['newsid'], $userdata, (int) $crow['time'], (string) $crow['text']);
                 }
             } else {
-                ?><p align="center"><?php echo L_NEWS_NOCOMMENTS; ?></p><?php
+                ?><div class="alert alert-info" role="alert"><?php echo L_NEWS_NOCOMMENTS; ?></div><?php
             }
         }
     }
@@ -313,7 +364,7 @@ class pn_news
                 $template = new pn_template();
                 $template->commentform($pnuser['nickname'], $newsid);
             } else {
-                ?><p align="center"><?php echo L_NEWS_CANNOTPOSTCOMMENTS; ?></p><?php
+                ?><div class="alert alert-warning" role="alert"><?php echo L_NEWS_CANNOTPOSTCOMMENTS; ?></div><?php
             }
         } else {
             $template = new pn_template();
@@ -332,24 +383,25 @@ class pn_news
         global $pn_config, $pnconfig, $pnuser, $pn_handler;
 
         $template = new pn_template();
+        $backToNews = $pn_config['detailfile'] . '?newsid=' . $newsid . '&showcomments=YES';
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $backToNews);
             return;
         }
 
         $text = trim($text);
 
         if ($text === '' || $text === '0') {
-            $template->message(L_ALL_FILLALL, 'javascript:history.back()');
+            $template->message(L_ALL_FILLALL, $backToNews);
             return;
         }
 
         // Length limit (BUG-038)
         $maxLen = 5000;
         if (mb_strlen($text) > $maxLen) {
-            $template->message('Kommentar zu lang (max. ' . $maxLen . ' Zeichen).', 'javascript:history.back()');
+            $template->message('Kommentar zu lang (max. ' . $maxLen . ' Zeichen).', $backToNews);
             return;
         }
 
@@ -358,7 +410,7 @@ class pn_news
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
         mysqli_stmt_execute($stmt);
         if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) !== 1) {
-            $template->message('News nicht gefunden.', 'javascript:history.back()');
+            $template->message('News nicht gefunden.', $pn_config['newsfile']);
             return;
         }
 
@@ -384,7 +436,7 @@ class pn_news
                 $sp_time = $pnconfig['spamprotection'];
                 $sp_unit = L_NEWS_SECONDS;
             }
-            $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", 'javascript:history.back()');
+            $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", $backToNews);
             return;
         }
 
@@ -443,11 +495,11 @@ class pn_news
                         $comments = $this->getcommentnum((int) $row['id']);
 
                         if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
-                            die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
+                            die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
                         }
                     }
                 } else {
-                    $template->message(L_NEWS_NONEWSFOUND, 'javascript:history.back()');
+                    $template->message(L_NEWS_NONEWSFOUND, $pn_config['archivefile']);
                 }
                 break;
 
@@ -484,7 +536,7 @@ class pn_news
                         $comments = $this->getcommentnum((int) $row['id']);
 
                         if (!$template->news((int) $row['id'], $author, (int) $row['time'], $category, (string) $row['title'], (string) $row['text'], $comments, 'NO', (string) $row['moretext'], $row['relatedlinks'])) {
-                            die('<center>' . L_TEMPL_CANNOTLOADTEMPL . '</center>');
+                            die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
                         }
                     }
                 }
@@ -591,16 +643,16 @@ class pn_news
                 if ($sendFlag == 'YES') {
                     // CSRF-Token pruefen (IMP-003)
                     if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-                        $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+                        $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $pn_config['sendnewsfile']);
                         return;
                     }
 
                     if (!trim($title) || !trim($text) || ($pnconfig['categories'] == 'YES' && !$catid)) {
                         // Specific error message for missing category
                         if ($pnconfig['categories'] == 'YES' && !$catid && trim($title) && trim($text)) {
-                            $template->message(L_NEWS_SELECTCAT_ERROR, 'javascript:history.back()');
+                            $template->message(L_NEWS_SELECTCAT_ERROR, $pn_config['sendnewsfile']);
                         } else {
-                            $template->message(L_ALL_FILLALL, 'javascript:history.back()');
+                            $template->message(L_ALL_FILLALL, $pn_config['sendnewsfile']);
                         }
                     } else {
                         $now = time();
@@ -684,9 +736,11 @@ class pn_user
             return;
         }
 
+        $registerUrl = $pn_config['userfile'];
+
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $registerUrl);
             return;
         }
 
@@ -695,7 +749,7 @@ class pn_user
         $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
 
         if ($nickname === '' || $email === '') {
-            $template->message('Ungueltige Eingabe. Nickname: 3-30 Zeichen (Buchstaben/Ziffern/._-), E-Mail muss gueltig sein.', 'javascript:history.back()');
+            $template->message('Ungueltige Eingabe. Nickname: 3-30 Zeichen (Buchstaben/Ziffern/._-), E-Mail muss gueltig sein.', $registerUrl);
             return;
         }
 
@@ -705,7 +759,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
 
         if (mysqli_num_rows($result) !== 0) {
-            $template->message(L_USR_USRALREADYEXISTS, 'javascript:history.back()');
+            $template->message(L_USR_USRALREADYEXISTS, $registerUrl);
             return;
         }
 
@@ -728,7 +782,7 @@ class pn_user
         } catch (Throwable $e) {
             mysqli_rollback($pn_handler);
             error_log('[register] ' . $e->getMessage());
-            $template->message('Registrierung fehlgeschlagen. Bitte sp&auml;ter erneut versuchen.', 'javascript:history.back()');
+            $template->message('Registrierung fehlgeschlagen. Bitte sp&auml;ter erneut versuchen.', $registerUrl);
         }
     }
 
@@ -843,9 +897,11 @@ class pn_user
             return;
         }
 
+        $loginUrl = $pn_config['userfile'] . '?page=login';
+
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $loginUrl);
             return;
         }
 
@@ -855,7 +911,7 @@ class pn_user
         $ip = substr(explode(',', (string) $ip)[0], 0, 64);
 
         if ($nickname === '' || $password === '') {
-            $template->message(L_ALL_FILLALL, 'javascript:history.back()');
+            $template->message(L_ALL_FILLALL, $loginUrl);
             return;
         }
 
@@ -867,7 +923,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
         [$failedCount] = mysqli_fetch_array($result);
         if ((int) $failedCount >= 10) {
-            $template->message('Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.', 'javascript:history.back()');
+            $template->message('Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.', $loginUrl);
             return;
         }
 
@@ -900,7 +956,7 @@ class pn_user
             $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
         } else {
             // Unified message (BUG-010)
-            $template->message('Nickname oder Passwort ist nicht korrekt.', 'javascript:history.back()');
+            $template->message('Nickname oder Passwort ist nicht korrekt.', $loginUrl);
         }
     }
 
@@ -918,9 +974,11 @@ class pn_user
             return;
         }
 
+        $senddataUrl = $pn_config['userfile'] . '?page=senddata';
+
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $senddataUrl);
             return;
         }
 
@@ -934,7 +992,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
         [$rpHourly] = mysqli_fetch_array($result);
         if ((int) $rpHourly > 20) {
-            $template->message('Zu viele Anfragen. Bitte sp&auml;ter erneut versuchen.', 'javascript:history.back()');
+            $template->message('Zu viele Anfragen. Bitte sp&auml;ter erneut versuchen.', $senddataUrl);
             return;
         }
 
@@ -1004,9 +1062,11 @@ class pn_user
             return;
         }
 
+        $profileUrl = $pn_config['userfile'] . '?page=profile';
+
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', 'javascript:history.back()');
+            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $profileUrl);
             return;
         }
 
@@ -1023,7 +1083,7 @@ class pn_user
         $icq = pn_validate_int_range($_POST['pndata']['icq'] ?? 0, 0, 2147483647, 0);
 
         if ($nickname === '' || $email === '' || ($homepageInput !== '' && $homepage === '')) {
-            $template->message('Ungueltige Eingabe. Bitte Nickname, E-Mail und Homepage pruefen.', 'javascript:history.back()');
+            $template->message('Ungueltige Eingabe. Bitte Nickname, E-Mail und Homepage pruefen.', $profileUrl);
             return;
         }
 
@@ -1032,11 +1092,11 @@ class pn_user
         $hashedPassword = '';
         if ($password !== '' || $password2 !== '') {
             if ($password !== $password2) {
-                $template->message(L_USR_PASSNOTEQUAL, 'javascript:history.back()');
+                $template->message(L_USR_PASSNOTEQUAL, $profileUrl);
                 return;
             }
             if (strlen($password) < 8) {
-                $template->message('Passwort muss mindestens 8 Zeichen haben.', 'javascript:history.back()');
+                $template->message('Passwort muss mindestens 8 Zeichen haben.', $profileUrl);
                 return;
             }
             $hashedPassword = pn_hash_password($password);
@@ -1050,7 +1110,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
 
         if (mysqli_num_rows($result) !== 0) {
-            $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, 'javascript:history.back()');
+            $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, $profileUrl);
             return;
         }
 
@@ -1255,8 +1315,8 @@ class pn_template
 
             $datetime = new DateTime();
             $datetime->setTimestamp($time);
-            $date = $datetime->format($pnconfig['dateformat']);
-            $timeStr = $datetime->format($pnconfig['timeformat']);
+            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
+            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
             $headline = preg_replace('!{ID}!', (string) $id, (string) $headline);
             $headline = preg_replace('!{DATE}!', $date, $headline);
@@ -1308,8 +1368,8 @@ class pn_template
 
             $datetime = new DateTime();
             $datetime->setTimestamp($time);
-            $date = $datetime->format($pnconfig['dateformat']);
-            $timeStr = $datetime->format($pnconfig['timeformat']);
+            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
+            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
             $news = preg_replace('!{ID}!', (string) $id, $news);
             $news = preg_replace('!{AUTHOR}!', $author, $news);
@@ -1337,9 +1397,12 @@ class pn_template
                 $news = preg_replace('!{CATPIC}!', is_array($category) ? $category['pic'] : '', $news);
             }
 
-            if ($pnconfig['relatedlinks'] == 'YES') {
-                $links = explode("\n", $relatedlinks);
-                $rlinks = '';
+            // Related Links auswerten. {RELATEDLINKS} muss IMMER ersetzt werden,
+            // damit der Platzhalter-Text nicht im Output sichtbar bleibt, wenn die
+            // Funktion in der Konfiguration deaktiviert ist oder keine Links gepflegt wurden.
+            $rlinks = '';
+            if ($pnconfig['relatedlinks'] == 'YES' && trim((string) $relatedlinks) !== '') {
+                $links = explode("\n", (string) $relatedlinks);
                 $linksCount = count($links) - 1;
 
                 for ($i = 0; $i < $linksCount; ++$i) {
@@ -1349,8 +1412,20 @@ class pn_template
                         $rlinks .= $this->relatedlinks($link[0], $link[1], $link[2]);
                     }
                 }
-                $news = preg_replace('!{RELATEDLINKS}!', $rlinks, $news);
             }
+            $news = preg_replace('!{RELATEDLINKS}!', $rlinks, $news);
+
+            // Optionale Related-Links-Section ueber Konditional-Marker
+            // <!--RELATEDLINKS_START-->...<!--RELATEDLINKS_END--> komplett ausblenden,
+            // wenn keine Links generiert wurden. So bleibt die Sidebar im Template
+            // gestaltbar, verschwindet aber automatisch bei leerem Inhalt.
+            $newsStr = is_string($news) ? $news : '';
+            if ($rlinks === '') {
+                $newsStr = (string) preg_replace('/<!--\s*RELATEDLINKS_START\s*-->.*?<!--\s*RELATEDLINKS_END\s*-->/s', '', $newsStr);
+            } else {
+                $newsStr = (string) preg_replace('/<!--\s*RELATEDLINKS_(START|END)\s*-->/', '', $newsStr);
+            }
+            $news = $newsStr;
 
             echo $news;
 
@@ -1398,8 +1473,8 @@ class pn_template
 
             $datetime = new DateTime();
             $datetime->setTimestamp($time);
-            $date = $datetime->format($pnconfig['dateformat']);
-            $timeStr = $datetime->format($pnconfig['timeformat']);
+            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
+            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
             $comment = preg_replace('!{ID}!', (string) $id, (string) $comment);
             $comment = preg_replace('!{AUTHOR}!', $user, $comment);
@@ -1785,6 +1860,9 @@ class pn_template
 
 function pn_cpi(): void
 {
-    global $pn_config;
-    ?><p align="center" class="copyright"><font size="1">PowerNews <?php echo pn_escape($pn_config['version']); ?> &copy; Copyright 2003 by <a href="https://www.powerscripts.org" target="_blank">PowerScripts</a></font></p><?php
+    // Frueher rendete diese Funktion eine zusaetzliche "PowerNews x.x © Copyright by PowerScripts"-
+    // Zeile direkt unter dem News/Archive/Detail-Inhalt. Mit dem Bootstrap-5-Layout uebernimmt
+    // dieser Aufgabe der globale Footer in footer.inc.php (Brand + Copyright in einer Zeile),
+    // damit die Information nicht doppelt erscheint. Funktion bleibt fuer API-Kompatibilitaet
+    // erhalten, gibt aber bewusst keinen Output mehr aus.
 }

@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,12 +19,16 @@
 /* MA  02111-1307  USA                                                  */
 
 ?>
-<?php echo L_OTHER_LICENSE_DESC; ?><br>
-<br>
-<p align="center">
+<div class="card pn-admin-card mb-4">
+    <h2 class="card-header h6 mb-0">Lizenz</h2>
+    <div class="card-body">
+        <p class="mb-3"><?php echo L_OTHER_LICENSE_DESC; ?></p>
 <?php if (@file_exists('./gnulicense.txt')) { ?>
-<textarea name="gnulicense" cols="100" rows="45"><?php include __DIR__ . '/gnulicense.txt'; ?></textarea>
+        <textarea class="form-control font-monospace small" name="gnulicense" rows="20" readonly aria-label="GNU License"><?php include __DIR__ . '/gnulicense.txt'; ?></textarea>
 <?php } else {
-    echo L_OTHER_NOLOCALLICENSE;
+    ?>
+        <div class="alert alert-warning mb-0" role="alert"><?php echo L_OTHER_NOLOCALLICENSE; ?></div>
+<?php
 } ?>
-</p>
+    </div>
+</div>

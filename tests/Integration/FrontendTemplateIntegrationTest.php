@@ -72,9 +72,14 @@ class FrontendTemplateIntegrationTest extends DatabaseTestCase
             $this->template->headline(42, $time, 'Tech', 'Headline Title');
         });
 
+        // Das Datumsformat in der Konfiguration ist historisch im strftime-Stil
+        // (z. B. "%d.%m.%Y") gespeichert. Seit Mai 2026 konvertiert PowerNews das
+        // intern via pn_convert_date_format() auf PHP-date()-Tokens, sodass
+        // DateTime::format() es korrekt verarbeitet. Der Test muss daher exakt
+        // dieselbe Konvertierung anwenden, um die erwartete Ausgabe zu bilden.
         $datetime = new \DateTime();
         $datetime->setTimestamp($time);
-        $expectedDate = $datetime->format($pnconfig['dateformat']);
+        $expectedDate = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
 
         $this->assertStringContainsString($expectedDate, $output);
     }

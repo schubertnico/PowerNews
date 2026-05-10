@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,15 +19,9 @@
 /* MA  02111-1307  USA                                                  */
 
 ?>
-<tr><td bgcolor="#3F5070" align="center"><b>
-
-       <b class="headline"><?php echo L_TITLE_MAIN; ?></b>
-
-</b></td></tr>
-
-</td><td bgcolor="#001F3F" valign="top">
-<?php echo L_ALL_WELCOME; ?>
-<br>
-<br>
-
-</td></tr>
+<div class="card pn-admin-card">
+    <h1 class="card-header h5 mb-0"><?php echo L_TITLE_MAIN; ?></h1>
+    <div class="card-body">
+        <p class="mb-0"><?php echo L_ALL_WELCOME; ?></p>
+    </div>
+</div>

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                         */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -17,7 +17,12 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
         $error = $edituser->checkuser($userid);
 
         if ($error !== '' && $error !== '0') {
-            ?><center><a href="index.php?page=users&subpage=show"><?php echo pnadmin_escape($error); ?></a></center><?php
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo pnadmin_escape($error); ?>
+                <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zur Liste</a></div>
+            </div>
+            <?php
         } else {
             if ($edit === 'YES') {
                 $error = $edituser->edituser(
@@ -32,9 +37,19 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                 );
 
                 if ($error !== '' && $error !== '0') {
-                    ?><center><a href="javascript:history.back()"><?php echo pnadmin_escape($error); ?></a></center><?php
+                    ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?php echo pnadmin_escape($error); ?>
+                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=edit&amp;userid=<?php echo pn_int($userid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    </div>
+                    <?php
                 } else {
-                    ?><center><a href="index.php?page=users&subpage=show"><?php echo L_USR_USREDITED; ?></a></center><?php
+                    ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo L_USR_USREDITED; ?>
+                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                    </div>
+                    <?php
                 }
             } else {
                 $data = $edituser->getuserdata($userid);
@@ -43,68 +58,70 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                     $showemail = 'checked';
                 }
                 ?>
-          <center>
-          <form action="index.php?page=users&subpage=edit&edit=YES&userid=<?php echo pn_int($userid); ?>" method="post">
-          <table border="0" cellpadding="4" cellspacing="0">
-          <tr><td colspan="2" align="center">
-          <b><?php echo L_USR_EDITUSR; ?></b>
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_NICKNAME; ?></b><br>
-          <small class="info"><?php echo L_USR_NICKNAME_DESC; ?></small>
-          </td><td>
-          <input name="nickname" size="25" maxlength="100" value="<?php echo pnadmin_escape($data['nickname']); ?>">
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_EMAIL; ?></b><br>
-          <small class="info"><?php echo L_USR_EMAIL_DESC; ?></small>
-          </td><td>
-          <input name="email" size="25" maxlength="250" value="<?php echo pnadmin_escape($data['email']); ?>">
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_SHOWEMAIL; ?></b><br>
-          <small class="info"><?php echo L_USR_SHOWEMAIL_DESC; ?></small>
-          </td><td>
-          <input type="checkbox" name="showemail" value="YES" <?php echo (isset($showemail) && trim($showemail) !== '') ? trim($showemail) : ''; ?>>
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_NEWPW; ?></b><br>
-          <small class="info"><?php echo L_USR_NEWPW_DESC; ?></small>
-          </td><td>
-          <input type="checkbox" name="newpassword" value="YES">
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_STATUS; ?></b><br>
-          <small class="info"><?php echo L_USR_STATUS_DESC; ?></small>
-          </td><td>
-          <select name="status" size="1">
-            <option value="Activated" <?php if ($data['status'] == 'Activated') {
-                echo 'selected';
-            } ?>><?php echo L_ALL_ACTIVATED; ?>
-            <option value="Deactivated" <?php if ($data['status'] == 'Deactivated') {
-                echo 'selected';
-            } ?>><?php echo L_ALL_DEACTIVATED; ?>
-          </select>
-          </td></tr>
-          <tr><td>
-          <b><?php echo L_USR_SENDMAIL; ?></b><br>
-          <small class="info"><?php echo L_USR_SENDMAIL; ?></small>
-          </td><td>
-          <input type="checkbox" name="sendemail" value="YES" checked>
-          </td></tr>
-          <tr><td colspan="2" align="center">
-          <input type="submit" value="<?php echo L_USR_EDITUSR; ?>"> <input type="reset" value="<?php echo L_ALL_RESETDATA; ?>">
-          </td></tr>
-          </table>
+          <form action="index.php?page=users&amp;subpage=edit&amp;edit=YES&amp;userid=<?php echo pn_int($userid); ?>" method="post" novalidate>
+              <fieldset>
+                  <legend class="h6"><?php echo L_USR_EDITUSR; ?></legend>
+
+                  <div class="mb-3">
+                      <label for="pn_nickname" class="form-label fw-bold"><?php echo L_USR_NICKNAME; ?></label>
+                      <input class="form-control" name="nickname" id="pn_nickname" maxlength="100" value="<?php echo pnadmin_escape($data['nickname']); ?>" required aria-describedby="pn_nickname_help">
+                      <div id="pn_nickname_help" class="form-text"><?php echo L_USR_NICKNAME_DESC; ?></div>
+                  </div>
+
+                  <div class="mb-3">
+                      <label for="pn_email" class="form-label fw-bold"><?php echo L_USR_EMAIL; ?></label>
+                      <input type="email" class="form-control" name="email" id="pn_email" maxlength="250" value="<?php echo pnadmin_escape($data['email']); ?>" required aria-describedby="pn_email_help">
+                      <div id="pn_email_help" class="form-text"><?php echo L_USR_EMAIL_DESC; ?></div>
+                  </div>
+
+                  <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" name="showemail" value="YES" id="pn_showemail" <?php echo (isset($showemail) && trim($showemail) !== '') ? trim($showemail) : ''; ?> aria-describedby="pn_showemail_help">
+                      <label class="form-check-label fw-bold" for="pn_showemail"><?php echo L_USR_SHOWEMAIL; ?></label>
+                      <div id="pn_showemail_help" class="form-text"><?php echo L_USR_SHOWEMAIL_DESC; ?></div>
+                  </div>
+
+                  <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" name="newpassword" value="YES" id="pn_newpassword" aria-describedby="pn_newpassword_help">
+                      <label class="form-check-label fw-bold" for="pn_newpassword"><?php echo L_USR_NEWPW; ?></label>
+                      <div id="pn_newpassword_help" class="form-text"><?php echo L_USR_NEWPW_DESC; ?></div>
+                  </div>
+
+                  <div class="mb-3">
+                      <label for="pn_status" class="form-label fw-bold"><?php echo L_USR_STATUS; ?></label>
+                      <select class="form-select" name="status" id="pn_status" aria-describedby="pn_status_help">
+                          <option value="Activated" <?php if ($data['status'] == 'Activated') {
+                              echo 'selected';
+                          } ?>><?php echo L_ALL_ACTIVATED; ?></option>
+                          <option value="Deactivated" <?php if ($data['status'] == 'Deactivated') {
+                              echo 'selected';
+                          } ?>><?php echo L_ALL_DEACTIVATED; ?></option>
+                      </select>
+                      <div id="pn_status_help" class="form-text"><?php echo L_USR_STATUS_DESC; ?></div>
+                  </div>
+
+                  <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" name="sendemail" value="YES" id="pn_sendemail" checked>
+                      <label class="form-check-label fw-bold" for="pn_sendemail"><?php echo L_USR_SENDMAIL; ?></label>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-primary"><?php echo L_USR_EDITUSR; ?></button>
+                      <button type="reset" class="btn btn-outline-secondary"><?php echo L_ALL_RESETDATA; ?></button>
+                  </div>
+              </fieldset>
           </form>
-          </center>
           <?php
             }
         }
     } else {
-        ?><center><a href="index.php?page=users&subpage=show"><?php echo L_USR_CHOOSEUSER; ?></a></center><?php
+        ?>
+        <div class="alert alert-info" role="alert">
+            <?php echo L_USR_CHOOSEUSER; ?>
+            <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-primary">Zur&uuml;ck zur Liste</a></div>
+        </div>
+        <?php
     }
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

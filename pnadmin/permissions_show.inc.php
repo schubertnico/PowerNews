@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,25 +19,26 @@
 /* MA  02111-1307  USA                                                  */
 
 if ($pnadmin['canreadpermissions'] == 'YES') {
-
     ?>
-    <center>
-    <table border="0" cellpadding="4" cellspacing="0">
-    <tr><td width="150">
-    <b><?php echo L_PERM_NICK; ?></b>
-    </td><td>
-    <b><?php echo L_PERM_PERMISSIONS; ?></b>
-    </td></tr>
+    <div class="table-responsive">
+        <table class="table table-striped pn-admin-table align-middle">
+            <thead>
+                <tr>
+                    <th style="min-width: 150px"><?php echo L_PERM_NICK; ?></th>
+                    <th><?php echo L_PERM_PERMISSIONS; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+<?php
+                $permissions = new permissions();
+                $permissions->listpermissions();
+?>
+            </tbody>
+        </table>
+    </div>
+    <p class="pn-help mb-0"><?php echo L_PERM_SHOW_DESC; ?></p>
     <?php
-      $permissions = new permissions();
-    $permissions->listpermissions();
-    ?>
-    </table>
-    </center><br>
-    <?php echo L_PERM_SHOW_DESC; ?>
-    <?php
-
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

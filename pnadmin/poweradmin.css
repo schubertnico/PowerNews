@@ -18,88 +18,31 @@
 /* MA  02111-1307  USA                                                  */
 /************************************************************************/
 
-BODY, TABLE, TR, TH, TD {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #ffffff;
-  font-size: 12px;
-  scrollbar-arrow-color: #001329;
-  scrollbar-base-color: #3F5070;
+/*
+ * Mit der Umstellung auf Bootstrap 5 werden alle UI-Farben durch Bootstrap
+ * gesteuert. Das alte poweradmin.css setzte globale weisse Schrift
+ * (BODY/TABLE/TD), helle Links (#B5C3D9) und einen dunklen INPUT-Hintergrund,
+ * was im neuen hellen Layout zu unlesbaren Kontrasten gefuehrt hat. Die
+ * Regeln werden hier deshalb nicht mehr aktiviert.
+ *
+ * Stattdessen ein paar punktuelle Hilfen fuer alte Inhalte, die noch in
+ * Help-/License-Texten enthalten sein koennen, ohne Bootstrap zu ueberschreiben.
+ */
+
+/* Legacy-Helferklasse "info": fruehere Hilfe-Inline-Beschreibungen klein und gedaempft. */
+small.info {
+  color: #6c757d;
+  font-size: 0.85em;
 }
 
-A {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #B5C3D9;
-  text-decoration: none;
+/* Legacy-Helferklasse "headline": Anchor-/Sprungmarken-Ueberschriften in Hilfetexten. */
+b.headline {
+  font-weight: 600;
+  font-size: 1rem;
 }
 
-A:VISITED {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #B5C3D9;
-  text-decoration: none;
-}
-
-A:ACTIVE{
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #B5C3D9;
-  text-decoration: none;
-}
-
-A:HOVER {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #B5C3D9;
-  text-decoration: none;
-  background-color: #3F4C66;
-}
-
-A:HOVER.logo {
-  background-color: #002040;
-}
-
-SMALL {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 11px;
-}
-
-SMALL.info {
-  font-family: Verdana, Helvetica, sans-serif;
-  color: #D0D0D0;
-  font-size: 11px;
-}
-
-TEXTAREA {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 10px;
-}
-
-B.HEADLINE {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #001329;
-  font-weight: bold;
-  font-size: 18px;
-}
-
-B.SMALL {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-weight: bold;
-  font-size: 10px;
-}
-
-INPUT, TEXTAREA, SELECT {
-  font-family: Tahoma;
-  font-size: 12px;
-  color: #FFFFFF;
-  border-width: 1;
-  border-color: #6078A0;
-  border-style: solid;
-  background: #001329;
-}
-
-TD.small {
-  font-family: Verdana, Helvetica, sans-serif;
-  font-size: 11px;
-  color: #D0D0D0;
-}
-
-HR {
-  color: #001329;
+/* Legacy-Helferklasse "small": kleine Verweise/Buttons in Statusleiste. */
+b.small,
+.small {
+  font-size: 0.85em;
 }

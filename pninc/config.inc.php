@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                          */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -59,7 +59,7 @@ $pn_config['rltargets'] = ['_blank', '_main'];
 
 // Please DO NOT EDIT the following code
 
-$pn_config['version'] = '3.00';
+$pn_config['version'] = '3.10';
 
 // Connect to mySQL Server and select database
 if (!isset($pn_handler)) {
@@ -84,7 +84,7 @@ if (!isset($pn_handler)) {
         }
     } catch (Exception $e) {
         error_log($e->getMessage());
-        die('<center><b>Database connection error. Please check your configuration.</b></center>');
+        die('<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><strong>Database connection error.</strong> Please check your configuration.</div>');
     }
 }
 

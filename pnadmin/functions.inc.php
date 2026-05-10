@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                          */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -303,7 +303,12 @@ class template
         $pndata = $_POST['pndata'] ?? [];
 
         if (empty($pndata['title'])) {
-            ?><center><a href="javascript:history.back()"><?php echo L_TEMPL_TITLENEEDED; ?></a></center><?php
+            ?>
+            <div class="alert alert-warning" role="alert">
+                <?php echo L_TEMPL_TITLENEEDED; ?>
+                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+            </div>
+            <?php
         } else {
             $result = mysqli_query($pn_handler, 'SELECT * FROM ' . $pn_config['templatetable'] . " WHERE id = '1'");
             $num = mysqli_num_rows($result);
@@ -344,12 +349,27 @@ class template
                         $row['dataemail'],
                     );
                     mysqli_stmt_execute($stmt);
-                    ?><center><a href="index.php?page=templates&subpage=show"><?php echo L_TEMPL_TEMPLATEADDED; ?></a></center><?php
+                    ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo L_TEMPL_TEMPLATEADDED; ?>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                    </div>
+                    <?php
                 } else {
-                    ?><center><a href="javascript:history.back()"><?php echo L_TEMPL_TEMPLATEALREADYEXISTS; ?></a></center><?php
+                    ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?php echo L_TEMPL_TEMPLATEALREADYEXISTS; ?>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    </div>
+                    <?php
                 }
             } else {
-                ?><center><a href="javascript:history.back()"><?php echo L_TEMPL_NOSTANDARDTEMPLATE; ?></a></center><?php
+                ?>
+                <div class="alert alert-danger" role="alert">
+                    <?php echo L_TEMPL_NOSTANDARDTEMPLATE; ?>
+                    <div class="mt-2"><a href="index.php?page=templates" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck</a></div>
+                </div>
+                <?php
             }
         }
     }
@@ -364,13 +384,13 @@ class template
         if ($num > 0) {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <a href="index.php?page=templates&subpage=edit&templateid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['title']); ?></a>
-                </td></tr>
+                <tr>
+                    <td><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['title']); ?></a></td>
+                </tr>
                 <?php
             }
         } else {
-            ?><tr><td align="center"><?php echo L_TEMPL_NOTEMPLATES; ?></td></tr><?php
+            ?><tr><td class="text-center text-muted"><?php echo L_TEMPL_NOTEMPLATES; ?></td></tr><?php
         }
     }
 
@@ -379,16 +399,32 @@ class template
         global $pn_config, $pn_handler;
 
         if (!$data->isValid()) {
-            ?><center><a href="javascript:history.back()"><?php echo L_TEMPL_INSERTALL; ?></a></center><?php
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo L_TEMPL_INSERTALL; ?>
+                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+            </div>
+            <?php
         } else {
-            if ($templateid === 1) {
-                ?><center><a href="javascript:history.back()"><?php echo L_TEMPL_NOSTANDARDEDIT; ?></a></center><?php
+            // Default-Template (id=1) darf editiert werden, aber NICHT geloescht.
+            if ($templateid === 1 && $delete === 'YES') {
+                ?>
+                <div class="alert alert-warning" role="alert">
+                    Das Default-Template (ID&nbsp;1) kann nicht gel&ouml;scht werden, weil es als Vorlage f&uuml;r alle neuen Templates dient. Du kannst es weiterhin editieren.
+                    <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=1" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                </div>
+                <?php
             } else {
                 if ($delete === 'YES') {
                     $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
                     mysqli_stmt_bind_param($stmt, 'i', $templateid);
                     mysqli_stmt_execute($stmt);
-                    ?><center><a href="index.php?page=templates&subpage=show"><?php echo L_TEMPL_TEMPLATEDELETED; ?></a></center><?php
+                    ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo L_TEMPL_TEMPLATEDELETED; ?>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                    </div>
+                    <?php
                 } else {
                     $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['templatetable'] . ' SET title = ?, message = ?, headline = ?, news = ?, comment = ?, usermenu = ?, usermenu2 = ?, relatedlinks = ?, commentform = ?, registerform = ?, loginform = ?, logout = ?, senddataform = ?, profileform = ?, archive = ?, sendnewsform = ?, addemail = ?, editemail = ?, registeremail = ?, dataemail = ? WHERE id = ?');
                     $title = $data->title;
@@ -437,7 +473,12 @@ class template
                         $templateid,
                     );
                     mysqli_stmt_execute($stmt);
-                    ?><center><a href="index.php?page=templates&subpage=edit&templateid=<?php echo $templateid; ?>"><?php echo L_TEMPL_TEMPLATEEDITED; ?></a></center><?php
+                    ?>
+                    <div class="alert alert-success" role="alert">
+                        <?php echo L_TEMPL_TEMPLATEEDITED; ?>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+                    </div>
+                    <?php
                 }
             }
         }
@@ -606,57 +647,54 @@ class menus
     {
         global $pnconfig;
 
+        // Aktuelle Subpage fuer aktiven Tab-Style ermitteln.
+        $activeSub = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
+
+        // Erzeugt einen einzelnen Subpage-Link als Bootstrap-Outline-Button.
+        // Die Klasse wechselt zu "btn-primary" (gefuellt), wenn der Tab aktiv ist.
+        $renderItem = static function (string $href, string $label, bool $active = false, ?string $target = null): void {
+            $classes = $active ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
+            $targetAttr = $target !== null ? ' target="' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '" rel="noopener noreferrer"' : '';
+            ?><a class="<?php echo $classes; ?>" href="<?php echo htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $targetAttr; ?>><?php echo $label; ?></a><?php
+        };
+
         switch ($page) {
             case 'templates':
-                ?>
-                &raquo; <a href="index.php?page=templates&subpage=add"><?php echo L_MENU_ADDTEMPLATE; ?></a><br>
-                &raquo; <a href="index.php?page=templates&subpage=show"><?php echo L_MENU_SHOWTEMPLATES; ?></a><br>
-                <?php
+                $renderItem('index.php?page=templates&subpage=add', L_MENU_ADDTEMPLATE, $activeSub === 'add');
+                $renderItem('index.php?page=templates&subpage=show', L_MENU_SHOWTEMPLATES, $activeSub === 'show' || $activeSub === 'edit');
                 break;
             case 'users':
-                ?>
-                &raquo; <a href="index.php?page=users&subpage=add"><?php echo L_MENU_ADDUSER; ?></a><br>
-                &raquo; <a href="index.php?page=users&subpage=show"><?php echo L_MENU_SHOWUSER; ?></a><br>
-                &raquo; <a href="index.php?page=users&subpage=search"><?php echo L_MENU_SEARCHUSER; ?></a><br>
-                <?php
+                $renderItem('index.php?page=users&subpage=add', L_MENU_ADDUSER, $activeSub === 'add');
+                $renderItem('index.php?page=users&subpage=show', L_MENU_SHOWUSER, $activeSub === 'show' || $activeSub === 'edit');
+                $renderItem('index.php?page=users&subpage=search', L_MENU_SEARCHUSER, $activeSub === 'search');
                 break;
             case 'permissions':
-                ?>
-                &raquo; <a href="index.php?page=permissions&subpage=add"><?php echo L_MENU_ADDPERMISSIONS; ?></a><br>
-                &raquo; <a href="index.php?page=permissions&subpage=show"><?php echo L_MENU_SHOWPERMISSIONS; ?></a><br>
-                <?php
+                $renderItem('index.php?page=permissions&subpage=add', L_MENU_ADDPERMISSIONS, $activeSub === 'add');
+                $renderItem('index.php?page=permissions&subpage=show', L_MENU_SHOWPERMISSIONS, $activeSub === 'show' || $activeSub === 'edit');
                 break;
             case 'configuration':
-                ?>
-                &raquo; <a href="index.php?page=configuration"><?php echo L_MENU_EDITCONFIG; ?></a><br>
-                <?php
+                $renderItem('index.php?page=configuration', L_MENU_EDITCONFIG, true);
                 break;
             case 'categories':
                 if ($pnconfig['categories'] == 'YES') {
-                    ?>
-                    &raquo; <a href="index.php?page=categories&subpage=add"><?php echo L_MENU_ADDCAT; ?></a><br>
-                    &raquo; <a href="index.php?page=categories&subpage=show"><?php echo L_MENU_SHOWCATS; ?></a><br>
-                    <?php
+                    $renderItem('index.php?page=categories&subpage=add', L_MENU_ADDCAT, $activeSub === 'add');
+                    $renderItem('index.php?page=categories&subpage=show', L_MENU_SHOWCATS, $activeSub === 'show' || $activeSub === 'edit');
                 } else {
-                    ?>&raquo; <?php echo L_MENU_CATSDEACTIVATED; ?><?php
+                    ?><span class="badge text-bg-secondary"><?php echo L_MENU_CATSDEACTIVATED; ?></span><?php
                 }
                 break;
             case 'news':
-                ?>
-                &raquo; <a href="index.php?page=news&subpage=add"><?php echo L_MENU_ADDNEWS; ?></a><br>
-                &raquo; <a href="index.php?page=news&subpage=show"><?php echo L_MENU_SHOWNEWS; ?></a><br>
-                &raquo; <a href="index.php?page=news&subpage=search"><?php echo L_MENU_SEARCHNEWS; ?></a><br>
-                <?php
+                $renderItem('index.php?page=news&subpage=add', L_MENU_ADDNEWS, $activeSub === 'add');
+                $renderItem('index.php?page=news&subpage=show', L_MENU_SHOWNEWS, $activeSub === 'show' || $activeSub === 'edit');
+                $renderItem('index.php?page=news&subpage=search', L_MENU_SEARCHNEWS, $activeSub === 'search');
                 break;
             case 'other':
-                ?>
-                &raquo; <a href="index.php?page=other&subpage=help"><?php echo L_MENU_HELP; ?></a><br>
-                &raquo; <a href="index.php?page=other&subpage=license"><?php echo L_MENU_LICENSE; ?></a><br>
-                &raquo; <a href="http://www.powerscripts.org" target="_ps"><?php echo L_MENU_PSHP; ?></a><br>
-                <?php
+                $renderItem('index.php?page=other&subpage=help', L_MENU_HELP, $activeSub === 'help');
+                $renderItem('index.php?page=other&subpage=license', L_MENU_LICENSE, $activeSub === 'license');
+                $renderItem('https://www.powerscripts.org', L_MENU_PSHP, false, '_ps');
                 break;
             default:
-                ?>&raquo; <?php echo L_MENU_CHOOSESECTION; ?><?php
+                ?><span class="text-muted"><?php echo L_MENU_CHOOSESECTION; ?></span><?php
                 break;
         }
     }
@@ -728,16 +766,17 @@ class user
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?>[ Keine Seiten ]<?php
+            ?><li class="page-item disabled"><span class="page-link">[ Keine Seiten ]</span></li><?php
         } else {
             $pagenum = (int) ceil($num / 25);
+            $activeCurrent = (int) ($_GET['current'] ?? 0);
 
             for ($i = 1; $i <= $pagenum; ++$i) {
                 $i2 = $i - 1;
                 $current = $i2 * 25;
-                ?>| <a href="index.php?page=users&subpage=show&current=<?php echo $current; ?>"><?php echo $i; ?></a> <?php
+                $isActive = $current === $activeCurrent ? ' active' : '';
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=users&subpage=show&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
-            ?> |<?php
         }
     }
 
@@ -766,46 +805,44 @@ class user
 
         if ($num == 0) {
             ?>
-            <tr><td colspan="9" align="center">
+            <tr><td colspan="5" class="text-center text-muted">
             <?php echo L_USR_NOUSRINDB; ?>
             </td></tr>
             <?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <a href="index.php?page=users&subpage=edit&userid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['nickname']); ?></a>
-                </td><td>
-                </td><td>
-                <a href="mailto:<?php echo pnadmin_escape($row['email']); ?>"><?php echo pnadmin_escape($row['email']); ?></a>
-                </td><td>
-                </td><td align="center">
+                <tr>
+                    <td><a href="index.php?page=users&amp;subpage=edit&amp;userid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['nickname']); ?></a></td>
+                    <td><a href="mailto:<?php echo pnadmin_escape($row['email']); ?>"><?php echo pnadmin_escape($row['email']); ?></a></td>
+                    <td class="text-center">
                 <?php
                 if ($row['showemail'] == 'YES') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_YES; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_YES; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_NO; ?>"><?php
+                    ?><span class="badge text-bg-secondary"><?php echo L_ALL_NO; ?></span><?php
                 }
                 ?>
-                </td><td>
-                </td><td align="center">
+                    </td>
+                    <td class="text-center">
                 <?php
                 if ($this->checkadmin((int) $row['id']) === 'YES') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_YES; ?>"><?php
+                    ?><span class="badge text-bg-primary"><?php echo L_ALL_YES; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_NO; ?>"><?php
+                    ?><span class="badge text-bg-secondary"><?php echo L_ALL_NO; ?></span><?php
                 }
                 ?>
-                </td><td>
-                </td><td align="center">
+                    </td>
+                    <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_ACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_ACTIVATED; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_DEACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-danger"><?php echo L_ALL_DEACTIVATED; ?></span><?php
                 }
                 ?>
-                </td></tr>
+                    </td>
+                </tr>
                 <?php
             }
         }
@@ -910,16 +947,17 @@ class user
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?>[ <?php echo L_ALL_NOPAGES; ?> ]<?php
+            ?><li class="page-item disabled"><span class="page-link">[ <?php echo L_ALL_NOPAGES; ?> ]</span></li><?php
         } else {
             $pagenum = (int) ceil($num / 25);
+            $activeCurrent = (int) ($_GET['current'] ?? 0);
 
             for ($i = 1; $i <= $pagenum; ++$i) {
                 $i2 = $i - 1;
                 $current = $i2 * 25;
-                ?>| <a href="index.php?page=users&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a> <?php
+                $isActive = $current === $activeCurrent ? ' active' : '';
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=users&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
-            ?> |<?php
         }
     }
 
@@ -942,46 +980,44 @@ class user
 
         if ($num == 0) {
             ?>
-            <tr><td colspan="9" align="center">
+            <tr><td colspan="5" class="text-center text-muted">
             <?php echo L_USR_NOUSRFOUND; ?>
             </td></tr>
             <?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <a href="index.php?page=users&subpage=edit&userid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['nickname']); ?></a>
-                </td><td>
-                </td><td>
-                <a href="mailto:<?php echo pnadmin_escape($row['email']); ?>"><?php echo pnadmin_escape($row['email']); ?></a>
-                </td><td>
-                </td><td align="center">
+                <tr>
+                    <td><a href="index.php?page=users&amp;subpage=edit&amp;userid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape($row['nickname']); ?></a></td>
+                    <td><a href="mailto:<?php echo pnadmin_escape($row['email']); ?>"><?php echo pnadmin_escape($row['email']); ?></a></td>
+                    <td class="text-center">
                 <?php
                 if ($row['showemail'] == 'YES') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_YES; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_YES; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_NO; ?>"><?php
+                    ?><span class="badge text-bg-secondary"><?php echo L_ALL_NO; ?></span><?php
                 }
                 ?>
-                </td><td>
-                </td><td align="center">
+                    </td>
+                    <td class="text-center">
                 <?php
                 if ($this->checkadmin((int) $row['id']) === 'YES') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_YES; ?>"><?php
+                    ?><span class="badge text-bg-primary"><?php echo L_ALL_YES; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_NO; ?>"><?php
+                    ?><span class="badge text-bg-secondary"><?php echo L_ALL_NO; ?></span><?php
                 }
                 ?>
-                </td><td>
-                </td><td align="center">
+                    </td>
+                    <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_ACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_ACTIVATED; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" border="0" alt="<?php echo L_ALL_DEACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-danger"><?php echo L_ALL_DEACTIVATED; ?></span><?php
                 }
                 ?>
-                </td></tr>
+                    </td>
+                </tr>
                 <?php
             }
         }
@@ -1161,7 +1197,7 @@ class permissions
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?><tr><td colspan="2" align="center"><?php echo L_PERM_NOPERMISSIONS; ?></td></tr><?php
+            ?><tr><td colspan="2" class="text-center text-muted"><?php echo L_PERM_NOPERMISSIONS; ?></td></tr><?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 $stmt = mysqli_prepare($pn_handler, 'SELECT nickname FROM ' . $pn_config['usertable'] . ' WHERE id = ?');
@@ -1173,64 +1209,58 @@ class permissions
 
                 if ($num2 == 1) {
                     [$nickname] = mysqli_fetch_array($result2);
+                    $permIcon = static function (string $value): string {
+                        if ($value == 'YES') {
+                            return '<span class="badge text-bg-success" aria-label="ja">&check;</span>';
+                        }
+                        return '<span class="badge text-bg-secondary" aria-label="nein">&minus;</span>';
+                    };
                     ?>
-                    <tr><td valign="top">
-                    <a href="index.php?page=permissions&subpage=edit&userid=<?php echo (int) $row['userid']; ?>"><?php echo pnadmin_escape($nickname); ?></a>
-                    </td><td valign="top">
-                      <table border="0" cellpadding="2" cellspacing="2">
-                      <tr><td>
-                      <u><?php echo L_PERM_SECTION; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_TEMPLATES; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_CONFIG; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_USER; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_PERMISSIONS; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_CATS; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_NEWS; ?></u>
-                      </td><td>
-                      <u><?php echo L_PERM_COMMENTS; ?></u>
-                      </td></tr>
-                      <tr><td>
-                      <u><?php echo L_PERM_READ; ?></u>
-                      </td><td align="center">
-                      <?php if ($row['canreadtemplates'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadconfig'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadusers'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadpermissions'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadcategories'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadnews'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canreadcomments'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td></tr>
-                      <tr><td>
-                      <u><?php echo L_PERM_WRITE; ?></u>
-                      </td><td align="center">
-                      <?php if ($row['canwritetemplates'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwriteconfig'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwriteusers'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwritepermissions'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwritecategories'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwritenews'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td><td align="center">
-                      <?php if ($row['canwritecomments'] == 'YES') { ?><img src="./gfx/yes.gif" border="0" width="15" height="15"><?php } else { ?><img src="./gfx/no.gif" border="0" width="15" height="15"><?php } ?>
-                      </td></tr>
-                      </table>
-                    </td></tr>
+                    <tr>
+                        <td class="align-top">
+                            <a href="index.php?page=permissions&amp;subpage=edit&amp;userid=<?php echo (int) $row['userid']; ?>"><?php echo pnadmin_escape($nickname); ?></a>
+                        </td>
+                        <td>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th><?php echo L_PERM_SECTION; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_TEMPLATES; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_CONFIG; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_USER; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_PERMISSIONS; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_CATS; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_NEWS; ?></th>
+                                            <th class="text-center"><?php echo L_PERM_COMMENTS; ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong><?php echo L_PERM_READ; ?></strong></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadtemplates']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadconfig']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadusers']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadpermissions']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadcategories']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadnews']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canreadcomments']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong><?php echo L_PERM_WRITE; ?></strong></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwritetemplates']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwriteconfig']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwriteusers']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwritepermissions']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwritecategories']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwritenews']); ?></td>
+                                            <td class="text-center"><?php echo $permIcon((string) $row['canwritecomments']); ?></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
                     <?php
                 } else {
                     $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
@@ -1479,25 +1509,23 @@ class category
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?><tr><td colspan="3" align="center"><?php echo L_CAT_NOCATSAVAILABLE; ?></a></td></tr><?php
+            ?><tr><td colspan="3" class="text-center text-muted"><?php echo L_CAT_NOCATSAVAILABLE; ?></td></tr><?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <a href="index.php?page=categories&subpage=edit&catid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['name'])); ?></a>
-                </td><td>
-                </td><td>
-                <?php echo pnadmin_escape($row['description']); ?>
-                </td><td>
-                </td><td align="center">
+                <tr>
+                    <td><a href="index.php?page=categories&amp;subpage=edit&amp;catid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['name'])); ?></a></td>
+                    <td><?php echo pnadmin_escape($row['description']); ?></td>
+                    <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
-                    ?><img src="./gfx/yes.gif" border="0" width="15" height="15" alt="<?php echo L_ALL_ACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_ACTIVATED; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" border="0" width="15" height="15" alt="<?php echo L_ALL_DEACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-danger"><?php echo L_ALL_DEACTIVATED; ?></span><?php
                 }
                 ?>
-                </td></tr>
+                    </td>
+                </tr>
                 <?php
             }
         }
@@ -1617,7 +1645,7 @@ class news
         $num = mysqli_num_rows($result);
 
         if ($num > 0) {
-            ?><select name="catid" size="1"><?php
+            ?><select class="form-select" name="catid" id="pn_catid" aria-label="<?php echo L_NEWS_CATEGORY; ?>"><?php
             if ($catid === 0) {
                 ?><option value=""><?php echo L_NEWS_CHOOSECAT; ?></option><?php
             }
@@ -1627,7 +1655,7 @@ class news
             }
             ?></select><?php
         } else {
-            echo L_NEWS_NOCATSAVAILABLE;
+            ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_NEWS_NOCATSAVAILABLE; ?></div><?php
         }
     }
 
@@ -1672,16 +1700,17 @@ class news
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?>[ <?php echo L_ALL_NOPAGES; ?> ]<?php
+            ?><li class="page-item disabled"><span class="page-link">[ <?php echo L_ALL_NOPAGES; ?> ]</span></li><?php
         } else {
             $pagenum = (int) ceil($num / 25);
+            $activeCurrent = (int) ($_GET['current'] ?? 0);
 
             for ($i = 1; $i <= $pagenum; ++$i) {
                 $i2 = $i - 1;
                 $current = $i2 * 25;
-                ?>| <a href="index.php?page=news&subpage=show&current=<?php echo $current; ?>"><?php echo $i; ?></a> <?php
+                $isActive = $current === $activeCurrent ? ' active' : '';
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&subpage=show&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
-            ?> |<?php
         }
     }
 
@@ -1714,38 +1743,35 @@ class news
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
 
+        $colCount = ($pnconfig['categories'] == 'YES') ? 4 : 3;
+
         if ($num == 0) {
             ?>
-            <tr><td colspan="7" align="center">
+            <tr><td colspan="<?php echo $colCount; ?>" class="text-center text-muted">
             <?php echo L_NEWS_NONEWS; ?>
             </td></tr>
             <?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <?php echo date('d.m.Y', (int) $row['time']); ?>
-                </td><?php if ($pnconfig['categories'] == 'YES') { ?><td>
-                &nbsp;
-                </td><td>
-                <?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?>
-                </td><?php } ?><td>
-                &nbsp;
-                </td><td>
-                <a href="index.php?page=news&subpage=edit&newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a>
-                </td><td>
-                &nbsp;
-                </td><td align="center">
+                <tr>
+                    <td><?php echo date('d.m.Y', (int) $row['time']); ?></td>
+                <?php if ($pnconfig['categories'] == 'YES') { ?>
+                    <td><?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?></td>
+                <?php } ?>
+                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a></td>
+                    <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" alt="<?php echo L_ALL_ACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_ACTIVATED; ?></span><?php
                 } elseif ($row['status'] == 'Unchecked') {
-                    ?><img src="./gfx/uc.gif" width="15" height="15" alt="<?php echo L_ALL_UNCHECKED; ?>"><?php
+                    ?><span class="badge text-bg-warning"><?php echo L_ALL_UNCHECKED; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" alt="<?php echo L_ALL_DEACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-danger"><?php echo L_ALL_DEACTIVATED; ?></span><?php
                 }
                 ?>
-                </td></tr>
+                    </td>
+                </tr>
                 <?php
             }
         }
@@ -1801,50 +1827,39 @@ class news
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?><tr><td colspan="2" align="center"><?php echo L_NEWS_NOCOMMENTS; ?></td></tr><?php
+            ?><div class="alert alert-info mb-0" role="alert"><?php echo L_NEWS_NOCOMMENTS; ?></div><?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <b><?php echo L_NEWS_DELETECOMMENT; ?></b><br>
-                <small class="info"><?php echo L_NEWS_DELETECOMMENT; ?></small>
-                </td><td>
-                <input type="hidden" name="commentid[]" value="<?php echo (int) $row['id']; ?>">
-                <input type="checkbox" name="commentdelete[]" value="<?php echo (int) $row['id']; ?>">
-                </td></tr>
-                <tr><td valign="top">
-                <b><?php echo L_NEWS_INFO; ?></b><br>
-                <small class="info"><?php echo L_NEWS_INFO_DESC; ?></small>
-                </td><td>
-                <?php echo L_NEWS_WRITTENBY; ?> <?php if ($row['userid'] == '0') {
-                    echo L_NEWS_GUEST;
-                } else {
-                    echo $this->getcommentauthor((int) $row['userid']);
-                } ?> <?php echo L_NEWS_ONDATE; ?> <?php echo date('d.m.Y', (int) $row['time']); ?> <?php echo L_NEWS_AT; ?> <?php echo date('H:i', (int) $row['time']); ?> (IP: <?php echo pnadmin_escape($row['ip']); ?>)
-                </td></tr>
-                <tr><td valign="top">
-                <b><?php echo L_NEWS_TEXT; ?></b><br>
-                <small class="info"><?php echo L_NEWS_COMMENTEXT_DESC; ?> (HMTL
-                <?php
-                if ($pnconfig['html'] == 'Comments' || $pnconfig['html'] == 'Comments/News') {
-                    ?><b><?php echo L_NEWS_ON; ?></b>/<a href="index.php?page=other&subpage=help#news.bbcode">BB Code</a> <?php
-                } else {
-                    ?><b><?php echo L_NEWS_OFF; ?></b>/<a href="index.php?page=other&subpage=help#news.bbcode">BB Code</a> <?php
-                }
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="small text-muted mb-2">
+                            <?php echo L_NEWS_WRITTENBY; ?>
+                            <?php if ($row['userid'] == '0') {
+                                echo L_NEWS_GUEST;
+                            } else {
+                                echo $this->getcommentauthor((int) $row['userid']);
+                            } ?>
+                            <?php echo L_NEWS_ONDATE; ?> <?php echo date('d.m.Y', (int) $row['time']); ?>
+                            <?php echo L_NEWS_AT; ?> <?php echo date('H:i', (int) $row['time']); ?>
+                            (IP: <?php echo pnadmin_escape($row['ip']); ?>)
+                        </div>
+                        <input type="hidden" name="commentid[]" value="<?php echo (int) $row['id']; ?>">
 
-                if ($pnconfig['bbcode'] == 'Comments' || $pnconfig['bbcode'] == 'Comments/News') {
-                    ?><b><?php echo L_NEWS_ON; ?></b>)<?php
-                } else {
-                    ?><b><?php echo L_NEWS_OFF; ?></b>)<?php
-                }
-                ?>
-                </small>
-                </td><td>
-                <textarea name="commenttext[]" cols="60" rows="5"><?php echo pnadmin_escape(stripslashes((string) $row['text'])); ?></textarea>
-                </td></tr>
-                <tr><td height="20" colspan="2">
-                &nbsp;
-                </td></tr>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="pn_commenttext_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_TEXT; ?></label>
+                            <textarea class="form-control" name="commenttext[]" id="pn_commenttext_<?php echo (int) $row['id']; ?>" rows="4" aria-describedby="pn_commenttext_help_<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['text'])); ?></textarea>
+                            <div id="pn_commenttext_help_<?php echo (int) $row['id']; ?>" class="form-text"><?php echo L_NEWS_COMMENTEXT_DESC; ?></div>
+                        </div>
+
+                        <div class="pn-danger-action">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="commentdelete[]" value="<?php echo (int) $row['id']; ?>" id="pn_commentdelete_<?php echo (int) $row['id']; ?>">
+                                <label class="form-check-label fw-bold text-danger" for="pn_commentdelete_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_DELETECOMMENT; ?></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php
             }
         }
@@ -1982,16 +1997,17 @@ class news
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?>[ <?php echo L_ALL_NOPAGES; ?> ]<?php
+            ?><li class="page-item disabled"><span class="page-link">[ <?php echo L_ALL_NOPAGES; ?> ]</span></li><?php
         } else {
             $pagenum = (int) ceil($num / 25);
+            $activeCurrent = (int) ($_GET['current'] ?? 0);
 
             for ($i = 1; $i <= $pagenum; ++$i) {
                 $i2 = $i - 1;
                 $current = $i2 * 25;
-                ?>| <a href="index.php?page=news&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a> <?php
+                $isActive = $current === $activeCurrent ? ' active' : '';
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
-            ?> |<?php
         }
     }
 
@@ -2012,38 +2028,35 @@ class news
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
 
+        $colCount = ($pnconfig['categories'] == 'YES') ? 4 : 3;
+
         if ($num == 0) {
             ?>
-            <tr><td colspan="7" align="center">
+            <tr><td colspan="<?php echo $colCount; ?>" class="text-center text-muted">
             <?php echo L_NEWS_NONEWS; ?>
             </td></tr>
             <?php
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <tr><td>
-                <?php echo date('d.m.Y', (int) $row['time']); ?>
-                </td><?php if ($pnconfig['categories'] == 'YES') { ?><td>
-                &nbsp;
-                </td><td>
-                <?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?>
-                </td><?php } ?><td>
-                &nbsp;
-                </td><td>
-                <a href="index.php?page=news&subpage=edit&newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a>
-                </td><td>
-                &nbsp;
-                </td><td align="center">
+                <tr>
+                    <td><?php echo date('d.m.Y', (int) $row['time']); ?></td>
+                <?php if ($pnconfig['categories'] == 'YES') { ?>
+                    <td><?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?></td>
+                <?php } ?>
+                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a></td>
+                    <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
-                    ?><img src="./gfx/yes.gif" width="15" height="15" alt="<?php echo L_ALL_ACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-success"><?php echo L_ALL_ACTIVATED; ?></span><?php
                 } elseif ($row['status'] == 'Unchecked') {
-                    ?><img src="./gfx/uc.gif" width="15" height="15" alt="<?php echo L_ALL_UNCHECKED; ?>"><?php
+                    ?><span class="badge text-bg-warning"><?php echo L_ALL_UNCHECKED; ?></span><?php
                 } else {
-                    ?><img src="./gfx/no.gif" width="15" height="15" alt="<?php echo L_ALL_DEACTIVATED; ?>"><?php
+                    ?><span class="badge text-bg-danger"><?php echo L_ALL_DEACTIVATED; ?></span><?php
                 }
                 ?>
-                </td></tr>
+                    </td>
+                </tr>
                 <?php
             }
         }

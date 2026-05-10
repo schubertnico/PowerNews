@@ -150,13 +150,32 @@ class AdminTemplateClassIntegrationTest extends DatabaseTestCase
     // ── edittemplate ──
 
     #[Test]
-    public function edittemplate_outputs_no_standard_edit_for_template_id_1(): void
+    public function edittemplate_blocks_delete_for_template_id_1(): void
     {
+        // Default-Template (id=1) darf editiert werden, aber NICHT geloescht.
+        // Loesch-Versuch muss eine Warnung produzieren und die Zeile NICHT entfernen.
         $data = $this->makeValidTemplateData();
+
+        $output = $this->captureOutput(fn() => $this->template->edittemplate(1, 'YES', $data));
+
+        $this->assertStringContainsString('Default-Template', $output);
+        $this->assertStringContainsString('nicht gel', $output); // "nicht geloescht"
+
+        // Zeile darf nicht weg sein.
+        global $pn_handler, $pn_config;
+        $r = mysqli_query($pn_handler, 'SELECT id FROM ' . $pn_config['templatetable'] . ' WHERE id = 1');
+        $this->assertSame(1, mysqli_num_rows($r));
+    }
+
+    #[Test]
+    public function edittemplate_allows_edit_of_template_id_1(): void
+    {
+        // Default-Template (id=1) darf jetzt editiert werden (vorher gesperrt).
+        $data = $this->makeValidTemplateData('Default Edited Title');
 
         $output = $this->captureOutput(fn() => $this->template->edittemplate(1, 'NO', $data));
 
-        $this->assertStringContainsString(L_TEMPL_NOSTANDARDEDIT, $output);
+        $this->assertStringContainsString(L_TEMPL_TEMPLATEEDITED, $output);
     }
 
     #[Test]

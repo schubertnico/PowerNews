@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -33,7 +33,7 @@ header('Content-Type: text/html; charset=UTF-8');
 if (file_exists(__DIR__ . '/config.inc.php')) {
     include __DIR__ . '/config.inc.php';
 } else {
-    echo "<center>File <b>config.inc.php</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>config.inc.php</strong> was not found!</div>';
     exit;
 }
 
@@ -41,7 +41,7 @@ if (file_exists(__DIR__ . '/config.inc.php')) {
 if (file_exists(__DIR__ . '/functions.inc.php')) {
     include __DIR__ . '/functions.inc.php';
 } else {
-    echo "<center>File <b>functions.inc.php</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>functions.inc.php</strong> was not found!</div>';
     exit;
 }
 
@@ -49,9 +49,8 @@ if (file_exists(__DIR__ . '/functions.inc.php')) {
 if (file_exists(__DIR__ . '/lang/' . $pn_config['language'] . '.php')) {
     include __DIR__ . '/lang/' . $pn_config['language'] . '.php';
 } else {
-    echo '<center>File <b>' .
-      $pn_config['language'] . "
-</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>' .
+      htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '</strong> was not found!</div>';
     exit;
 }
 
@@ -64,12 +63,12 @@ if ($cnum == 1) {
 } else {
     if ($cnum == 0) {
         ?>
-      <center>No PowerNews configuration found. Please check the mySQL table <b><?php
-          echo $pn_config['configtable']; ?></b></center><?php
+      <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">No PowerNews configuration found. Please check the mySQL table <strong><?php
+          echo htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8'); ?></strong></div><?php
     } elseif ($cnum > 1) {
         ?>
-      <center>Too many PowerNEws configurations found. Please check the mySQL table <b><?php
-          echo $pn_config['configtable']; ?></b></center><?php
+      <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Too many PowerNews configurations found. Please check the mySQL table <strong><?php
+          echo htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8'); ?></strong></div><?php
     }
     exit;
 }

@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,23 +19,25 @@
 /* MA  02111-1307  USA                                                  */
 
 if ($pnadmin['canreadtemplates'] == 'YES') {
-
     ?>
-    <center>
-    <table border="0" cellpadding="4" cellspacing="0">
-    <tr><td>
-    <b><?php echo L_TEMPL_TITLE; ?></b>
-    </td></tr>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover pn-admin-table align-middle">
+            <thead>
+                <tr>
+                    <th><?php echo L_TEMPL_TITLE; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+<?php
+                $template = new template();
+                $template->listtemplates();
+?>
+            </tbody>
+        </table>
+    </div>
+    <p class="pn-help mb-0"><?php echo L_TEMPL_SHOW_DESC; ?></p>
     <?php
-      $template = new template();
-    $template->listtemplates();
-    ?>
-    </table>
-    </center>
-    <?php echo L_TEMPL_SHOW_DESC; ?>
-    <?php
-
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

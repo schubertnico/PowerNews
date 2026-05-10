@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -24,7 +24,7 @@ $startoutput = explode(' ', microtime());
 if (@file_exists('phpheader.inc.php')) {
     include __DIR__ . '/phpheader.inc.php';
 } else {
-    echo "<center>File <b>phpheader.inc.php</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>phpheader.inc.php</strong> was not found!</div>';
     exit;
 }
 
@@ -32,107 +32,237 @@ if ($pn_config['acpuffer'] == true) {
     //  echo '1';exit;
     ob_start('ob_gzhandler');
 }
+
+$psdesignscript = 'PowerNews';
+$psdesignversion = '3.10';
+
+// Determine current page for active navigation state
+$currentPage = $_GET['page'] ?? 'main';
+$currentSubpage = $_GET['subpage'] ?? '';
+
+// Vor jeder Seite den Login-Status pruefen, um die Navigation/QuickLinks
+// nur eingeloggten Nutzern zu zeigen. Andernfalls vermittelt eine sichtbare
+// Adminnavigation faelschlich, dass man bereits angemeldet ist.
+$pnloggedin ??= 'NO';
+$isLoggedIn = ($pnloggedin === 'YES');
 ?>
-<?php $psdesignscript = 'PowerNews';
-$psdesignversion = '3.00'; ?>
-    <html>
-    <head>
-        <title><?php echo $psdesignscript . ' ' . $psdesignversion; ?> -- AdminCenter</title>
-        <link rel="stylesheet" href="./poweradmin.css" type="text/css">
-    </head>
-    <noscript></noscript>
-    <body bgcolor="#002040" topmargin="10" bottommargin="10" leftmargin="10" rightmargin="10" text="#ffffff"
-          link="#B5C3D9" vlink="#858585" alink="#333366" marginwidth="0" marginheight="0">
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> &mdash; AdminCenter</title>
+    <link href="../assets/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./poweradmin.css" type="text/css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .pn-admin-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .pn-admin-content {
+            flex: 1;
+        }
+        .pn-admin-card .card-header {
+            background-color: #0d6efd;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .pn-admin-status {
+            background-color: #e7f1ff;
+            border-bottom: 1px solid #cfe2ff;
+            color: #084298;
+        }
+        .pn-admin-status a {
+            color: #084298;
+            text-decoration: underline;
+        }
+        .pn-admin-status a:hover {
+            color: #052c65;
+        }
+        .table.pn-admin-table th {
+            background-color: #f1f3f5;
+            color: #212529;
+        }
+        .pn-help,
+        .form-text {
+            color: #212529;
+            font-size: 0.85em;
+        }
+        .pn-danger-action {
+            border: 2px solid #dc3545;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            background-color: #fff5f5;
+        }
+        /*
+         * Global keine grauen Texte. Das alte Bootstrap-Default-Grau (#6c757d /
+         * --bs-secondary-color) ist auf hellem Hintergrund schlecht lesbar, daher
+         * werden alle muted-/secondary-Klassen auf Schwarz/Dunkel uebersteuert.
+         */
+        body.pn-admin-body {
+            color: #212529;
+            --bs-secondary-color: #212529;
+            --bs-tertiary-color: #212529;
+            --bs-link-color: #0a58ca;
+            --bs-link-hover-color: #084298;
+        }
+        body.pn-admin-body input,
+        body.pn-admin-body textarea,
+        body.pn-admin-body select {
+            color: #212529;
+            background-color: #ffffff;
+        }
+        body.pn-admin-body .text-muted,
+        body.pn-admin-body .form-text,
+        body.pn-admin-body .pn-help,
+        body.pn-admin-body small,
+        body.pn-admin-body .small {
+            color: #212529 !important;
+        }
+        body.pn-admin-body .link-secondary {
+            color: #0a58ca !important;
+            text-decoration: underline;
+        }
+        body.pn-admin-body .link-secondary:hover {
+            color: #084298 !important;
+        }
+        /* Outline-Secondary-Buttons komplett schwarze Schrift, kein Grau. */
+        body.pn-admin-body .btn-outline-secondary {
+            color: #000000;
+            border-color: #212529;
+            background-color: #ffffff;
+        }
+        body.pn-admin-body .btn-outline-secondary:hover,
+        body.pn-admin-body .btn-outline-secondary:focus,
+        body.pn-admin-body .btn-outline-secondary:active {
+            color: #ffffff !important;
+            background-color: #212529 !important;
+            border-color: #212529 !important;
+        }
+        /* Footer und Copyright in voller dunkler Schrift. */
+        body.pn-admin-body footer.border-top,
+        body.pn-admin-body footer.border-top * {
+            color: #212529 !important;
+        }
+        body.pn-admin-body footer.border-top a {
+            color: #0a58ca !important;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="pn-admin-body">
+<div class="pn-admin-shell">
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Hauptnavigation">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="./">
+                <?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> AdminCenter
+            </a>
+<?php if ($isLoggedIn) { ?>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pnAdminNav" aria-controls="pnAdminNav" aria-expanded="false" aria-label="Navigation umschalten">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="pnAdminNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'templates' ? ' active' : ''; ?>" href="index.php?page=templates"><?php echo L_MENU_TEMPLATES; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'users' ? ' active' : ''; ?>" href="index.php?page=users"><?php echo L_MENU_USERS; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'permissions' ? ' active' : ''; ?>" href="index.php?page=permissions"><?php echo L_MENU_PERMISSIONS; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'configuration' ? ' active' : ''; ?>" href="index.php?page=configuration"><?php echo L_MENU_CONFIG; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'categories' ? ' active' : ''; ?>" href="index.php?page=categories"><?php echo L_MENU_CATEGORIES; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'news' ? ' active' : ''; ?>" href="index.php?page=news"><?php echo L_MENU_NEWS; ?></a></li>
+                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'other' ? ' active' : ''; ?>" href="index.php?page=other"><?php echo L_MENU_OTHER; ?></a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+<?php if (isset($pnuser['nickname'])) { ?>
+                    <span class="navbar-text text-light small">
+                        <?php echo L_USR_HELLO; ?> <strong><?php echo pnadmin_escape($pnuser['nickname']); ?></strong>
+                    </span>
+                    <a class="btn btn-outline-light btn-sm" href="index.php?page=profile"><?php echo L_USR_EDITPROFILE; ?></a>
+<?php } ?>
+                    <a class="btn btn-outline-light btn-sm" href="../"><?php echo L_MENU_EXTERN; ?></a>
+                    <a class="btn btn-warning btn-sm" href="index.php?pnlogout=YES"><?php echo L_USR_LOGOUT; ?></a>
+                </div>
+            </div>
+<?php } else { ?>
+            <a class="btn btn-outline-light btn-sm ms-auto" href="../"><?php echo L_MENU_EXTERN; ?></a>
+<?php } ?>
+        </div>
+    </nav>
 
-    <table border="0" width="100%" cellpadding="4" cellspacing="1">
-        <tr>
-            <td width="500">
-                <a href="./" class="logo"><img src="./powernews.gif" width="461" height="179" border="0"></a>
-            </td>
-            <td width="*" align="center" valign="center">
-                <table border="1" cellpadding="4" cellspacing="0" width="100%" bordercolor="#6078A0">
-                    <tr bgcolor="#001329">
-                        <td align="center" valign="center">
-                            <b><?php echo $psdesignscript . ' ' . $psdesignversion; ?> AdminCenter</b><br>
-                        </td>
-                    </tr>
-                    <tr bgcolor="#001329">
-                        <td align="center">
+<?php if ($isLoggedIn) { ?>
+    <div class="pn-admin-status">
+        <div class="container-fluid py-2 d-flex flex-wrap justify-content-end align-items-center small">
+            <div>
+                <strong><?php echo L_QUICKLINKS; ?>:</strong>
+                <a href="index.php?page=news&amp;subpage=add"><?php echo L_NEWS_WRITENEWS; ?></a> |
+                <a href="index.php?page=news&amp;subpage=show"><?php echo L_NEWS_SHOWNEWS; ?></a> |
+                <a href="index.php?page=users&amp;subpage=search"><?php echo L_USR_SEARCHUSR; ?></a>
+            </div>
+        </div>
+    </div>
+<?php } ?>
+</header>
 
-                            <table border="0" cellpadding="0" cellspacing="3" width="100%">
-                                <tr>
-                                    <td width="25%" valign="top">
-                                        <small>
-                                            &raquo; <a
-                                                    href="index.php?page=templates"><?php echo L_MENU_TEMPLATES; ?></a><br>
-                                            &raquo; <a href="index.php?page=users"><?php echo L_MENU_USERS; ?></a><br>
-                                            &raquo; <a
-                                                    href="index.php?page=permissions"><?php echo L_MENU_PERMISSIONS; ?></a><br>
-                                            &raquo; <a
-                                                    href="index.php?page=configuration"><?php echo L_MENU_CONFIG; ?></a><br>
-                                            &raquo; <a
-                                                    href="index.php?page=categories"><?php echo L_MENU_CATEGORIES; ?></a><br>
-                                            &raquo; <a href="index.php?page=news"><?php echo L_MENU_NEWS; ?></a><br>
-                                            <br>
-                                            &raquo; <a href="index.php?page=other"><?php echo L_MENU_OTHER; ?></a><br>
-                                        </small>
-                                    </td>
-                                    <td width="75%" valign="top">
-                                        <small>
-                                          <?php if (isset($_GET['page']) && $_GET['page'] && isset($individualmenus)) {
-                                              $individualmenus->submenu($_GET['page']);
-                                          } ?>
-                                        </small>
-                                    </td>
-                                </tr>
-                            </table>
+<main class="pn-admin-content py-4">
+    <div class="container-fluid">
+<?php if ($isLoggedIn && isset($_GET['page']) && $_GET['page']) { ?>
+<?php
+        // Lokalisierte Sektions- und Subpage-Namen fuer die Brotkrumen-Navigation.
+        $sectionLabels = [
+            'templates'     => 'Templates',
+            'users'         => 'Benutzer',
+            'permissions'   => 'Berechtigungen',
+            'configuration' => 'Konfiguration',
+            'categories'    => 'Kategorien',
+            'news'          => 'News',
+            'other'         => 'Sonstiges',
+            'profile'       => 'Profil',
+            'main'          => 'Start',
+        ];
+        $subpageLabels = [
+            'add'     => 'Anlegen',
+            'show'    => 'Anzeigen',
+            'edit'    => 'Bearbeiten',
+            'search'  => 'Suchen',
+            'help'    => 'Hilfe',
+            'license' => 'Lizenz',
+        ];
+        $sectionKey = (string) $_GET['page'];
+        $sectionLabel = $sectionLabels[$sectionKey] ?? ucfirst($sectionKey);
+        $subpageKey = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
+        $subpageLabel = $subpageKey !== '' ? ($subpageLabels[$subpageKey] ?? ucfirst($subpageKey)) : '';
+?>
+        <nav aria-label="Brotkrumen-Navigation" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="index.php">Start</a></li>
+<?php if ($subpageLabel === '') { ?>
+                <li class="breadcrumb-item active" aria-current="page"><?php echo pnadmin_escape($sectionLabel); ?></li>
+<?php } else { ?>
+                <li class="breadcrumb-item"><a href="index.php?page=<?php echo pnadmin_escape($sectionKey); ?>"><?php echo pnadmin_escape($sectionLabel); ?></a></li>
+                <li class="breadcrumb-item active" aria-current="page"><?php echo pnadmin_escape($subpageLabel); ?></li>
+<?php } ?>
+            </ol>
+        </nav>
 
-                            <br>
+<?php if (isset($individualmenus)) { ?>
+        <nav aria-label="Schnellzugriff" class="card mb-3">
+            <div class="card-body py-2 d-flex flex-wrap gap-2 align-items-center">
+<?php
+                $individualmenus->submenu($sectionKey);
+?>
+            </div>
+        </nav>
+<?php } ?>
+<?php } ?>
 
-                            <small>
-                                <a href="../"><?php echo L_MENU_EXTERN; ?></a>
-                            </small>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-
-    <br><br><br>
-
-    <table border="0" cellpadding="4" cellspacing="1" width="100%" bgcolor="#6078A0">
-        <tr bgcolor="#001329">
-            <td valign="bottom" align="left">
-                <b class="small">&raquo; <?php
-                  if (isset($pnloggedin, $pnuser['nickname'], $individualmenus)) {
-                      $individualmenus->statusmenu($pnloggedin, $pnuser['nickname']);
-                  }
-?></b>
-            </td>
-            <td width="375" align="right">
-                <b class="small">
-                  <?php echo L_QUICKLINKS; ?>: <a
-                            href="index.php?page=news&subpage=add"><?php echo L_NEWS_WRITENEWS; ?></a> | <a
-                            href="index.php?page=news&subpage=show"><?php echo L_NEWS_SHOWNEWS; ?></a> | <a
-                            href="index.php?page=users&subpage=search"><?php echo L_USR_SEARCHUSR; ?></a>
-                </b>
-            </td>
-        </tr>
-    </table>
-    <br><br>
-
-    <table border="0" cellpadding="4" cellspacing="1" width="100%" bgcolor="#6078A0">
-
-      <?php
-      $pnloggedin ??= 'NO';
-
-if ($pnloggedin != 'YES') {
-
+<?php
+if (!$isLoggedIn) {
     include __DIR__ . '/login.inc.php';
-
 } else {
-
     $allowed_files = [
         'login.inc.php',
         'news.inc.php',
@@ -175,44 +305,36 @@ if ($pnloggedin != 'YES') {
         include $file_to_include;
     } else {
         ?>
-            <tr>
-                <td bgcolor="#3F5070" align="center"><b>
-
-                        <b class="headline"><?php echo L_TITLE_DOCUMENTNOTFOUND; ?></b>
-
-                    </b></td>
-            </tr>
-
-            </td>
-            <td bgcolor="#001F3F" valign="top">
-
-                <center><?php echo L_ALL_NOPAGE; ?></center>
-
-            </td></tr>
-        <?php }
-    } ?>
-
-    </table>
-    </td></tr>
-    </table>
-    </center>
-    <br>
-    <center>
-
-      <?php
-    $endoutput = explode(' ', microtime());
-$startop = (float) $startoutput[1] + (float) $startoutput[0];
-$endop = (float) $endoutput[1] + (float) $endoutput[0];
-$outputtime = round($endop - $startop, 3);
+        <div class="card pn-admin-card">
+            <h1 class="card-header h5 mb-0"><?php echo L_TITLE_DOCUMENTNOTFOUND; ?></h1>
+            <div class="card-body">
+                <div class="alert alert-warning mb-0" role="alert"><?php echo L_ALL_NOPAGE; ?></div>
+            </div>
+        </div>
+        <?php
+    }
+}
 ?>
-        <small><?php echo L_ALL_PAGECREATEDIN; ?> <?php echo $outputtime; ?> <?php echo L_ALL_SECONDSBY; ?> <a
-                    href="http://www.powerscripts.org"
-                    target="_powerscripts"><?php echo $psdesignscript . ' ' . $pn_config['version']; ?> &copy; 2001-2023
-                PowerScripts</a></small>
-    </center>
+    </div>
+</main>
 
-    </body>
-    </html>
+<footer class="border-top bg-white py-3 mt-auto">
+    <div class="container-fluid text-center small">
+<?php
+    $endoutput = explode(' ', microtime());
+    $startop = (float) $startoutput[1] + (float) $startoutput[0];
+    $endop = (float) $endoutput[1] + (float) $endoutput[0];
+    $outputtime = round($endop - $startop, 3);
+?>
+        <?php echo L_ALL_PAGECREATEDIN; ?> <?php echo pnadmin_escape((string) $outputtime); ?> <?php echo L_ALL_SECONDSBY; ?>
+        <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer"><?php echo pnadmin_escape($psdesignscript . ' ' . $pn_config['version']); ?> &copy; 2001-2026 PowerScripts</a>
+    </div>
+</footer>
+</div>
+
+<script src="../assets/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 <?php if ($pn_config['acpuffer'] == true) {
     ob_implicit_flush();
 } ?>

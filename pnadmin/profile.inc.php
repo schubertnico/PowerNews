@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,14 +19,9 @@
 /* MA  02111-1307  USA                                                  */
 
 ?>
-<tr><td bgcolor="#3F5070" align="center"><b>
-
-       <b class="headline"><?php echo L_TITLE_PROFILE; ?></b>
-
-</b></td></tr>
-
-</td><td bgcolor="#001F3F" valign="top">
-
+<div class="card pn-admin-card mb-4">
+    <h1 class="card-header h5 mb-0"><?php echo L_TITLE_PROFILE; ?></h1>
+    <div class="card-body">
 <?php
   $profile = new profile();
 
@@ -38,14 +33,29 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
     $password2 = $_POST['password2'] ?? '';
 
     if (!$nickname || !$email) {
-        ?><center><a href="javascript:history.back()">Nickname und Email m&uuml;ssen ausgef&uuml;llt werden</a></center><?php
+        ?>
+        <div class="alert alert-warning" role="alert">
+            Nickname und Email m&uuml;ssen ausgef&uuml;llt werden.
+            <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+        </div>
+        <?php
     } else {
         $error = $profile->edit($nickname, $email, $showemail, $password, $password2, $pnuser['id']);
 
         if ($error !== '' && $error !== '0') {
-            ?><center><a href="javascript:history.back()"><?php echo $error; ?></a></center><?php
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo pnadmin_escape($error); ?>
+                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+            </div>
+            <?php
         } else {
-            ?><center><a href="index.php?page=profile"><?php echo L_USR_PROFILEEDITED; ?></a></center><?php
+            ?>
+            <div class="alert alert-success" role="alert">
+                <?php echo L_USR_PROFILEEDITED; ?>
+                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+            </div>
+            <?php
         }
     }
 } else {
@@ -57,47 +67,50 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
         $showemail = 'checked';
     }
     ?>
-    <center>
-    <form action="index.php?page=profile&edit=YES" method="post">
-    <table border="0" cellpadding="4" cellspacing="0">
-    <tr><td colspan="2" align="center">
-    <b><?php echo L_USR_EDITPROFILE; ?></b>
-    </td></tr>
-    <tr><td>
-    <b><?php echo L_USR_NICKNAME; ?></b><br>
-    <small class="info"><?php echo L_USR_NICKNAME_DESC_PROF; ?></small>
-    </td><td>
-    <input name="nickname" size="25" maxlength="100" value="<?php echo htmlspecialchars($data['nickname'], ENT_QUOTES, 'UTF-8'); ?>">
-    </td></tr>
-    <tr><td>
-    <b><?php echo L_USR_EMAIL; ?></b><br>
-    <small class="info"><?php echo L_USR_EMAIL_DESC_PROF; ?></small>
-    </td><td>
-    <input name="email" size="25" maxlength="250" value="<?php echo htmlspecialchars($data['email'], ENT_QUOTES, 'UTF-8'); ?>">
-    </td></tr>
-    <tr><td>
-    <b><?php echo L_USR_SHOWEMAIL; ?></b><br>
-    <small class="info"><?php echo L_USR_SHOWEMAIL_DESC_PROF; ?></small>
-    </td><td>
-    <input type="checkbox" name="showemail" value="YES" <?php echo $showemail; ?>>
-    </td></tr>
-    <tr><td valign="top">
-    <b><?php echo L_USR_PASSWORD; ?></b><br>
-    <small class="info"><?php echo L_USR_PASSWORD_DESC_PROF; ?></small>
-    </td><td>
-    <input type="password" name="password" value="" size="25" maxlength="25" placeholder="Neues Passwort (leer = keine &Auml;nderung)"><br>
-    <input type="password" name="password2" value="" size="25" maxlength="25" placeholder="Passwort wiederholen">
-    </td></tr>
-    <tr><td colspan="2" align="center">
-    <input type="submit" value="<?php echo L_USR_EDITPROFILE; ?>"> <input type="reset" value="<?php echo L_ALL_RESETDATA; ?>">
-    </td></tr>
-    </table>
+    <form action="index.php?page=profile&amp;edit=YES" method="post" novalidate>
+        <fieldset>
+            <legend class="h6"><?php echo L_USR_EDITPROFILE; ?></legend>
+
+            <div class="mb-3">
+                <label for="pn_nickname" class="form-label fw-bold"><?php echo L_USR_NICKNAME; ?></label>
+                <input class="form-control" name="nickname" id="pn_nickname" maxlength="100" value="<?php echo htmlspecialchars($data['nickname'], ENT_QUOTES, 'UTF-8'); ?>" required aria-describedby="pn_nickname_help">
+                <div id="pn_nickname_help" class="form-text"><?php echo L_USR_NICKNAME_DESC_PROF; ?></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="pn_email" class="form-label fw-bold"><?php echo L_USR_EMAIL; ?></label>
+                <input type="email" class="form-control" name="email" id="pn_email" maxlength="250" value="<?php echo htmlspecialchars($data['email'], ENT_QUOTES, 'UTF-8'); ?>" required aria-describedby="pn_email_help">
+                <div id="pn_email_help" class="form-text"><?php echo L_USR_EMAIL_DESC_PROF; ?></div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="showemail" value="YES" id="pn_showemail" <?php echo $showemail; ?> aria-describedby="pn_showemail_help">
+                <label class="form-check-label fw-bold" for="pn_showemail"><?php echo L_USR_SHOWEMAIL; ?></label>
+                <div id="pn_showemail_help" class="form-text"><?php echo L_USR_SHOWEMAIL_DESC_PROF; ?></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold" for="pn_password"><?php echo L_USR_PASSWORD; ?></label>
+                <div class="row g-2">
+                    <div class="col-12 col-md-6">
+                        <input type="password" class="form-control" name="password" id="pn_password" maxlength="25" value="" autocomplete="new-password" placeholder="Neues Passwort (leer = keine &Auml;nderung)">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <input type="password" class="form-control" name="password2" id="pn_password2" maxlength="25" value="" autocomplete="new-password" placeholder="Passwort wiederholen">
+                    </div>
+                </div>
+                <div class="form-text"><?php echo L_USR_PASSWORD_DESC_PROF; ?></div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><?php echo L_USR_EDITPROFILE; ?></button>
+                <button type="reset" class="btn btn-outline-secondary"><?php echo L_ALL_RESETDATA; ?></button>
+            </div>
+        </fieldset>
     </form>
-    </center>
-    <br>
-    <?php echo L_USR_PROFILE_DESC; ?>
+    <p class="pn-help mt-3 mb-0"><?php echo L_USR_PROFILE_DESC; ?></p>
     <?php
 }
 ?>
-
-</td></tr>
+    </div>
+</div>

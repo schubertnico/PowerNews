@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -20,37 +20,28 @@
 
 if ($pnadmin['canreadcategories'] == 'YES') {
     if ($pnconfig['categories'] == 'YES') {
+        $category = new category();
         ?>
-      <center>
-      <?php
-          $category = new category();
-        ?>
-      <br><br>
-      <table border="0" cellpadding="4" cellspacing="0">
-      <tr><td>
-      <b><?php echo L_CAT_TITLE; ?></b>
-      </td><td width="30">
-       &nbsp;
-      </td><td>
-      <b><?php echo L_CAT_DESCRIPTION; ?></b>
-      </td><td width="30">
-       &nbsp;
-      </td><td>
-      <b><?php echo L_CAT_STATUS; ?></b>
-      </td></tr>
-      <?php
-          $category->listcats();
-        ?>
-      </table>
-      <br>
-      </center>
-      <br>
-      <small><?php echo L_CAT_CLICKFORDETAILS; ?></small>
-      <?php
+        <div class="table-responsive">
+            <table class="table table-striped table-hover pn-admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th><?php echo L_CAT_TITLE; ?></th>
+                        <th><?php echo L_CAT_DESCRIPTION; ?></th>
+                        <th class="text-center"><?php echo L_CAT_STATUS; ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $category->listcats(); ?>
+                </tbody>
+            </table>
+        </div>
+        <p class="pn-help mb-0"><?php echo L_CAT_CLICKFORDETAILS; ?></p>
+        <?php
     } else {
-        ?><center><?php echo L_CAT_CATSAREDEACTIVATED; ?></center><?php
+        ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_CAT_CATSAREDEACTIVATED; ?></div><?php
     }
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

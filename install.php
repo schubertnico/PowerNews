@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,7 +19,7 @@
 /* MA  02111-1307  USA                                                  */
 
 /* Include config file */
-header('Content-Type: text/html; charset=ISO-8859-15');
+header('Content-Type: text/html; charset=UTF-8');
 @include __DIR__ . '/pninc/config.inc.php';
 @include __DIR__ . '/pnadmin/functions.inc.php';
 
@@ -30,206 +30,177 @@ $need_php_version = '8.2.0';
 $need_mysql_version = '10.3';
 
 /* Current PowerNews version */
-$thisversion = '3.00';
+$thisversion = '3.10';
 ?>
-<html>
+<!doctype html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PowerNews Installation</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+    <link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
 </head>
-<style>
-    <!--
-    BODY, TR, TD, P {
-        font-family: Verdana;
-        font-size: 10px;
-        color: #000000
-    }
+<body class="bg-light">
 
-    INPUT, TEXTAREA, SELECT {
-        font-family: Verdana;
-        font-size: 10px;
-        border-color: #000000;
-        border-width: 1px;
-    }
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <h1 class="card-header h5 mb-0">PowerNews Installation</h1>
+        <div class="card-body">
+<?php
+        $installLockFile = __DIR__ . '/pninc/install.lock';
+        if (isset($_POST['install']) && $_POST['install'] == 'YES') {
 
-    A {
-        color: #000080;
-    }
+            if (file_exists($installLockFile)) {
+                http_response_code(403);
+                ?>
+                <div class="alert alert-warning" role="alert">
+                    <strong>Installation bereits erfolgt.</strong><br>
+                    Zum Neuinstallieren bitte <code>pninc/install.lock</code> entfernen.
+                </div>
+                <?php
+            } else {
+                $sqlCommands = readDump('powernews.sql');
+                $counter = count($sqlCommands);
 
-    A:HOVER {
-        color: #000000;
-    }
+                for ($i = 0; $i < $counter; ++$i) {
+                    mysqli_query($pn_handler, $sqlCommands[$i]);
+                }
+                ?>
+                <div class="alert alert-success">
+                    <p class="mb-1"><?php echo count($sqlCommands); ?> mySQL Befehle ausgef&uuml;hrt.</p>
+                    <p class="mb-1">Tabellenstruktur erstellt.</p>
+                    <p class="mb-1">Standardkonfiguration geladen.</p>
+                </div>
+                <?php
 
-    -->
-</style>
-<body bgcolor="#FFFFF0" text="#000000" link="#000080" alink="#000080" vlink="#000080">
+                // Create admin user with random bcrypt password (BUG-003)
+                $adminNickname = 'admin';
+                $adminEmail = 'admin@localhost';
+                $adminPassword = bin2hex(random_bytes(8));
+                $adminHash = password_hash($adminPassword, PASSWORD_DEFAULT);
+                $nowTs = time();
+                $stmt = mysqli_prepare($pn_handler, "INSERT INTO pn_users (nickname, email, password, registered, showemail, status) VALUES (?, ?, ?, ?, 'NO', 'Activated')");
+                if ($stmt) {
+                    mysqli_stmt_bind_param($stmt, 'sssi', $adminNickname, $adminEmail, $adminHash, $nowTs);
+                    mysqli_stmt_execute($stmt);
+                    $adminId = mysqli_insert_id($pn_handler);
 
-<center>
-    <table border="0" cellpadding="0" cellspacing="0" width="75%">
-        <tr>
-            <td bgcolor="#000000">
-                <table border="0" cellpadding="3" cellspacing="1" width="100%">
-                    <tr>
-                        <td bgcolor="#C0C0C0">
+                    $stmt2 = mysqli_prepare($pn_handler, "INSERT INTO pn_permissions (userid, canreadtemplates, canwritetemplates, canreadconfig, canwriteconfig, canreadusers, canwriteusers, canreadpermissions, canwritepermissions, canreadcategories, canwritecategories, canreadnews, canwritenews, canreadcomments, canwritecomments) VALUES (?, 'YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES')");
+                    if ($stmt2) {
+                        mysqli_stmt_bind_param($stmt2, 'i', $adminId);
+                        mysqli_stmt_execute($stmt2);
+                    }
+                    ?>
+                    <div class="alert alert-info">
+                        <strong>Admin-Zugang erstellt:</strong><br>
+                        Nickname: <code><?php echo htmlspecialchars($adminNickname); ?></code><br>
+                        Passwort: <code><?php echo htmlspecialchars($adminPassword); ?></code><br>
+                        <strong class="text-danger">Bitte sofort notieren und nach erstem Login im Profil &auml;ndern.</strong>
+                    </div>
+                    <?php
+                }
 
-                          <?php
-                          $installLockFile = __DIR__ . '/pninc/install.lock';
-                          if (isset($_POST['install']) && $_POST['install'] == 'YES') {
+                @file_put_contents($installLockFile, 'installed ' . date('c'));
+                ?>
+                <div class="alert alert-success mb-0">
+                    Installation erfolgreich! Bitte l&ouml;schen Sie die <strong>install.php</strong> und die <strong>update.php</strong> &mdash;
+                    <a href="./pnadmin/" class="alert-link">Adminbereich</a>.
+                </div>
+                <?php
+            }
 
-                              if (file_exists($installLockFile)) {
-                                  http_response_code(403);
-                                  echo '<b>Installation bereits erfolgt.</b><br>Zum Neuinstallieren bitte <code>pninc/install.lock</code> entfernen.';
-                              } else {
-                                  $sqlCommands = readDump('powernews.sql');
-                                  $counter = count($sqlCommands);
+        } else {
+            ?>
+            <p>
+                Bitte fahren Sie mit der Installation von PowerNews nur fort, wenn alle Vorraussetzungen erf&uuml;llt (gr&uuml;n) sind. F&uuml;r die einzelnen Installationsschritte lesen Sie bitte die
+                <a href="readme.html" target="_blank" rel="noopener noreferrer">ReadMe</a>.
+            </p>
 
-                                  for ($i = 0; $i < $counter; ++$i) {
-                                      mysqli_query($pn_handler, $sqlCommands[$i]);
-                                  }
-                                  echo count($sqlCommands) . " mySQL Befehle ausgef&uuml;hrt.<br><br>\n";
-                                  echo "Tabellenstruktur erstellt<br><br>\n";
-                                  echo "Standardkonfiguration geladen<br><br>\n";
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Ben&ouml;tigt</th>
+                            <th>Vorhanden</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PHP Version</strong></td>
+                            <td><?php echo $need_php_version; ?> oder h&ouml;her</td>
+                            <td>
+<?php
+                                if (phpversion() >= $need_php_version) {
+                                    ?><span class="badge text-bg-success"><?php echo phpversion(); ?></span><?php
+                                } else {
+                                    $error = 'PHP VERSION';
+                                    ?><span class="badge text-bg-danger"><?php echo phpversion(); ?></span><?php
+                                }
+?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>upload_max_filesize</strong> (nur f&uuml;r Bildupload)</td>
+                            <td>&gt; 0M</td>
+                            <td>
+<?php
+                                $uploadMax = get_cfg_var('upload_max_filesize');
+                                if (is_array($uploadMax)) {
+                                    $uploadMax = (string) ($uploadMax[0] ?? '0');
+                                } elseif ($uploadMax === false) {
+                                    $uploadMax = '0';
+                                }
+                                if ((int) $uploadMax > 0) {
+                                    ?><span class="badge text-bg-success"><?php echo htmlspecialchars($uploadMax); ?></span><?php
+                                } else {
+                                    ?><span class="badge text-bg-danger"><?php echo htmlspecialchars($uploadMax); ?></span><?php
+                                }
+?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>mySQL</strong></td>
+                            <td><?php echo $need_mysql_version; ?> oder h&ouml;her</td>
+                            <td>
+<?php
+                                if (isset($pn_handler)) {
+                                    $server_version = mysqli_get_server_info($pn_handler);
+                                    $version_parts = explode('-', $server_version);
+                                    $numeric_version = $version_parts[0];
 
-                                  // Create admin user with random bcrypt password (BUG-003)
-                                  $adminNickname = 'admin';
-                                  $adminEmail = 'admin@localhost';
-                                  $adminPassword = bin2hex(random_bytes(8));
-                                  $adminHash = password_hash($adminPassword, PASSWORD_DEFAULT);
-                                  $nowTs = time();
-                                  $stmt = mysqli_prepare($pn_handler, "INSERT INTO pn_users (nickname, email, password, registered, showemail, status) VALUES (?, ?, ?, ?, 'NO', 'Activated')");
-                                  if ($stmt) {
-                                      mysqli_stmt_bind_param($stmt, 'sssi', $adminNickname, $adminEmail, $adminHash, $nowTs);
-                                      mysqli_stmt_execute($stmt);
-                                      $adminId = mysqli_insert_id($pn_handler);
+                                    if (version_compare($numeric_version, $need_mysql_version, '>=')) {
+                                        ?><span class="badge text-bg-success"><?php echo htmlspecialchars($numeric_version); ?></span><?php
+                                    } else {
+                                        $error = 'MYSQL';
+                                        ?><span class="badge text-bg-danger"><?php echo htmlspecialchars($numeric_version); ?></span><?php
+                                    }
+                                } else {
+                                    ?><span class="badge text-bg-danger">Unknown version</span><?php
+                                }
+?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                                      $stmt2 = mysqli_prepare($pn_handler, "INSERT INTO pn_permissions (userid, canreadtemplates, canwritetemplates, canreadconfig, canwriteconfig, canreadusers, canwriteusers, canreadpermissions, canwritepermissions, canreadcategories, canwritecategories, canreadnews, canwritenews, canreadcomments, canwritecomments) VALUES (?, 'YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES','YES')");
-                                      if ($stmt2) {
-                                          mysqli_stmt_bind_param($stmt2, 'i', $adminId);
-                                          mysqli_stmt_execute($stmt2);
-                                      }
-
-                                      echo '<b>Admin-Zugang erstellt:</b><br>';
-                                      echo 'Nickname: <code>' . htmlspecialchars($adminNickname) . '</code><br>';
-                                      echo 'Passwort: <code>' . htmlspecialchars($adminPassword) . '</code><br>';
-                                      echo '<b style="color:#cc0000">Bitte sofort notieren und nach erstem Login im Profil &auml;ndern.</b><br><br>';
-                                  }
-
-                                  @file_put_contents($installLockFile, 'installed ' . date('c'));
-
-                                  echo "<br>Installation erfolgreich! Bitte l&ouml;schen Sie die <b>install.php</b> und die <b>update.php</b> - <a href=\"./pnadmin/\">Adminbereich</a>\n";
-                              }
-
-                          } else {
-                              ?>
-                              Bitte fahren Sie mit der Installation von PowerNews nur fort, wenn alle Vorraussetzungen erf&uuml;llt (gr&uuml;n) sind. F&uuml;r die einzelnen Installationsschritte lesen Sie bitte die
-                              <a href="readme.html" target="_blank">ReadMe</a>.<br>
-                              <br>
-
-                              <center>
-                                  <table border="0" cellpadding="3" cellspacing="3">
-                                      <tr>
-                                          <td width="150">
-                                              &nbsp;
-                                          </td>
-                                          <td width="175">
-                                              <b>Ben&ouml;tigt</b>
-                                          </td>
-                                          <td width="175">
-                                              <b>Vorhanden</b>
-                                          </td>
-                                      </tr>
-
-                                      <tr>
-                                          <td>
-                                              <b>PHP Version</b>
-                                          </td>
-                                          <td>
-                                              <?php echo $need_php_version; ?> oder h&ouml;her
-                                          </td>
-                                          <td>
-                                              <?php
-      if (phpversion() >= $need_php_version) {
-          echo '<font color="#008000">' . phpversion() . '</font>';
-      } else {
-          $error = 'PHP VERSION';
-          echo '<font color="#FF0000">' . phpversion() . '</font>';
-      }
-                              ?>
-                                          </td>
-                                      </tr>
-
-                                      <tr>
-                                          <td>
-                                              <b>upload_max_filesize</b> (nur f&uuml;r Bildupload)
-                                          </td>
-                                          <td>
-                                              &gt; 0M
-                                          </td>
-                                          <td>
-                                              <?php
-      if (get_cfg_var('upload_max_filesize') > 0) {
-          echo '<font
-                                                      color="#008000">' . get_cfg_var('upload_max_filesize') . '</font>';
-      } else {
-          echo '<font
-                                                      color="#FF0000">' . get_cfg_var('upload_max_filesize') . '</font>';
-      }
-                              ?>
-                                          </td>
-                                      </tr>
-
-                                      <tr>
-                                          <td>
-                                              <b>mySQL</b>
-                                          </td>
-                                          <td>
-                                              <?php echo $need_mysql_version; ?> oder h&ouml;her
-                                          </td>
-                                          <td>
-                                              <?php
-  if (isset($pn_handler)) {
-      $server_version = mysqli_get_server_info($pn_handler);
-      $version_parts = explode('-', $server_version);
-      $numeric_version = $version_parts[0];
-
-      if (version_compare($numeric_version, $need_mysql_version, '>=')) {
-          echo "<font color=\"#008000\">{$numeric_version}</font>";
-      } else {
-          $error = 'MYSQL';
-          echo "<font color=\"#FF0000\">{$numeric_version}</font>";
-      }
-  } else {
-      echo '<font color="#FF0000">Unknown version</font>';
-  }
-                              ?>
-
-                                          </td>
-                                      </tr>
-                                  </table>
-                              </center>
-
-                            <?php if (!isset($error)) { ?>
-                                  <p align="center">
-                                  <form action="install.php" method="post">
-                                      <input type="hidden" name="install" value="YES">
-                                      <input type="submit" value="Installieren">
-                                  </form>
-                                  </p>
-                              <?php
-                            }
-                          }
+<?php if (!isset($error)) { ?>
+            <form action="install.php" method="post">
+                <input type="hidden" name="install" value="YES">
+                <button type="submit" class="btn btn-primary">Installieren</button>
+            </form>
+<?php
+            }
+        }
 ?>
 
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</center>
+        </div>
+    </div>
 
-<p align="center" class="copyright"><font size="1">PowerNews <?php echo $thisversion; ?> &copy; Copyright 2002 by <a
-                href="http://www.powerscripts.org" target="_blank">PowerScripts</a></font></p>
+    <p class="text-center text-muted small mt-4 mb-0">PowerNews <?php echo htmlspecialchars($thisversion); ?> &copy; Copyright 2002 by <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer">PowerScripts</a></p>
+</div>
 
+<script src="./assets/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>

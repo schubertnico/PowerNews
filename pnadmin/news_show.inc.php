@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,45 +19,40 @@
 /* MA  02111-1307  USA                                                  */
 
 if ($pnadmin['canreadnews'] == 'YES') {
+    $news = new news();
+    if (!isset($_GET['current'])) {
+        $_GET['current'] = '0';
+    }
     ?>
-    <center>
-    <?php
-      $news = new news();
-    $news->listpages();
-    ?>
-    <br><br>
-    <table border="0" cellpadding="4" cellspacing="0">
-    <tr><td>
-    <b><?php echo L_NEWS_DATE; ?></b>
-    </td><?php if ($pnconfig['categories'] == 'YES') { ?><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_NEWS_CATEGORY; ?></b>
-    </td><?php } ?><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_NEWS_TITLE; ?></b>
-    </td><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_NEWS_STATUS; ?></b>
-    </td></tr>
-    <?php
-      if (!isset($_GET['current'])) {
-          $_GET['current'] = '0';
-      }
-    $news->listnews($_GET['current']);
-    ?>
-    </table>
-    <br>
-    <?php
-      $news->listpages();
-    ?>
-    </center><br>
-    <?php echo L_NEWS_SHOW_DESC; ?>
-    <?php
+    <nav aria-label="Seitennavigation oben" class="mb-3">
+        <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $news->listpages(); ?></ul>
+    </nav>
 
+    <div class="table-responsive">
+        <table class="table table-striped table-hover pn-admin-table align-middle">
+            <thead>
+                <tr>
+                    <th><?php echo L_NEWS_DATE; ?></th>
+<?php if ($pnconfig['categories'] == 'YES') { ?>
+                    <th><?php echo L_NEWS_CATEGORY; ?></th>
+<?php } ?>
+                    <th><?php echo L_NEWS_TITLE; ?></th>
+                    <th class="text-center"><?php echo L_NEWS_STATUS; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $news->listnews((int) $_GET['current']); ?>
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Seitennavigation unten" class="mb-3">
+        <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $news->listpages(); ?></ul>
+    </nav>
+
+    <p class="pn-help mb-0"><?php echo L_NEWS_SHOW_DESC; ?></p>
+    <?php
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

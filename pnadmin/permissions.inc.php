@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,14 +19,9 @@
 /* MA  02111-1307  USA                                                  */
 
 ?>
-<tr><td bgcolor="#3F5070" align="center"><b>
-
-       <b class="headline"><?php echo L_TITLE_PERMISSIONS; ?></b>
-
-</b></td></tr>
-
-</td><td bgcolor="#001F3F" valign="top">
-
+<div class="card pn-admin-card mb-4">
+    <h1 class="card-header h5 mb-0"><?php echo L_TITLE_PERMISSIONS; ?></h1>
+    <div class="card-body">
 <?php
 if (isset($_GET['subpage']) && $_GET['subpage']) {
     $allowed_files = [
@@ -66,11 +61,13 @@ if (isset($_GET['subpage']) && $_GET['subpage']) {
     if (in_array($requested_file, $allowed_files, true) && file_exists($requested_file)) {
         include $requested_file;
     } else {
-        ?><center><?php echo L_ALL_SUBPAGENOTFOUND; ?></center><?php
+        ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_ALL_SUBPAGENOTFOUND; ?></div><?php
     }
 } else {
-    ?><center><?php echo L_ALL_CHOOSESUBPAGE; ?><br><br><a href="index.php?page=permissions&subpage=add"><?php echo L_PERM_ADDPERMISSIONS; ?></a> | <a href="index.php?page=permissions&subpage=show"><?php echo L_PERM_SHOWPERMISSIONS; ?></a></center><?php
+    ?>
+        <p class="mb-0 text-muted"><?php echo L_ALL_CHOOSESUBPAGE; ?></p>
+    <?php
 }
 ?>
-
-</td></tr>
+    </div>
+</div>

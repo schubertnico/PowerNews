@@ -493,8 +493,10 @@ class AdminNewsIntegrationTest extends DatabaseTestCase
 
         $output = $this->captureOutput(fn() => $this->news->listpages());
 
+        // Pagination ist jetzt Bootstrap-konform: <li class="page-item"><a class="page-link">...</a></li>.
         $this->assertStringContainsString('1', $output);
-        $this->assertStringContainsString('|', $output);
+        $this->assertStringContainsString('page-item', $output);
+        $this->assertStringContainsString('page-link', $output);
     }
 
     // ── listsearchpages ──
@@ -515,7 +517,9 @@ class AdminNewsIntegrationTest extends DatabaseTestCase
 
         $output = $this->captureOutput(fn() => $this->news->listsearchpages('title', 'Findable'));
 
+        // Pagination ist jetzt Bootstrap-konform.
         $this->assertStringContainsString('1', $output);
-        $this->assertStringContainsString('|', $output);
+        $this->assertStringContainsString('page-item', $output);
+        $this->assertStringContainsString('page-link', $output);
     }
 }

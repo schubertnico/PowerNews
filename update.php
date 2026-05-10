@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -28,7 +28,7 @@ include __DIR__ . '/pnadmin/functions.inc.php';
 $adminInfo = pnadmin_auth_check();
 if ($adminInfo === null || ($adminInfo['canwriteconfig'] ?? 'NO') !== 'YES') {
     http_response_code(403);
-    echo '<center><b>Nur f&uuml;r Admins. Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</b></center>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><strong>Nur f&uuml;r Admins.</strong> Bitte im <a href="./pnadmin/">Adminbereich</a> einloggen.</div>';
     exit;
 }
 
@@ -42,203 +42,175 @@ $need_mysql_version = '3.00';
 $need_pn_version = '2.5.5';
 
 /* Current PowerNews version */
-$thisversion = '3.00';
+$thisversion = '3.10';
 
 /* Current installed PowerNews version */
 $currentversion = $pn_config['version'];
 ?>
-<html>
+<!doctype html>
+<html lang="de">
 <head>
-  <title>PowerNews Update</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PowerNews Update</title>
+    <link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
 </head>
-<style>
-<!--
-  BODY, TR, TD, P {
-    font-family: Verdana;
-    font-size: 10px;
-    color: #000000
-  }
+<body class="bg-light">
 
-  INPUT, TEXTAREA, SELECT {
-    font-family: Verdana;
-    font-size: 10px;
-    border-color: #000000;
-    border-width: 1px;
-  }
-
-  A {
-    color: #000080;
-		text-decoration: none;
-  }
-
-  A:HOVER {
-    color: #000000;
-		text-decoration: none;
-  }
--->
-</style>
-<body bgcolor="#FFFFF0" text="#000000" link="#000080" alink="#000080" vlink="#000080">
-
-<center>
-<table border="0" cellpadding="0" cellspacing="0" width="75%">
-<tr><td bgcolor="#000000">
-  <table border="0" cellpadding="3" cellspacing="1" width="100%">
-  <tr><td bgcolor="#C0C0C0">
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <h1 class="card-header h5 mb-0">PowerNews Update</h1>
+        <div class="card-body">
 <?php
   if ($_GET['updatenow'] == 'YES') {
       switch ($_GET['page']) {
           case '2':
               ?>
-        <h2>Schritt 2</h2>
-				mySQL Tabellen werden ge�ndert:<br><br>
-        <?php
-          $sqlCommands = readDump('pn_update.sql');
+              <h2 class="h6 fw-bold">Schritt 2</h2>
+              <p>mySQL Tabellen werden ge&auml;ndert:</p>
+              <?php
+              $sqlCommands = readDump('pn_update.sql');
               $counter = count($sqlCommands);
 
               for ($i = 0; $i < $counter; ++$i) {
                   mysqli_query($pn_handler, $sqlCommands[$i]);
               }
-              echo count($sqlCommands) . " �nderungen an mySQL Tabellen durchgef�hrt!<br><br>\n";
-
               ?>
-        <b>Achtung:</b> Aufgrund des Updates ist es n�tig, dass die <a href="pnadmin/index.php?page=configuration">Konfiguration</a> erneut editiert wird!
-				<p align="center">
-          <span style="font-size: 20px; text-weight: bold"><a href="pnadmin/index.php">UPDATE ABGESCHLOSSEN</a></span>
-        </p>
-				<?php
-                  break;
+              <div class="alert alert-success"><?php echo count($sqlCommands); ?> &Auml;nderungen an mySQL Tabellen durchgef&uuml;hrt!</div>
+
+              <div class="alert alert-warning">
+                  <strong>Achtung:</strong> Aufgrund des Updates ist es n&ouml;tig, dass die <a href="pnadmin/index.php?page=configuration" class="alert-link">Konfiguration</a> erneut editiert wird.
+              </div>
+
+              <a href="pnadmin/index.php" class="btn btn-success btn-lg">UPDATE ABGESCHLOSSEN</a>
+              <?php
+              break;
           default:
               ?>
-        <h2>Schritt 1</h2>
-				Bitte &uuml;berschreiben Sie mindestens die folgenden Dateien mit den neuen Versionen aus dem ZIP File:
-				<br>
-				<ul type="square">
-					<li>pninc/head.inc.php
-					<li>pninc/functions.inc.php
-					<li>pnadmin/phpheader.inc.php
-					<li>pnadmin/news_edit.inc.php
-					<li>pnadmin/news_show.inc.php
-					<li>pnadmin/users_show.inc.php
-					<li>pnadmin/configuration.php
-					<li>pnadmin/lang/german-du.php
-					<li>pnadmin/lang/german-sie.php
-          <li>pnadmin/functions.inc.php
-					<li>update.php
-					<li>readme.html
-          <li>changelog.html
-          <li>pn_update.sql
-				</ul>
-        Alternativ k�nnen Sie die �nderungen in diesen Dateien auch mit Hilfe des
-        <a href="changelog.html">Changelogs</a> manuell durchf�hren.
-        <p align="center">
-          <span style="font-size: 20px; text-weight: bold"><a href="update.php?updatenow=YES&page=2">WEITER</a></span>
-        </p>
-        <?php
-                  break;
+              <h2 class="h6 fw-bold">Schritt 1</h2>
+              <p>Bitte &uuml;berschreiben Sie mindestens die folgenden Dateien mit den neuen Versionen aus dem ZIP File:</p>
+              <ul>
+                  <li>pninc/head.inc.php</li>
+                  <li>pninc/functions.inc.php</li>
+                  <li>pnadmin/phpheader.inc.php</li>
+                  <li>pnadmin/news_edit.inc.php</li>
+                  <li>pnadmin/news_show.inc.php</li>
+                  <li>pnadmin/users_show.inc.php</li>
+                  <li>pnadmin/configuration.php</li>
+                  <li>pnadmin/lang/german-du.php</li>
+                  <li>pnadmin/lang/german-sie.php</li>
+                  <li>pnadmin/functions.inc.php</li>
+                  <li>update.php</li>
+                  <li>readme.html</li>
+                  <li>changelog.html</li>
+                  <li>pn_update.sql</li>
+              </ul>
+              <p>Alternativ k&ouml;nnen Sie die &Auml;nderungen in diesen Dateien auch mit Hilfe des
+              <a href="changelog.html">Changelogs</a> manuell durchf&uuml;hren.</p>
+
+              <a href="update.php?updatenow=YES&page=2" class="btn btn-primary btn-lg">WEITER</a>
+              <?php
+              break;
       }
   } else {
       $error = '';
       ?>
-		<h1>PowerNews Update <?php echo $currentversion; ?> auf <?php echo $thisversion; ?></h1>
-		&Uuml;ber diese Datei k&ouml;nnen Sie Ihre PowerNews Version auf die aktuelle Version updaten. Bitte beachten Sie,
-		vorher auf Version <?php echo $need_pn_version; ?> upzudaten, ansonsten kann es zu Datenverlust kommen.<br>
-		<br>
- 		<br>
-    Bitte fahren Sie mit dem Update von PowerNews nur fort, wenn alle Vorraussetzungen erf&uuml;llt (gr&uuml;n) sind.
-		F&uuml;r die einzelnen Updateschritte lesen Sie bitte die <a href="readme.html" target="_blank">ReadMe</a>.<br>
-    <br>
+        <h1 class="h5 fw-bold">PowerNews Update <?php echo htmlspecialchars((string) $currentversion); ?> auf <?php echo htmlspecialchars($thisversion); ?></h1>
+        <p>&Uuml;ber diese Datei k&ouml;nnen Sie Ihre PowerNews Version auf die aktuelle Version updaten. Bitte beachten Sie, vorher auf Version <?php echo htmlspecialchars($need_pn_version); ?> upzudaten, ansonsten kann es zu Datenverlust kommen.</p>
 
-    <center>
-    <table border="0" cellpadding="3" cellspacing="3">
-    <tr><td width="150">
-    &nbsp;
-    </td><td width="175">
-    <b>Ben&ouml;tigt</b>
-    </td><td width="175">
-    <b>Vorhanden</b>
-    </td></tr>
+        <p>Bitte fahren Sie mit dem Update von PowerNews nur fort, wenn alle Vorraussetzungen erf&uuml;llt (gr&uuml;n) sind. F&uuml;r die einzelnen Updateschritte lesen Sie bitte die <a href="readme.html" target="_blank" rel="noopener noreferrer">ReadMe</a>.</p>
 
-    <tr><td>
-    <b>PHP Version</b>
-    </td><td>
-    <?php echo $need_php_version; ?> oder h&ouml;her
-    </td><td>
-    <?php
-      if (phpversion() >= $need_php_version) {
-          echo '<font color="#008000">' . phpversion() . '</font>';
-      } else {
-          $error = 'PHP VERSION';
-          echo '<font color="#FF0000">' . phpversion() . '</font>';
-      }
-      ?>
-    </td></tr>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Ben&ouml;tigt</th>
+                        <th>Vorhanden</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>PHP Version</strong></td>
+                        <td><?php echo htmlspecialchars($need_php_version); ?> oder h&ouml;her</td>
+                        <td>
+<?php
+                            if (phpversion() >= $need_php_version) {
+                                ?><span class="badge text-bg-success"><?php echo phpversion(); ?></span><?php
+                            } else {
+                                $error = 'PHP VERSION';
+                                ?><span class="badge text-bg-danger"><?php echo phpversion(); ?></span><?php
+                            }
+?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>upload_max_filesize</strong> (nur f&uuml;r Bildupload)</td>
+                        <td>&gt; 0M</td>
+                        <td>
+<?php
+                            $uploadMax = get_cfg_var('upload_max_filesize');
+                            if (is_array($uploadMax)) {
+                                $uploadMax = (string) ($uploadMax[0] ?? '0');
+                            } elseif ($uploadMax === false) {
+                                $uploadMax = '0';
+                            }
+                            if ((int) $uploadMax > 0) {
+                                ?><span class="badge text-bg-success"><?php echo htmlspecialchars($uploadMax); ?></span><?php
+                            } else {
+                                ?><span class="badge text-bg-danger"><?php echo htmlspecialchars($uploadMax); ?></span><?php
+                            }
+?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>mySQL</strong></td>
+                        <td><?php echo htmlspecialchars($need_mysql_version); ?> oder h&ouml;her</td>
+                        <td>
+<?php
+                            if (mysqli_get_server_info($pn_handler) >= $need_mysql_version) {
+                                ?><span class="badge text-bg-success"><?php echo htmlspecialchars(mysqli_get_server_info($pn_handler)); ?></span><?php
+                            } else {
+                                $error = 'MYSQL';
+                                ?><span class="badge text-bg-danger"><?php echo htmlspecialchars(mysqli_get_server_info($pn_handler)); ?></span><?php
+                            }
+?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>PowerNews Version</strong></td>
+                        <td><?php echo htmlspecialchars($need_pn_version); ?></td>
+                        <td>
+<?php
+                            if ($need_pn_version == $currentversion) {
+                                ?><span class="badge text-bg-success"><?php echo htmlspecialchars((string) $currentversion); ?></span><?php
+                            } else {
+                                $error = 'POWERNEWS';
+                                ?><span class="badge text-bg-danger"><?php echo htmlspecialchars((string) $currentversion); ?></span><?php
+                            }
+?>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <tr><td>
-    <b>upload_max_filesize</b> (nur f&uuml;r Bildupload)
-    </td><td>
-    &gt; 0M
-    </td><td>
-    <?php
-        if (get_cfg_var('upload_max_filesize') > 0) {
-            echo '<font color="#008000">' . get_cfg_var('upload_max_filesize') . '</font>';
-        } else {
-            echo '<font color="#FF0000">' . get_cfg_var('upload_max_filesize') . '</font>';
+<?php
+        if ($error) {
+            ?><div class="alert alert-danger" role="alert"><strong>WARNUNG:</strong> Nicht alle Vorraussetzungen sind erf&uuml;llt, das Update sollte nicht durchgef&uuml;hrt werden.</div><?php
         }
-      ?>
-    </td></tr>
-
-    <tr><td>
-    <b>mySQL</b>
-    </td><td>
-    <?php echo $need_mysql_version; ?> oder h&ouml;her
-    </td><td>
-    <?php
-        if (mysqli_get_server_info($pn_handler) >= $need_mysql_version) {
-            echo '<font color="#008000">' . mysqli_get_server_info($pn_handler) . '</font>';
-        } else {
-            $error = 'MYSQL';
-            echo '<font color="#FF0000">' . mysqli_get_server_info($pn_handler) . '</font>';
-        }
-      ?>
-    </td></tr>
-
-		<tr><td>
-    	<b>PowerNews Version</b>
-    </td><td>
-    	<?php echo $need_pn_version; ?>
-    </td><td>
-    <?php
-        if ($need_pn_version == $currentversion) {
-            echo '<font color="#008000">' . $currentversion . '</font>';
-        } else {
-            $error = 'POWERNEWS';
-            echo '<font color="#FF0000">' . $currentversion . '</font>';
-        }
-      ?>
-    </td></tr>
-    </table>
-    </center>
-
-    <?php
-            if ($error) {
-                ?><br><br><center><span style="font-weight: bold; color: #FF0000">WARNUNG: NICHT ALLE VORRAUSSETZUNGEN SIND ERF&Uuml;LLT, DAS UPDATE SOLLTE NICHT DURCHGEF&Uuml;HRT WERDEN</span></center><?php
-            }
-      ?>
-    <p align="center">
-    	<span style="font-size: 20px; text-weight: bold"><a href="update.php?updatenow=YES">UPDATEN</a></span>
-    </p>
-
-		<?php
-  }
 ?>
 
-  </td></tr>
-  </table>
-</td></tr>
-</table>
-</center>
+        <a href="update.php?updatenow=YES" class="btn btn-primary btn-lg">UPDATEN</a>
+      <?php
+  }
+?>
+        </div>
+    </div>
 
-<p align="center" class="copyright"><font size="1">PowerNews <?php echo $thisversion; ?> &copy; 2003-2004 <a href="http://www.powerscripts.org" target="_blank">PowerScripts</a></font></p>
+    <p class="text-center text-muted small mt-4 mb-0">PowerNews <?php echo htmlspecialchars($thisversion); ?> &copy; 2003-2004 <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer">PowerScripts</a></p>
+</div>
 
+<script src="./assets/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>

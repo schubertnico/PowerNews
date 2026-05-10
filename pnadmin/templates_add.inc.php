@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -25,28 +25,23 @@ if ($pnadmin['canwritetemplates'] == 'YES') {
         $addtemplate->addtemplate();
     } else {
         ?>
-      <center>
-      <form action="index.php?page=templates&subpage=add&add=YES" method="post">
-      <table border="0" cellpadding="4" cellspacing="0">
-      <tr><td colspan="2" align="center">
-      <b><?php echo L_TEMPL_ADDTEMPLATE; ?></b>
-      </td></tr>
-      <tr><td>
-      <b><?php echo L_TEMPL_TITLE; ?></b><br>
-      <small><?php echo L_TEMPL_TITLE_DESC; ?></small>
-      </td><td>
-      <input name="pndata[title]" size="25" maxlength="100">
-      </td></tr>
-      <tr><td colspan="2" align="center">
-      <input type="submit" value="<?php echo L_TEMPL_ADDTEMPLATE; ?>">
-      </td></tr>
-      </table>
+      <form action="index.php?page=templates&amp;subpage=add&amp;add=YES" method="post" novalidate>
+          <fieldset>
+              <legend class="h6"><?php echo L_TEMPL_ADDTEMPLATE; ?></legend>
+
+              <div class="mb-3">
+                  <label for="pn_title" class="form-label fw-bold"><?php echo L_TEMPL_TITLE; ?></label>
+                  <input class="form-control" name="pndata[title]" id="pn_title" maxlength="100" required aria-describedby="pn_title_help">
+                  <div id="pn_title_help" class="form-text"><?php echo L_TEMPL_TITLE_DESC; ?></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary"><?php echo L_TEMPL_ADDTEMPLATE; ?></button>
+          </fieldset>
       </form>
-      </center>
       <?php
     }
 
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

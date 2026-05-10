@@ -1,78 +1,110 @@
 <?php
 /*
-Hier wird die head.inc.php in die Datei eingefügt.
+Hier wird die head.inc.php in die Datei eingefï¿½gt.
 Es ist wichtig, dass es vor dem <?PHP keine anderen Zeichen in der Datei gibt!
 */
 include __DIR__ . '/pninc/head.inc.php';
-?>
-<html>
+?><!doctype html>
+<html lang="de">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="powerscripts.org">
 <title>PowerNews 3.0</title>
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<meta content="powerscripts.org" name="author">
-
+<link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
 <style>
-<!--
-  BODY, TABLE, TR, TD {
-    font-family: Verdana;
-    font-size: 11px;
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.95rem;
+    background-color: #f8f9fa;
+    color: #212529;
+    --bs-secondary-color: #212529;
+    --bs-tertiary-color: #212529;
+    --bs-link-color: #0a58ca;
+    --bs-link-hover-color: #084298;
+  }
+  /* Etwas dunkleres Link-Blau fuer bessere Lesbarkeit auf hellem Hintergrund (WCAG AA). */
+  a {
+    color: #0a58ca;
+  }
+  a:hover {
+    color: #084298;
+  }
+  /* Keine grauen muted-Texte: alles in dunkler Schrift fuer maximale Lesbarkeit. */
+  .text-muted,
+  .form-text,
+  small,
+  .small {
+    color: #212529 !important;
+  }
+  .copyright {
+    font-size: 0.75rem;
+    color: #212529 !important;
+  }
+  /* Outline-Secondary-Buttons komplett schwarze Schrift, kein Grau. */
+  .btn-outline-secondary {
     color: #000000;
+    border-color: #212529;
+    background-color: #ffffff;
   }
-
-  A {
-    color: #000080;
-    text-decoration: none;
+  .btn-outline-secondary:hover,
+  .btn-outline-secondary:focus,
+  .btn-outline-secondary:active {
+    color: #ffffff !important;
+    background-color: #212529 !important;
+    border-color: #212529 !important;
   }
-
-  A:HOVER {
-    text-decoration: underline;
+  .pn-section-title {
+    background-color: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
   }
-
--->
+  .pn-content {
+    background-color: #ffffff;
+  }
+  .pn-news-card .card-header {
+    font-weight: 600;
+  }
 </style>
 </head>
-
-<body text="#000000" vlink="#000080" alink="#000080" link="#000080" bgcolor="#FFFFFF" scroll="auto">
-<center>
-
+<body>
 <!--Hinweis auf die Readme und dass es sich hierbei nur um Beispieldateien handelt!-->
-<table border="0" cellpadding="0" cellspacing="0" width="50%">
-<tr><td bgcolor="#000000">
-  <table border="0" cellpadding="3" cellspacing="1" width="100%">
-  <tr><td bgcolor="#FFFFFF">
-  <font family="Verdana" size="2" color="#FF0000">
-  <b>Bitte beachten</b><br>
-  <br>
-  Bitte lesen Sie sich die <a href="readme.html" target="_blank">ReadMe</a> durch falls Sie Schwierigkeiten haben.<br>
-  Dieses Design ist nur zu Testzwecken eingerichtet, Sie sollten PowerNews also an Ihr eigenes Seitendesign anpassen. Es müssen weder Dateinamen noch HTML Strukturen übernommen werden!
-  </font>
-  </td></tr>
-  </table>
-</td></tr>
-</table>
+<div class="container my-3">
+  <div class="alert alert-warning border" role="alert">
+    <strong>Bitte beachten</strong><br>
+    Bitte lesen Sie sich die <a href="readme.html" target="_blank" rel="noopener noreferrer" class="alert-link">ReadMe</a> durch falls Sie Schwierigkeiten haben.<br>
+    Dieses Design ist nur zu Testzwecken eingerichtet, Sie sollten PowerNews also an Ihr eigenes Seitendesign anpassen. Es m&uuml;ssen weder Dateinamen noch HTML Strukturen &uuml;bernommen werden!
+  </div>
+</div>
 
-<br>
+<!--Das kleine Menï¿½ der Seite-->
+<div class="container">
+  <div class="row g-3">
+    <aside class="col-12 col-md-3">
+      <nav class="card" aria-label="Hauptnavigation">
+        <div class="card-body">
+          <h2 class="h6 fw-bold border-bottom pb-2">News</h2>
+          <ul class="list-unstyled mb-3">
+            <li>&raquo; <a href="index.php">Home</a></li>
+            <li>&raquo; <a href="archive.php">Archiv</a></li>
+            <li>&raquo; <a href="sendnews.php">News einsenden</a></li>
+          </ul>
 
-<!--Das kleine Menü der Seite-->
-
-<table cellspacing="0" cellpadding="0" width="90%" border="0">
-<tr><td bgcolor="#000000">
-  <table border="0" cellpadding="3" cellspacing="1" width="100%">
-  <tr><td width="125" valign="top" bgcolor="#DEDFDE">
-  <b>News</b><br>
-  &raquo; <a href="index.php">Home</a><br>
-  &raquo; <a href="archive.php">Archiv</a><br>
-  &raquo; <a href="sendnews.php">News einsenden</a><br>
-  <br>
-  <br>
-  <b>Benutzer</b><br>
-  <?php
+          <h2 class="h6 fw-bold border-bottom pb-2">Benutzer</h2>
+          <div class="mb-3">
+<?php
     /*
-      Hier wird die usermenu.inc.php Datei eingefügt um das Benutzermenü anzeigen zu lassen.
+      Hier wird die usermenu.inc.php Datei eingefï¿½gt um das Benutzermenï¿½ anzeigen zu lassen.
     */
     include __DIR__ . '/pninc/usermenu.inc.php';
-?><br>
-  <br>
-  &raquo; <a href="./pnadmin/">Adminbereich</a><br>
-  <br>
-  </td><td witdh="*" valign="top" bgcolor="#ADAEAD">
+?>
+          </div>
+          <div>
+            &raquo; <a href="./pnadmin/">Adminbereich</a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="col-12 col-md-9" id="pn-main">

@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,66 +19,55 @@
 /* MA  02111-1307  USA                                                  */
 
 ?>
-<tr>
-    <td bgcolor="#3F5070" align="center"><b>
+<div class="card pn-admin-card mb-4">
+    <h1 class="card-header h5 mb-0"><?php echo L_TITLE_USERS; ?></h1>
+    <div class="card-body">
+<?php
+if (isset($_GET['subpage']) && $_GET['subpage']) {
+    $allowed_files = [
+        'login.inc.php',
+        'news.inc.php',
+        'other_license.inc.php',
+        'users_show.inc.php',
+        'news_edit.inc.php',
+        'other.inc.php',
+        'news_search.inc.php',
+        'profile.inc.php',
+        'templates_edit.inc.php',
+        'templates_show.inc.php',
+        'users_search.inc.php',
+        'news_show.inc.php',
+        'categories_add.inc.php',
+        'categories_show.inc.php',
+        'permissions.inc.php',
+        'permissions_add.inc.php',
+        'permissions_edit.inc.php',
+        'main.inc.php',
+        'templates.inc.php',
+        'users_add.inc.php',
+        'other_help.inc.php',
+        'templates_add.inc.php',
+        'users_edit.inc.php',
+        'news_add.inc.php',
+        'users.inc.php',
+        'categories.inc.php',
+        'permissions_show.inc.php',
+        'categories_edit.inc.php',
+        'configuration.inc.php',
+    ];
 
-            <b class="headline"><?php echo L_TITLE_USERS; ?></b>
+    $requested_file = $_GET['page'] . '_' . $_GET['subpage'] . '.inc.php';
 
-        </b></td>
-</tr>
-
-</td>
-<td bgcolor="#001F3F" valign="top">
-
-  <?php
-  if (isset($_GET['subpage']) && $_GET['subpage']) {
-      $allowed_files = [
-          'login.inc.php',
-          'news.inc.php',
-          'other_license.inc.php',
-          'users_show.inc.php',
-          'news_edit.inc.php',
-          'other.inc.php',
-          'news_search.inc.php',
-          'profile.inc.php',
-          'templates_edit.inc.php',
-          'templates_show.inc.php',
-          'users_search.inc.php',
-          'news_show.inc.php',
-          'categories_add.inc.php',
-          'categories_show.inc.php',
-          'permissions.inc.php',
-          'permissions_add.inc.php',
-          'permissions_edit.inc.php',
-          'main.inc.php',
-          'templates.inc.php',
-          'users_add.inc.php',
-          'other_help.inc.php',
-          'templates_add.inc.php',
-          'users_edit.inc.php',
-          'news_add.inc.php',
-          'users.inc.php',
-          'categories.inc.php',
-          'permissions_show.inc.php',
-          'categories_edit.inc.php',
-          'configuration.inc.php',
-      ];
-
-      $requested_file = $_GET['page'] . '_' . $_GET['subpage'] . '.inc.php';
-
-      if (in_array($requested_file, $allowed_files, true) && file_exists($requested_file)) {
-          include $requested_file;
-      } else {
-          ?>
-        <center><?php echo L_ALL_SUBPAGENOTFOUND; ?></center><?php
-      }
-  } else {
-      ?>
-      <center><?php echo L_ALL_CHOOSESUBPAGE; ?><br><br><a
-              href="index.php?page=users&subpage=add"><?php echo L_USR_ADDUSR; ?></a> | <a
-              href="index.php?page=users&subpage=show"><?php echo L_USR_SHOWUSR; ?></a> | <a
-              href="index.php?page=users&subpage=search"><?php echo L_USR_SEARCHUSR; ?></a></center><?php
-  }
+    if (in_array($requested_file, $allowed_files, true) && file_exists($requested_file)) {
+        include $requested_file;
+    } else {
+        ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_ALL_SUBPAGENOTFOUND; ?></div><?php
+    }
+} else {
+    ?>
+        <p class="mb-0 text-muted"><?php echo L_ALL_CHOOSESUBPAGE; ?></p>
+    <?php
+}
 ?>
-
-</td></tr>
+    </div>
+</div>

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                         */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -23,232 +23,245 @@ if ($pnadmin['canwritenews'] == 'YES') {
         $time = $_POST['time'] ?? [];
 
         if (($pnconfig['categories'] == 'YES' && $catid === 0) || $title === '' || $text === '') {
-            ?><center><a href="javascript:history.back()"><?php echo L_NEWS_TITLEANDTEXTNEEDED; ?>
-        <?php if ($pnconfig['categories'] == 'YES') {
-            echo L_NEWS_ALSOCATEGORY;
-        } ?>!</a></center><?php
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo L_NEWS_TITLEANDTEXTNEEDED; ?>
+                <?php if ($pnconfig['categories'] == 'YES') {
+                    echo L_NEWS_ALSOCATEGORY;
+                } ?>!
+                <div class="mt-2"><a href="index.php?page=news&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+            </div>
+            <?php
         } else {
             $news = new news();
             $error = $news->addnews($title, $text, $catid, $moretext, $rl_title, $rl_url, $rl_target, $time);
 
             if ($error !== '' && $error !== '0') {
-                ?><center><a href="javascript:history.back()"><?php echo pnadmin_escape($error); ?></a></center><?php
+                ?>
+                <div class="alert alert-danger" role="alert">
+                    <?php echo pnadmin_escape($error); ?>
+                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                </div>
+                <?php
             } else {
-                ?><center><a href="index.php?page=news&subpage=add"><?php echo L_NEWS_NEWSADDED; ?></a></center><?php
+                ?>
+                <div class="alert alert-success" role="alert">
+                    <?php echo L_NEWS_NEWSADDED; ?>
+                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=add" class="btn btn-sm btn-success">Weitere News einsenden</a></div>
+                </div>
+                <?php
             }
         }
     } else {
         ?>
-      <center>
-      <form action="index.php?page=news&subpage=add&add=YES" method="post">
-      <table border="0" cellpadding="4" cellspacing="0">
-      <tr><td colspan="2" align="center">
-      <b><?php echo L_NEWS_WRITENEWS; ?></b>
-      </td></tr>
-      <?php if ($pnconfig['categories'] == 'YES') { ?>
-        <tr><td>
-        <b><?php echo L_NEWS_CATEGORY; ?></b><br>
-        <small class="info"><?php echo L_NEWS_CATEGORY_DESC; ?></small>
-        </td><td>
-        <?php
-            $news = new news();
-          $news->getcatdropdown();
-          ?>
-        </td></tr>
-      <?php } ?>
-      <tr><td>
-      <b><?php echo L_NEWS_TIME; ?></b><br>
-      <small class="info"><?php echo L_NEWS_TIME_DESC; ?></small>
-      </td><td>
-      <select name="time[day]" size="1">
-        <option value=""><?php echo L_NEWS_DAY; ?></option>
-        <option value=""></option>
-        <?php
-            $this_day = date('d');
+      <form action="index.php?page=news&amp;subpage=add&amp;add=YES" method="post" novalidate>
+          <fieldset>
+              <legend class="h6"><?php echo L_NEWS_WRITENEWS; ?></legend>
 
-        for ($i = 1; $i < 32; ++$i) {
-            if ($i < 10) {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-            } else {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-            }
-        }
-        ?>
-      </select>
-      <select name="time[month]" size="1">
-        <option value=""><?php echo L_NEWS_MONTH; ?></option>
-        <option value=""></option>
-        <?php
-          $this_month = date('m');
+<?php if ($pnconfig['categories'] == 'YES') { ?>
+              <div class="mb-3">
+                  <label class="form-label fw-bold"><?php echo L_NEWS_CATEGORY; ?></label>
+                  <?php
+                  $news = new news();
+                  $news->getcatdropdown();
+                  ?>
+                  <div class="form-text"><?php echo L_NEWS_CATEGORY_DESC; ?></div>
+              </div>
+<?php } ?>
 
-        for ($i = 1; $i < 13; ++$i) {
-            if ($i === 1) {
-                $month = L_NEWS_JANUARY;
-            } elseif ($i === 2) {
-                $month = L_NEWS_FEBRUARY;
-            } elseif ($i === 3) {
-                $month = L_NEWS_MARCH;
-            } elseif ($i === 4) {
-                $month = L_NEWS_APRIL;
-            } elseif ($i === 5) {
-                $month = L_NEWS_MAY;
-            } elseif ($i === 6) {
-                $month = L_NEWS_JUNE;
-            } elseif ($i === 7) {
-                $month = L_NEWS_JULY;
-            } elseif ($i === 8) {
-                $month = L_NEWS_AUGUST;
-            } elseif ($i === 9) {
-                $month = L_NEWS_SEPTEMBER;
-            } elseif ($i === 10) {
-                $month = L_NEWS_OCTOBER;
-            } elseif ($i === 11) {
-                $month = L_NEWS_NOVEMBER;
-            } elseif ($i === 12) {
-                $month = L_NEWS_DECEMBER;
-            }
-            ?><option value="<?php echo $i; ?>" <?php echo $this_month == $i ? 'selected' : ''; ?>><?php echo $month; ?></option><?php
-        }
-        ?>
-      </select>
-      <select name="time[year]" size="1">
-        <option value=""><?php echo L_NEWS_YEAR; ?></option>
-        <option value=""></option>
-        <?php
-          $this_year = date('Y');
-        ?><option value="<?php echo $this_year; ?>" selected><?php echo $this_year; ?></option><?php
-        ?><option value="<?php echo ++$this_year; ?>"><?php echo $this_year; ?></option><?php
-        ?>
-      </select>
-      @
-      <select name="time[hour]" size="1">
-        <option value=""><?php echo L_NEWS_HOUR; ?></option>
-        <option value=""></option>
-        <?php
-          $this_hour = date('H');
+              <div class="mb-3">
+                  <label class="form-label fw-bold"><?php echo L_NEWS_TIME; ?></label>
+                  <div class="d-flex flex-wrap gap-2 align-items-center">
+                      <select class="form-select form-select-sm w-auto" name="time[day]" aria-label="<?php echo L_NEWS_DAY; ?>">
+                          <option value=""><?php echo L_NEWS_DAY; ?></option>
+<?php
+                          $this_day = date('d');
+                          for ($i = 1; $i < 32; ++$i) {
+                              if ($i < 10) {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
+                              } else {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
+                              }
+                          }
+?>
+                      </select>
+                      <select class="form-select form-select-sm w-auto" name="time[month]" aria-label="<?php echo L_NEWS_MONTH; ?>">
+                          <option value=""><?php echo L_NEWS_MONTH; ?></option>
+<?php
+                          $this_month = date('m');
+                          for ($i = 1; $i < 13; ++$i) {
+                              if ($i === 1) {
+                                  $month = L_NEWS_JANUARY;
+                              } elseif ($i === 2) {
+                                  $month = L_NEWS_FEBRUARY;
+                              } elseif ($i === 3) {
+                                  $month = L_NEWS_MARCH;
+                              } elseif ($i === 4) {
+                                  $month = L_NEWS_APRIL;
+                              } elseif ($i === 5) {
+                                  $month = L_NEWS_MAY;
+                              } elseif ($i === 6) {
+                                  $month = L_NEWS_JUNE;
+                              } elseif ($i === 7) {
+                                  $month = L_NEWS_JULY;
+                              } elseif ($i === 8) {
+                                  $month = L_NEWS_AUGUST;
+                              } elseif ($i === 9) {
+                                  $month = L_NEWS_SEPTEMBER;
+                              } elseif ($i === 10) {
+                                  $month = L_NEWS_OCTOBER;
+                              } elseif ($i === 11) {
+                                  $month = L_NEWS_NOVEMBER;
+                              } elseif ($i === 12) {
+                                  $month = L_NEWS_DECEMBER;
+                              }
+                              ?><option value="<?php echo $i; ?>" <?php echo $this_month == $i ? 'selected' : ''; ?>><?php echo $month; ?></option><?php
+                          }
+?>
+                      </select>
+                      <select class="form-select form-select-sm w-auto" name="time[year]" aria-label="<?php echo L_NEWS_YEAR; ?>">
+                          <option value=""><?php echo L_NEWS_YEAR; ?></option>
+<?php
+                          $this_year = date('Y');
+                          ?><option value="<?php echo $this_year; ?>" selected><?php echo $this_year; ?></option><?php
+                          ?><option value="<?php echo ++$this_year; ?>"><?php echo $this_year; ?></option><?php
+?>
+                      </select>
+                      <span aria-hidden="true">&#64;</span>
+                      <select class="form-select form-select-sm w-auto" name="time[hour]" aria-label="<?php echo L_NEWS_HOUR; ?>">
+                          <option value=""><?php echo L_NEWS_HOUR; ?></option>
+<?php
+                          $this_hour = date('H');
+                          for ($i = 0; $i < 24; ++$i) {
+                              if ($i < 10) {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
+                              } else {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
+                              }
+                          }
+?>
+                      </select>
+                      <span aria-hidden="true">:</span>
+                      <select class="form-select form-select-sm w-auto" name="time[min]" aria-label="<?php echo L_NEWS_MIN; ?>">
+                          <option value=""><?php echo L_NEWS_MIN; ?></option>
+<?php
+                          $this_min = date('i');
+                          for ($i = 0; $i < 60; ++$i) {
+                              if ($i < 10) {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
+                              } else {
+                                  ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
+                              }
+                          }
+?>
+                      </select>
+                  </div>
+                  <div class="form-text"><?php echo L_NEWS_TIME_DESC; ?></div>
+              </div>
 
-        for ($i = 0; $i < 24; ++$i) {
-            if ($i < 10) {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-            } else {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-            }
-        }
-        ?>
-      </select>
-      :
-      <select name="time[min]" size="1">
-        <option value=""><?php echo L_NEWS_MIN; ?></option>
-        <option value=""></option>
-        <?php
-          $this_min = date('i');
+              <div class="mb-3">
+                  <label for="pn_title" class="form-label fw-bold"><?php echo L_NEWS_TITLE; ?></label>
+                  <input class="form-control" name="title" id="pn_title" maxlength="150" required aria-describedby="pn_title_help">
+                  <div id="pn_title_help" class="form-text"><?php echo L_NEWS_TITLE_DESC; ?></div>
+              </div>
 
-        for ($i = 0; $i < 60; ++$i) {
-            if ($i < 10) {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-            } else {
-                ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-            }
-        }
-        ?>
-      </select>
-      </td></tr>
-      <tr><td>
-      <b><?php echo L_NEWS_TITLE; ?></b><br>
-      <small class="info"><?php echo L_NEWS_TITLE_DESC; ?></small>
-      </td><td>
-      <input name="title" size="50" maxlength="150">
-      </td></tr>
-      <tr><td valign="top">
-      <b><?php echo L_NEWS_TEXT; ?></b><br>
-      <small class="info"><?php echo L_NEWS_TEXT_DESC; ?> (<a href="index.php?page=other&subpage=help#other.html" target="_blank">HTML</a>
-      <?php
-        if ($pnconfig['html'] == 'News' || $pnconfig['html'] == 'Comments & News') {
-            ?><b><?php echo L_NEWS_ON; ?></b><?php
-        } else {
-            ?><b><?php echo L_NEWS_OFF; ?></b> <?php
-        }
-        ?>/<a href="index.php?page=other&subpage=help#other.bbcode" target="_blank">BB Code</a> <?php
-        if ($pnconfig['bbcode'] == 'News' || $pnconfig['bbcode'] == 'Comments & News') {
-            ?><b><?php echo L_NEWS_ON; ?></b>)<?php
-        } else {
-            ?><b><?php echo L_NEWS_OFF; ?></b>)<?php
-        }
-        ?>
-      </small>
-      </td><td>
-      <textarea name="text" cols="75" rows="15"></textarea>
-      </td></tr>
-      <?php if ($pnconfig['moretext'] == 'YES') { ?>
-        <tr><td valign="top">
-        <b><?php echo L_NEWS_LONGTEXT; ?></b><br>
-        <small class="info"><?php echo L_NEWS_LONGTEXT_DESC; ?> (<a href="index.php?page=other&subpage=help#other.html" target="_blank">HTML</a>
-        <?php
-            if ($pnconfig['html'] == 'News' || $pnconfig['html'] == 'Comments & News') {
-                ?><b><?php echo L_NEWS_ON; ?></b><?php
-            } else {
-                ?><b><?php echo L_NEWS_OFF; ?></b><?php
-            }
-          ?>/<a href="index.php?page=other&subpage=help#news.bbcode" target="_blank">BB Code</a> <?php
-          if ($pnconfig['bbcode'] == 'News' || $pnconfig['bbcode'] == 'Comments & News') {
-              ?><b><?php echo L_NEWS_ON; ?></b>)<?php
-          } else {
-              ?><b><?php echo L_NEWS_OFF; ?></b>)<?php
-          }
-          ?>
-        </small>
-        </td><td>
-        <textarea name="moretext" cols="75" rows="20"></textarea>
-        </td></tr>
-      <?php } ?>
-      <?php if ($pnconfig['relatedlinks'] == 'YES') { ?>
-        <tr><td valign="top">
-        <b><?php echo L_NEWS_RELATEDLINKS; ?></b><br>
-        <small class="info"><?php echo L_NEWS_RELATEDLINKS_DESC; ?></small>
-        </td><td>
-          <table border="0" cellpadding="3" cellspacing="0" width="100%">
-          <tr><td>
-          <b><?php echo L_NEWS_RL_TITLE; ?></b>
-          </td><td>
-          <b><?php echo L_NEWS_RL_URL; ?></b>
-          </td><td>
-          <b><?php echo L_NEWS_RL_TARGET; ?></b>
-          </td></tr>
-        <?php
+              <div class="mb-3">
+                  <label for="pn_text" class="form-label fw-bold"><?php echo L_NEWS_TEXT; ?></label>
+                  <textarea class="form-control" name="text" id="pn_text" rows="10" required aria-describedby="pn_text_help"></textarea>
+                  <div id="pn_text_help" class="form-text">
+                      <?php echo L_NEWS_TEXT_DESC; ?>
+                      (<a href="index.php?page=other&amp;subpage=help#other.html" target="_blank" rel="noopener noreferrer">HTML</a>
+<?php
+                      if ($pnconfig['html'] == 'News' || $pnconfig['html'] == 'Comments & News') {
+                          ?><strong><?php echo L_NEWS_ON; ?></strong><?php
+                      } else {
+                          ?><strong><?php echo L_NEWS_OFF; ?></strong><?php
+                      }
+?> /
+                      <a href="index.php?page=other&amp;subpage=help#other.bbcode" target="_blank" rel="noopener noreferrer">BB Code</a>
+<?php
+                      if ($pnconfig['bbcode'] == 'News' || $pnconfig['bbcode'] == 'Comments & News') {
+                          ?><strong><?php echo L_NEWS_ON; ?></strong><?php
+                      } else {
+                          ?><strong><?php echo L_NEWS_OFF; ?></strong><?php
+}
+?>)
+                  </div>
+              </div>
 
-            /* List forms for related links */
-            for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
-                ?>
-            <tr><td>
-            <input name="rl_title[]" size="25" maxlegnth="50">
-            </td><td>
-            <input name="rl_url[]" size="25" maxlength="250">
-            </td><td>
-            <select name="rl_target[]" size="1">
-              <?php
-                    $counter = count($pn_config['rltargets']);
+<?php if ($pnconfig['moretext'] == 'YES') { ?>
+              <div class="mb-3">
+                  <label for="pn_moretext" class="form-label fw-bold"><?php echo L_NEWS_LONGTEXT; ?></label>
+                  <textarea class="form-control" name="moretext" id="pn_moretext" rows="10" aria-describedby="pn_moretext_help"></textarea>
+                  <div id="pn_moretext_help" class="form-text">
+                      <?php echo L_NEWS_LONGTEXT_DESC; ?>
+                      (<a href="index.php?page=other&amp;subpage=help#other.html" target="_blank" rel="noopener noreferrer">HTML</a>
+<?php
+                      if ($pnconfig['html'] == 'News' || $pnconfig['html'] == 'Comments & News') {
+                          ?><strong><?php echo L_NEWS_ON; ?></strong><?php
+                      } else {
+                          ?><strong><?php echo L_NEWS_OFF; ?></strong><?php
+                      }
+?> /
+                      <a href="index.php?page=other&amp;subpage=help#news.bbcode" target="_blank" rel="noopener noreferrer">BB Code</a>
+<?php
+                      if ($pnconfig['bbcode'] == 'News' || $pnconfig['bbcode'] == 'Comments & News') {
+                          ?><strong><?php echo L_NEWS_ON; ?></strong><?php
+                      } else {
+                          ?><strong><?php echo L_NEWS_OFF; ?></strong><?php
+                      }
+?>)
+                  </div>
+              </div>
+<?php } ?>
 
-                for ($i2 = 0; $i2 < $counter; ++$i2) {
-                    ?><option value="<?php echo $pn_config['rltargets'][$i2]; ?>"><?php echo $pn_config['rltargets'][$i2]; ?></option><?php
-                }
-                ?>
-            </select>
-            </td></tr>
-            <?php
-            }
-          ?>
-          </table>
-        </td></tr>
-      <?php } ?>
-      <tr><td colspan="2" align="center">
-      <input type="submit" value="<?php echo L_NEWS_WRITENEWS; ?>">
-      </td></tr>
-      </table>
+<?php if ($pnconfig['relatedlinks'] == 'YES') { ?>
+              <div class="mb-3">
+                  <label class="form-label fw-bold"><?php echo L_NEWS_RELATEDLINKS; ?></label>
+                  <div class="form-text mb-2"><?php echo L_NEWS_RELATEDLINKS_DESC; ?></div>
+                  <div class="table-responsive">
+                      <table class="table table-sm align-middle">
+                          <thead>
+                              <tr>
+                                  <th><?php echo L_NEWS_RL_TITLE; ?></th>
+                                  <th><?php echo L_NEWS_RL_URL; ?></th>
+                                  <th><?php echo L_NEWS_RL_TARGET; ?></th>
+                              </tr>
+                          </thead>
+                          <tbody>
+<?php
+                          /* List forms for related links */
+                          for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
+                              ?>
+                              <tr>
+                                  <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" aria-label="Related Link Title"></td>
+                                  <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" aria-label="Related Link URL"></td>
+                                  <td>
+                                      <select class="form-select form-select-sm" name="rl_target[]" aria-label="Related Link Target">
+<?php
+                                          $counter = count($pn_config['rltargets']);
+                                          for ($i2 = 0; $i2 < $counter; ++$i2) {
+                                              ?><option value="<?php echo $pn_config['rltargets'][$i2]; ?>"><?php echo $pn_config['rltargets'][$i2]; ?></option><?php
+                                          }
+?>
+                                      </select>
+                                  </td>
+                              </tr>
+<?php
+                          }
+?>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+<?php } ?>
+
+              <button type="submit" class="btn btn-primary"><?php echo L_NEWS_WRITENEWS; ?></button>
+          </fieldset>
       </form>
-      </center>
       <?php
     }
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>

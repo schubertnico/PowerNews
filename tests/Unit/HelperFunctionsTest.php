@@ -307,30 +307,32 @@ class HelperFunctionsTest extends TestCase
     // ===========================
 
     #[Test]
-    public function pnCpiOutputsCopyrightHtml(): void
+    public function pnCpiProducesNoOutput(): void
     {
         global $pn_config;
         $pn_config['version'] = '1.0.0';
 
+        // Seit Mai 2026 ist pn_cpi() ein No-Op. Die frueher gerendete Copyright-
+        // Zeile direkt unter dem News-Inhalt hat sich mit dem neuen globalen
+        // Bootstrap-5-Footer in footer.inc.php gedoppelt. Funktion bleibt fuer
+        // API-Kompatibilitaet, gibt aber bewusst nichts mehr aus.
         ob_start();
         pn_cpi();
         $output = ob_get_clean();
 
-        $this->assertNotEmpty($output);
-        $this->assertIsString($output);
+        $this->assertSame('', $output);
     }
 
     #[Test]
-    public function pnCpiOutputContainsHtmlMarkup(): void
+    public function pnCpiReturnsVoid(): void
     {
         global $pn_config;
         $pn_config['version'] = '2.0.0';
 
-        ob_start();
-        pn_cpi();
-        $output = ob_get_clean();
+        // pn_cpi() ist als void deklariert und liefert keinen Rueckgabewert.
+        $result = pn_cpi();
 
-        $this->assertMatchesRegularExpression('/<[^>]+>/', $output);
+        $this->assertNull($result);
     }
 
     // ===========================

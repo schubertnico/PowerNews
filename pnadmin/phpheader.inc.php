@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /* PowerNews - PHP and MySQL based news script                         */
-/* Copyright (c) 2001-2024 PowerScripts                                 */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
@@ -14,7 +14,7 @@ error_reporting(E_ALL);
 if (file_exists('../pninc/config.inc.php')) {
     include __DIR__ . '/../pninc/config.inc.php';
 } else {
-    echo "<center>File <b>config.inc.php</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>config.inc.php</strong> was not found!</div>';
     exit;
 }
 
@@ -22,7 +22,7 @@ if (file_exists('../pninc/config.inc.php')) {
 if (file_exists('functions.inc.php')) {
     include __DIR__ . '/functions.inc.php';
 } else {
-    echo "<center>File <b>functions.inc.php</b> wasn't found!</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>functions.inc.php</strong> was not found!</div>';
     exit;
 }
 
@@ -35,7 +35,7 @@ if (file_exists(__DIR__ . '/dto.inc.php')) {
 if (file_exists('./lang/' . $pn_config['language'] . '.php')) {
     include './lang/' . $pn_config['language'] . '.php';
 } else {
-    echo '<center>Language file <b>' . $pn_config['language'] . ".php</b> wasn't found</center>";
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Language file <strong>' . htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '.php</strong> was not found</div>';
     exit;
 }
 
@@ -91,7 +91,11 @@ if ($cnum == 1) {
     //var_dump($pnconfig);exit;
 } else {
     ?>
-    <center>There are too many configurations or no one!</center><?php
+    <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">There are too many configurations or no one!</div><?php
     exit;
 }
+
+// Status- und Submenu-Renderer fuer den Adminkopf instanziieren.
+// Ohne diese Instanz blieb die Statusleiste leer ("kein Logout sichtbar").
+$individualmenus = new menus();
 ?>

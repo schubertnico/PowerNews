@@ -1,11 +1,12 @@
-# PowerNews v3.0
+# PowerNews v3.10
 
 [![PHP](https://img.shields.io/badge/PHP-8.4-blue)](https://www.php.net/)
 [![tests](https://img.shields.io/badge/tests-734%20passing-brightgreen)](#tests)
 [![coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](#tests)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.3-7952B3)](https://getbootstrap.com/)
 [![license](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
-Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung.
+Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung. Frontend und Adminbereich sind komplett auf **Bootstrap 5.3** umgestellt – responsiv, barrierearm, ohne CDN.
 
 ---
 
@@ -19,9 +20,9 @@ cd PowerNews
 # 2. (optional) Composer-Abhängigkeiten für Entwicklungswerkzeuge
 composer install
 
-# 3. Container bauen & starten
+# 3. Container starten (beim Erststart wird das Image automatisch gebaut)
 cd .docker
-docker compose up -d --build
+docker compose up -d
 
 # 4. Browser öffnen
 # Hauptseite: http://localhost:8087/
@@ -102,6 +103,49 @@ Beim Fresh-Install sind folgende Defaults gesetzt:
 - **Templates**: anpassbare HTML-Templates pro Bereich, CSRF-`{CSRF}`- und `{CSRF}`-Platzhalter automatisch ersetzt
 - **Archiv**: durchsuchbares News-Archiv
 - **Mail**: Registrierungs- und Passwort-Reset-Mails via `msmtp` → Mailpit (Docker) oder beliebigem SMTP-Relay
+- **Modernes UI**: Bootstrap 5.3.3 (lokal gehostet, ohne CDN) für Frontend & Adminbereich – responsiv, barrierearm, mit Cards/Tables/Alerts/Badges
+- **Adminhilfe**: Eingebauter Hilfe-Bereich (`?page=other&subpage=help`) mit Inhaltsverzeichnis, BB-Code-/Smilies-Referenz und Modul-Anleitungen
+- **Datumsformat-Konverter**: Akzeptiert sowohl PHP-`date()`-Tokens (`d.m.Y`/`H:i`) als auch strftime-Tokens (`%d.%m.%Y`/`%H:%M`); ältere Konfigurationen funktionieren ohne manuelle Migration weiter
+
+---
+
+## Stand 2026-05-10 – Bootstrap-5-Refactor + Folgekorrekturen
+
+Mit der Iteration vom 10.05.2026 sind Frontend und Adminbereich vollständig auf
+Bootstrap 5.3.3 umgestellt. Aktuelle Version: **3.10**. Highlights:
+
+**UI & Layout:**
+- **Self-hosted Bootstrap** unter `assets/bootstrap/` (kein CDN, CSP unverändert restriktiv).
+- **Echte Breadcrumb-Navigation** im Adminbereich: `Start › Benutzer › Anlegen` mit
+  `aria-current="page"` auf der aktiven Seite.
+- **Schnellzugriff-Tab-Card** mit Pillen-Navigation für die Sub-Pages des aktuellen Bereichs.
+- **Login-Status sichtbar:** "Hallo admin" + Profil-/Logout-Buttons direkt in der Navbar
+  (Logout in `btn-warning`-Gelb, fällt sofort auf).
+- **WCAG-AA-Audit:** keine grauen Texte mehr; alle muted-Bootstrap-Klassen
+  übersteuert auf #212529 / #000000 / #0a58ca. Audit auf 8 Seiten: 0 Issues.
+- **Status-Spalten** in Admin-Tabellen: Bootstrap-Badges statt `gfx/yes.gif`/`no.gif`/`uc.gif`.
+- **Gefährliche Aktionen** (Delete-Checkboxen) in `pn-danger-action`-Box mit rotem Border +
+  erläuterndem Text – Bedeutung nicht nur über Farbe.
+
+**Bugfixes:**
+- **Datumsformat-Bug:** `pn_convert_date_format()` mappt strftime-Tokens auf
+  PHP-`date()`-Tokens, sodass `%d.%m.%Y`/`%H:%M`-Konfigurationen ohne Migration weiterlaufen.
+- **`{RELATEDLINKS}`-Platzhalter:** wird jetzt immer ersetzt; die Sidebar verschwindet
+  automatisch, wenn keine Links da sind.
+- **Default-Template (id=1)** editierbar (vorher gesperrt) – nur Löschen bleibt blockiert,
+  damit die Vorlage für "Template anlegen" nicht wegbricht.
+- **Doppeltes Copyright** entfernt: `pn_cpi()` ist No-Op, der globale Footer übernimmt.
+- **41 Zurück-Buttons** von `javascript:history.back()` auf konkrete Rück-URLs umgestellt.
+- **PHP 8.4 strict_types** Cast in `templates_edit.inc.php` (`(int)` für `templateid`).
+
+**Dokumentation:**
+- **Adminhilfe** komplett neu (51 anker-IDs, 104 interne Links, 16 Admin-Routen alle validiert;
+  Status-Badges, Code-Snippets, BB-Code-/Smilies-Referenz).
+- Copyright in 57 Dateien aktualisiert auf 2001-2026.
+
+Details siehe
+[`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md) (Hauptmigration)
+und [`docs/2026-05-10-Pt2-Followup.md`](docs/2026-05-10-Pt2-Followup.md) (Folgekorrekturen).
 
 ---
 
@@ -206,18 +250,27 @@ Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.
 2. Dateien durch die 3.0-Version ersetzen.
 3. `http://<host>/update.php` als eingeloggter Admin aufrufen (neue Auth-Gate-Prüfung greift automatisch).
 4. Bestehende User mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt hochgehasht.
-5. `update.php` nach dem Update löschen.
+5. **Default-Template auf Bootstrap 5 heben:** Beim Update von einer Vor-2026-05-Version müssen die Felder
+   `news`, `headline`, `comment`, `commentform`, `loginform`, `registerform`, `profileform`,
+   `senddataform`, `archive`, `sendnewsform`, `usermenu`, `usermenu2`, `relatedlinks`,
+   `logout` und `message` der Zeile `id=1` in `pn_templates` auf das neue Bootstrap-5-
+   Markup gehoben werden. Der einfachste Weg: Werte aus einer frischen
+   `powernews.sql`-Installation per `UPDATE pn_templates SET … WHERE id=1` einspielen.
+6. `update.php` nach dem Update löschen.
 
-Details siehe [`changelog.html`](changelog.html).
+Details siehe [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md).
 
 ---
 
 ## Dokumentation
 
-- Audit-Report: `docs/2026-04-23-Userbereichs-bugs.md`
-- Improvements: `docs/2026-04-23-Userbereichs-improvements.md` (Alias `…-verbesserungen.md`)
-- Testabdeckung: `docs/2026-04-23-Userbereichs-test-coverage.md` (Alias `…-testabdeckung.md`)
-- Implementierungsplan für die Bugfixes: `docs/superpowers/plans/2026-04-23-userbereich-bugfixes.md`
+- **Bootstrap-5-Migration & UI-Hardening (2026-05-10):** [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md)
+- **Folgekorrekturen (Pt 2, 2026-05-10):** [`docs/2026-05-10-Pt2-Followup.md`](docs/2026-05-10-Pt2-Followup.md) – Login-Status sichtbar, echte Breadcrumb-Navigation, Default-Template editierbar, Version 3.10, `{RELATEDLINKS}`-Bug, doppeltes Copyright entfernt
+- Audit-Report (April 2026): [`docs/2026-04-23-Userbereichs-bugs.md`](docs/2026-04-23-Userbereichs-bugs.md)
+- Improvements: [`docs/2026-04-23-Userbereichs-improvements.md`](docs/2026-04-23-Userbereichs-improvements.md) (Alias `…-verbesserungen.md`)
+- Testabdeckung: [`docs/2026-04-23-Userbereichs-test-coverage.md`](docs/2026-04-23-Userbereichs-test-coverage.md) (Alias `…-testabdeckung.md`)
+- Implementierungsplan für die Bugfixes: [`docs/superpowers/plans/2026-04-23-userbereich-bugfixes.md`](docs/superpowers/plans/2026-04-23-userbereich-bugfixes.md)
+- **Adminhilfe** (interaktiv im Adminbereich): `http://<host>/pnadmin/index.php?page=other&subpage=help`
 
 ---
 

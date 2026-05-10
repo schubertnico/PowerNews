@@ -1,7 +1,7 @@
 <?php
 
 /* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2023 PowerScripts                                 */
+/* Copyright (C) 2001-2026 PowerScripts                                 */
 
 /* This program is free software; you can redistribute it and/or modify */
 /* it under the terms of the GNU General Public License as published by */
@@ -19,47 +19,39 @@
 /* MA  02111-1307  USA                                                  */
 
 if ($pnadmin['canreadusers'] == 'YES') {
+    $listusers = new user();
+    if (!isset($_GET['current'])) {
+        $_GET['current'] = '0';
+    }
     ?>
-    <center>
-    <?php
-      $listusers = new user();
-    $listusers->listpages();
-    ?>
-    <br><br>
-    <table border="0" cellpadding="4" cellspacing="0">
-    <tr><td>
-    <b><?php echo L_USR_NICKNAME; ?></b>
-    </td><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_USR_EMAIL; ?></b>
-    </td><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_USR_SHOWEMAIL; ?></b>
-    </td><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_USR_ADMIN; ?></b>
-    </td><td width="30">
-    &nbsp;
-    </td><td>
-    <b><?php echo L_USR_STATUS; ?></b>
-    </td></tr>
-    <?php
-      if (!isset($_GET['current'])) {
-          $_GET['current'] = '0';
-      }
-    $listusers->listusers($_GET['current']);
-    ?>
-    </table>
-    <br>
-    <?php $listusers->listpages(); ?>
-    </center><br>
-    <br>
-    <small><?php echo L_USR_SHOWUSR_DESC; ?></small>
+    <nav aria-label="Seitennavigation oben" class="mb-3">
+        <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $listusers->listpages(); ?></ul>
+    </nav>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover pn-admin-table align-middle">
+            <thead>
+                <tr>
+                    <th><?php echo L_USR_NICKNAME; ?></th>
+                    <th><?php echo L_USR_EMAIL; ?></th>
+                    <th class="text-center"><?php echo L_USR_SHOWEMAIL; ?></th>
+                    <th class="text-center"><?php echo L_USR_ADMIN; ?></th>
+                    <th class="text-center"><?php echo L_USR_STATUS; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $listusers->listusers((int) $_GET['current']); ?>
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Seitennavigation unten" class="mb-3">
+        <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $listusers->listpages(); ?></ul>
+    </nav>
+
+    <p class="pn-help mb-0"><?php echo L_USR_SHOWUSR_DESC; ?></p>
     <?php
 } else {
-    ?><center><?php echo L_ALL_ACCESSDENIED; ?></center><?php
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 }
 ?>
