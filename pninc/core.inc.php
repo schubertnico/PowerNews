@@ -477,3 +477,22 @@ function pn_password_reset_complete(mysqli $db, array $pn_config, int $userId, s
 
     pn_sessions_delete_for_user($db, $userId);
 }
+
+/**
+ * Startet die PHP-Session (für CSRF-Token) mit sicheren Cookie-Parametern, sofern noch
+ * keine läuft und noch nichts ausgegeben wurde.
+ */
+function pn_php_session_start(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE || headers_sent()) {
+        return;
+    }
+
+    session_set_cookie_params([
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}

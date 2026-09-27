@@ -25,7 +25,7 @@
             <h1 class="card-header h5 mb-0"><?php echo L_TITLE_LOGIN; ?></h1>
             <div class="card-body">
 <?php if (!isset($loginerror)) { ?>
-                <form action="index.php?pnlogin=YES" method="post" novalidate>
+                <form action="index.php?pnlogin=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
                     <div class="mb-3">
                         <label for="pn_login_nick" class="form-label fw-bold"><?php echo L_USR_NICKNAME; ?></label>
                         <input class="form-control" name="pnlogin_nickname" id="pn_login_nick" maxlength="100" autocomplete="username" required>

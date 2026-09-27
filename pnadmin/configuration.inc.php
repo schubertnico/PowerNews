@@ -63,7 +63,7 @@ if ($pnadmin['canreadconfig'] == 'YES') {
         }
     } else {
         ?>
-      <form action="index.php?page=configuration&amp;edit=YES" method="post" novalidate>
+      <form action="index.php?page=configuration&amp;edit=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
 
           <div class="mb-3">
               <label class="form-label fw-bold"><?php echo L_CONF_CATEGORIES; ?></label>

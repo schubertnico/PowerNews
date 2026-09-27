@@ -49,7 +49,7 @@ if ($pnadmin['canwritecategories'] == 'YES') {
             }
         } else {
             ?>
-        <form action="index.php?page=categories&amp;subpage=add&amp;add=YES" method="post" enctype="multipart/form-data" novalidate>
+        <form action="index.php?page=categories&amp;subpage=add&amp;add=YES" method="post" enctype="multipart/form-data" novalidate><?php echo pnadmin_csrf_field(); ?>
             <fieldset>
                 <legend class="h6"><?php echo L_CAT_ADDCAT; ?></legend>
 

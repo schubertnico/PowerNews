@@ -65,7 +65,7 @@ if ($pnadmin['canreadpermissions'] == 'YES' && $pnadmin['canwritepermissions'] =
             } else {
                 $data = $permissions->getdata($userid);
                 ?>
-          <form action="index.php?page=permissions&amp;subpage=edit&amp;edit=YES&amp;userid=<?php echo pn_int($userid); ?>" method="post" novalidate>
+          <form action="index.php?page=permissions&amp;subpage=edit&amp;edit=YES&amp;userid=<?php echo pn_int($userid); ?>" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
               <fieldset>
                   <legend class="h6"><?php echo L_PERM_EDITPERMISSIONS; ?></legend>
 

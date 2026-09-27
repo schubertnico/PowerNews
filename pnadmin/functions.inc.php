@@ -19,6 +19,82 @@ function pnadmin_escape(string $value): string
 }
 
 /**
+ * CSRF-Token für Admin-Formulare (B36). Für angemeldete Admins wird es aus dem geheimen
+ * Sitzungstoken abgeleitet und gilt so lange wie die Admin-Sitzung (kein Ablauf nach
+ * 24 Minuten wie bei der PHP-Session). Vor dem Login dient das Token der PHP-Session.
+ */
+function pnadmin_csrf_token(): string
+{
+    global $pnadminsession;
+
+    if (is_array($pnadminsession) && isset($pnadminsession[1])) {
+        return hash_hmac('sha256', 'pn-admin-csrf', (string) $pnadminsession[1]);
+    }
+
+    return pn_csrf_token();
+}
+
+/**
+ * Prüft ein CSRF-Token aus einem Admin-Formular.
+ */
+function pnadmin_csrf_verify(mixed $token): bool
+{
+    global $pnadminsession;
+
+    if (!is_string($token) || $token === '') {
+        return false;
+    }
+
+    if (is_array($pnadminsession) && isset($pnadminsession[1])
+        && hash_equals(hash_hmac('sha256', 'pn-admin-csrf', (string) $pnadminsession[1]), $token)) {
+        return true;
+    }
+
+    return pn_csrf_verify($token);
+}
+
+/**
+ * Verstecktes Formularfeld mit dem CSRF-Token.
+ */
+function pnadmin_csrf_field(): string
+{
+    return '<input type="hidden" name="csrf_token" value="' . pnadmin_escape(pnadmin_csrf_token()) . '">';
+}
+
+/**
+ * Zentrale Prüfung jeder schreibenden Admin-Anfrage (B36): Aktionen (add/edit/Login/Logout
+ * oder jedes POST) brauchen POST und ein gültiges CSRF-Token. Sonst werden die Aktions-
+ * parameter und POST-Daten verworfen; die Seite zeigt dann nur ihr Formular.
+ *
+ * @return bool true, wenn die Anfrage abgewiesen wurde
+ */
+function pnadmin_guard_request(): bool
+{
+    $flags = ['pnlogin', 'pnlogout', 'add', 'edit', 'editcomments'];
+    $isPost = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
+    $isAction = $isPost;
+
+    foreach ($flags as $flag) {
+        if (($_GET[$flag] ?? '') === 'YES') {
+            $isAction = true;
+        }
+    }
+
+    if (!$isAction || ($isPost && pnadmin_csrf_verify($_POST['csrf_token'] ?? null))) {
+        return false;
+    }
+
+    $_POST = [];
+    $_FILES = [];
+
+    foreach ($flags as $flag) {
+        unset($_GET[$flag]);
+    }
+
+    return true;
+}
+
+/**
  * Führt ein Prepared Statement aus und fängt Datenbankfehler ab. Statt eines HTTP-500
  * (Fatal Error durch mysqli_sql_exception) erhält der Aufrufer false und kann eine
  * verständliche Meldung anzeigen. Die technische Ursache landet im Fehlerlog.
@@ -618,15 +694,6 @@ class getadmin
 
 class menus
 {
-    public function statusmenu(string $loggedin, string $username): void
-    {
-        if ($loggedin === 'NO') {
-            echo L_USR_PLEASELOGIN;
-        } else {
-            echo L_USR_HELLO . ' ' . pnadmin_escape($username);
-            ?> - [ <a href="index.php?page=profile"><?php echo L_USR_EDITPROFILE; ?></a> |<a href="index.php?pnlogout=YES"><?php echo L_USR_LOGOUT; ?></a> ]<?php
-        }
-    }
 
     public function submenu(string $page): void
     {

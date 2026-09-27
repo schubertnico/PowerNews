@@ -425,6 +425,7 @@ define('L_QUICKLINKS', 'Quick links');
 define('L_ALL_PAGECREATEDIN', 'Page created in');
 define('L_ALL_SECONDSBY', 'seconds by');
 define('L_ALL_WELCOME', 'Welcome to the PowerNews administration!<br><br>Please report any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a>.');
+define('L_ALL_CSRFINVALID', 'The security check failed, so nothing was saved. The form was open too long or did not come from the administration. Please try again.');
 define('L_ALL_BACK', 'Back');
 define('L_ALL_BACKTOFORM', 'Back to the form');
 define('L_ALL_BACKTOLIST', 'Back to the list');

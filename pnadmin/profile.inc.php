@@ -67,7 +67,7 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
         $showemail = 'checked';
     }
     ?>
-    <form action="index.php?page=profile&amp;edit=YES" method="post" novalidate>
+    <form action="index.php?page=profile&amp;edit=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
         <fieldset>
             <legend class="h6"><?php echo L_USR_EDITPROFILE; ?></legend>
 

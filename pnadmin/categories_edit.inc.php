@@ -64,7 +64,7 @@ if ($pnadmin['canreadcategories'] == 'YES' && $pnadmin['canwritecategories'] == 
                 } else {
                     $data = $editcat->getcatdata($catid);
                     ?>
-            <form action="index.php?page=categories&amp;subpage=edit&amp;edit=YES&amp;catid=<?php echo pn_int($catid); ?>" method="post" enctype="multipart/form-data" novalidate>
+            <form action="index.php?page=categories&amp;subpage=edit&amp;edit=YES&amp;catid=<?php echo pn_int($catid); ?>" method="post" enctype="multipart/form-data" novalidate><?php echo pnadmin_csrf_field(); ?>
                 <fieldset>
                     <legend class="h6"><?php echo L_CAT_EDITCAT; ?></legend>
 

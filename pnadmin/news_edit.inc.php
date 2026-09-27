@@ -112,7 +112,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
             } else {
                 $data = $editnews->getnewsdata($newsid) ?? [];
                 ?>
-          <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>" method="post" novalidate>
+          <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
               <fieldset>
                   <legend class="h6"><?php echo L_NEWS_EDITNEWS; ?></legend>
 
@@ -236,7 +236,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
           <?php
           if ($pnconfig['comments'] == 'YES' && $pnadmin['canreadcomments'] == 'YES') {
               ?>
-            <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>&amp;editcomments=YES" method="post" class="mt-4" novalidate>
+            <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>&amp;editcomments=YES" method="post" class="mt-4" novalidate><?php echo pnadmin_csrf_field(); ?>
                 <fieldset>
                     <legend class="h6"><?php echo L_NEWS_EDITCOMMENTS; ?></legend>
 <?php

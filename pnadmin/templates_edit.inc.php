@@ -39,7 +39,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
               <strong><?php echo L_ALL_NOTE; ?></strong> <?php echo L_TEMPL_DEFAULTEDITHINT; ?>
           </div>
 <?php } ?>
-          <form action="index.php?page=templates&amp;subpage=edit&amp;edit=YES&amp;templateid=<?php echo (int) ($_GET['templateid'] ?? 0); ?>" method="post" novalidate>
+          <form action="index.php?page=templates&amp;subpage=edit&amp;edit=YES&amp;templateid=<?php echo (int) ($_GET['templateid'] ?? 0); ?>" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
               <fieldset>
                   <legend class="h6"><?php echo L_TEMPL_EDITTEMPLATE; ?></legend>
 

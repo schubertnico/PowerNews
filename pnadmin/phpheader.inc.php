@@ -42,7 +42,16 @@ if (file_exists('./lang/' . $pn_config['language'] . '.php')) {
 // Set pnloggedin to default status
 $pnloggedin = 'NO';
 
-//var_dump($_GET, $_POST);
+// PHP-Session (CSRF-Token vor dem Login) vor jeder Ausgabe starten.
+pn_php_session_start();
+
+// Admin-Sitzung aus dem eigenen Cookie lesen (B04/B33). Das Frontend-Cookie „pncookie“
+// wird hier nicht ausgewertet; ein ungültiges Format führt einfach zum Login.
+$pnadminsession = pn_session_parse_cookie(PN_COOKIE_ADMIN);
+
+// Jede schreibende Anfrage braucht POST und ein gültiges CSRF-Token (B36).
+$pncsrferror = pnadmin_guard_request();
+
 // Check login and set cookie
 if (isset($_GET['pnlogin']) && $_GET['pnlogin'] == 'YES') {
     if (!isset($_POST['pnlogin_nickname']) || !isset($_POST['pnlogin_password'])) {
@@ -58,13 +67,10 @@ if (isset($_GET['pnlogin']) && $_GET['pnlogin'] == 'YES') {
 } elseif (isset($_GET['pnlogout']) && $_GET['pnlogout'] == 'YES') {
     $logout = new login();
     $logout->logout();
-    $pnloggedin = 'NO';
+    $pnadminsession = null;
 }
 
-// Admin-Sitzung aus dem eigenen Cookie lesen (B04/B33). Das Frontend-Cookie „pncookie“
-// wird hier nicht mehr ausgewertet; ein ungültiges Format führt einfach zum Login.
 $pnloggedin = 'NO';
-$pnadminsession = pn_session_parse_cookie(PN_COOKIE_ADMIN);
 
 if ($pnadminsession !== null) {
     $checkdata = new getadmin();

@@ -21,11 +21,6 @@
 // Set error reporting
 error_reporting(E_ALL & ~E_NOTICE);
 
-// Session early-start so CSRF-Token survives GET->POST form-roundtrip.
-// Without this, pn_csrf_token() might try to session_start() after output began.
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
 
 header('Content-Type: text/html; charset=UTF-8');
 
@@ -44,6 +39,10 @@ if (file_exists(__DIR__ . '/functions.inc.php')) {
     echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>functions.inc.php</strong> was not found!</div>';
     exit;
 }
+
+// Session vor jeder Ausgabe starten, damit das CSRF-Token den Weg GET -> POST übersteht
+// (HttpOnly, SameSite=Lax, Secure unter HTTPS).
+pn_php_session_start();
 
 // Check if language file exists and include
 if (file_exists(__DIR__ . '/lang/' . $pn_config['language'] . '.php')) {

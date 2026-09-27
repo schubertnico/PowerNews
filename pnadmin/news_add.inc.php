@@ -55,7 +55,7 @@ if ($pnadmin['canwritenews'] == 'YES') {
     } else {
         $news = new news();
         ?>
-      <form action="index.php?page=news&amp;subpage=add&amp;add=YES" method="post" novalidate>
+      <form action="index.php?page=news&amp;subpage=add&amp;add=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
           <fieldset>
               <legend class="h6"><?php echo L_NEWS_WRITENEWS; ?></legend>
 

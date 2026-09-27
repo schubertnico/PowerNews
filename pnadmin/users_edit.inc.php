@@ -58,7 +58,7 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                     $showemail = 'checked';
                 }
                 ?>
-          <form action="index.php?page=users&amp;subpage=edit&amp;edit=YES&amp;userid=<?php echo pn_int($userid); ?>" method="post" novalidate>
+          <form action="index.php?page=users&amp;subpage=edit&amp;edit=YES&amp;userid=<?php echo pn_int($userid); ?>" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
               <fieldset>
                   <legend class="h6"><?php echo L_USR_EDITUSR; ?></legend>
 

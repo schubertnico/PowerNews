@@ -425,6 +425,7 @@ define('L_QUICKLINKS', 'Schnellzugriff');
 define('L_ALL_PAGECREATEDIN', 'Seite erstellt in');
 define('L_ALL_SECONDSBY', 'Sekunden von');
 define('L_ALL_WELCOME', 'Willkommen in der PowerNews-Administration!<br><br>Gefundene Fehler kannst Du gerne an <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a> melden.');
+define('L_ALL_CSRFINVALID', 'Die Sicherheitsprüfung ist fehlgeschlagen, deshalb wurde nichts gespeichert. Das Formular war zu lange geöffnet oder stammt nicht aus der Administration. Bitte versuche es erneut.');
 define('L_ALL_BACK', 'Zurück');
 define('L_ALL_BACKTOFORM', 'Zurück zum Formular');
 define('L_ALL_BACKTOLIST', 'Zurück zur Liste');

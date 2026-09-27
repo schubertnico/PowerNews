@@ -52,7 +52,7 @@ if ($pnadmin['canwritepermissions'] == 'YES') {
         }
     } else {
         ?>
-      <form action="index.php?page=permissions&amp;subpage=add&amp;add=YES" method="post" novalidate>
+      <form action="index.php?page=permissions&amp;subpage=add&amp;add=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
           <fieldset>
               <legend class="h6"><?php echo L_PERM_ADDPERMISSIONS; ?></legend>
 

@@ -538,53 +538,6 @@ class HelperFunctionsTest extends TestCase
     }
 
     // ===========================
-    // menus::statusmenu Tests
-    // ===========================
-
-    #[Test]
-    public function statusmenuShowsLoginMessageWhenNotLoggedIn(): void
-    {
-        ob_start();
-        $this->menus->statusmenu('NO', '');
-        $output = ob_get_clean();
-
-        // L_USR_PLEASELOGIN = 'Please log in'
-        $this->assertStringContainsString('log in', strtolower($output));
-    }
-
-    #[Test]
-    public function statusmenuShowsUsernameWhenLoggedIn(): void
-    {
-        ob_start();
-        $this->menus->statusmenu('YES', 'admin');
-        $output = ob_get_clean();
-
-        $this->assertStringContainsString('admin', $output);
-    }
-
-    #[Test]
-    public function statusmenuShowsHelloWhenLoggedIn(): void
-    {
-        ob_start();
-        $this->menus->statusmenu('YES', 'testuser');
-        $output = ob_get_clean();
-
-        // L_USR_HELLO = 'Hello'
-        $this->assertStringContainsString('Hello', $output);
-        $this->assertStringContainsString('testuser', $output);
-    }
-
-    #[Test]
-    public function statusmenuEscapesUsername(): void
-    {
-        ob_start();
-        $this->menus->statusmenu('YES', '<script>alert(1)</script>');
-        $output = ob_get_clean();
-
-        $this->assertStringNotContainsString('<script>', $output);
-    }
-
-    // ===========================
     // menus::submenu Tests
     // ===========================
 

@@ -25,7 +25,7 @@ if ($pnadmin['canwritetemplates'] == 'YES') {
         $addtemplate->addtemplate();
     } else {
         ?>
-      <form action="index.php?page=templates&amp;subpage=add&amp;add=YES" method="post" novalidate>
+      <form action="index.php?page=templates&amp;subpage=add&amp;add=YES" method="post" novalidate><?php echo pnadmin_csrf_field(); ?>
           <fieldset>
               <legend class="h6"><?php echo L_TEMPL_ADDTEMPLATE; ?></legend>
 

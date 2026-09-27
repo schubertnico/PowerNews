@@ -186,7 +186,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
                     <a class="btn btn-outline-light btn-sm" href="index.php?page=profile"><?php echo L_USR_EDITPROFILE; ?></a>
 <?php } ?>
                     <a class="btn btn-outline-light btn-sm" href="../"><?php echo L_MENU_EXTERN; ?></a>
-                    <a class="btn btn-warning btn-sm" href="index.php?pnlogout=YES"><?php echo L_USR_LOGOUT; ?></a>
+                    <form action="index.php?pnlogout=YES" method="post" class="m-0"><?php echo pnadmin_csrf_field(); ?><button type="submit" class="btn btn-warning btn-sm"><?php echo L_USR_LOGOUT; ?></button></form>
                 </div>
             </div>
 <?php } else { ?>
@@ -261,6 +261,9 @@ $isLoggedIn = ($pnloggedin === 'YES');
 <?php } ?>
 <?php } ?>
 
+<?php if (!empty($pncsrferror)) { ?>
+        <div class="alert alert-danger" role="alert"><?php echo L_ALL_CSRFINVALID; ?></div>
+<?php } ?>
 <?php
 if (!$isLoggedIn) {
     include __DIR__ . '/login.inc.php';
