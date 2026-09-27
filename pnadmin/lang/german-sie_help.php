@@ -199,7 +199,7 @@
     </blockquote>
 
     <blockquote>
-    <a name="#configuration.dateformat"></a><b>DATUMS- & ZEITFORMAT</b><br>
+    <a id="help-configuration-dateformat"></a><b>DATUMS- & ZEITFORMAT</b><br>
     über diese Option kann man einstellen wie das Datum und die Zeit ausgegeben wird. Dabei sind eine Vielzahl
     von Platzhaltern möglich, hier ein Auszug:<br>
     <ul type="square">
@@ -425,7 +425,7 @@
   </ul>
 
     <blockquote>
-    <a name="#other.bbcode"></a><b>BB CODE</b><br>
+    <a id="help-other-bbcode"></a><b>BB CODE</b><br>
     Die folgenden BB Codes können in den News und in den Kommentaren (falls aktiviert) verwendet werden.
     Die Kommandos selbst sind <b>fett</b> gekennzeichnet.<br>
     <br>

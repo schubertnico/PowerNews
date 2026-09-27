@@ -89,7 +89,7 @@ define('L_CONF_BBCODE_DESC', 'Allow to use BB Code?');
 define('L_CONF_HTML', 'HTML');
 define('L_CONF_HTML_DESC', 'Allow to use HTML?');
 define('L_CONF_DATEFORMAT', 'Date format');
-define('L_CONF_DATEFORMAT_DESC', 'How to format the date? (<a href="./?page=other&subpage=help#configuration.dateformat">Help</a>)');
+define('L_CONF_DATEFORMAT_DESC', 'How to format the date? (<a href="index.php?page=other&amp;subpage=help#help-configuration-dateformat">Help</a>)');
 define('L_CONF_TEMPLATE', 'Template');
 define('L_CONF_TEMPLATE_DESC', 'What template should be used?');
 define('L_CONF_URL', 'URL');
@@ -111,7 +111,7 @@ define('L_CONF_RELATEDLINKS_DESC', 'Do you want to use related links?');
 define('L_CONF_RELATEDLINKS_NUM', 'Number of Related Links');
 define('L_CONF_RELATEDLINKS_NUM_DESC', 'How many related links do you want to use?');
 define('L_CONF_TIMEFORMAT', 'Time format');
-define('L_CONF_TIMEFORMAT_DESC', 'How to format the time? (<a href="./?page=other&subpage=help#configuration.dateformat">Help</a>)');
+define('L_CONF_TIMEFORMAT_DESC', 'How to format the time? (<a href="index.php?page=other&amp;subpage=help#help-configuration-dateformat">Help</a>)');
 define('L_CONF_EDITFAILED', 'Editing configuration failed!');
 
 /* Menu */
@@ -378,6 +378,8 @@ define('L_NEWS_OCTOBER', 'October');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'December');
 define('L_NEWS_NOCOMMENTTEXT', 'One or more comments are missing the text!');
+define('L_NEWS_INVALIDDATE', 'The publication date is invalid (e.g. 31 February). Please choose a valid date.');
+define('L_NEWS_BBCODE', 'BB code');
 define('L_NEWS_WRITEMORE', 'Write more news');
 
 /* Other */

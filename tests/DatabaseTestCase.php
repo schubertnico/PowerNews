@@ -277,6 +277,52 @@ abstract class DatabaseTestCase extends BaseTestCase
     }
 
     /**
+     * Rendert eine Admin-Unterseite (pnadmin/<datei>) wie index.php, mit den angegebenen
+     * GET/POST-Daten und Rechten. Fehlende Rechte gelten als „YES“.
+     *
+     * @param array<string, mixed> $get
+     * @param array<string, mixed> $post
+     * @param array<string, string> $perms
+     */
+    protected function renderAdminPage(string $file, array $get, array $post = [], array $perms = []): string
+    {
+        global $pn_config, $pnconfig, $pn_handler, $pnuser;
+
+        $_GET = $get;
+        $_POST = $post;
+        $pnadmin = array_merge([
+            'loggedin' => 'YES',
+            'canreadtemplates' => 'YES', 'canwritetemplates' => 'YES',
+            'canreadconfig' => 'YES', 'canwriteconfig' => 'YES',
+            'canreadusers' => 'YES', 'canwriteusers' => 'YES',
+            'canreadpermissions' => 'YES', 'canwritepermissions' => 'YES',
+            'canreadcategories' => 'YES', 'canwritecategories' => 'YES',
+            'canreadnews' => 'YES', 'canwritenews' => 'YES',
+            'canreadcomments' => 'YES', 'canwritecomments' => 'YES',
+        ], $perms);
+
+        ob_start();
+        include __DIR__ . '/../pnadmin/' . $file;
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Liest eine Zeile aus einer Tabelle per ID.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function fetchRow(string $table, int $id): ?array
+    {
+        global $pn_handler;
+
+        $result = pn_query_by_id($pn_handler, 'SELECT * FROM ' . $table . ' WHERE id = ?', $id);
+        $row = $result ? mysqli_fetch_assoc($result) : null;
+
+        return is_array($row) ? $row : null;
+    }
+
+    /**
      * Capture output from a callable.
      */
     protected function captureOutput(callable $fn): string

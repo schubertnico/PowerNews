@@ -71,8 +71,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
             color: #ffffff;
             font-weight: 600;
             /* Sperrung per CSS statt "K O N F I G U R A T I O N" im Text (Screenreader lesen ganze Wörter). */
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
         .pn-admin-status {
             background-color: #e7f1ff;

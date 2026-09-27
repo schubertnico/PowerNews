@@ -16,6 +16,29 @@ function pnadmin_escape(string $value): string
 }
 
 /**
+ * Baut die WHERE-Bedingung für die Admin-Suche. Textfelder werden per LIKE durchsucht,
+ * „id“ als exakter Zahlenvergleich. Unbekannte Felder fallen auf das erste Textfeld zurück.
+ *
+ * @param list<string> $textFields
+ *
+ * @return array{0: string, 1: string, 2: int|string}
+ */
+function pnadmin_search_condition(string $searchin, string $searchstring, array $textFields): array
+{
+    if ($searchin === 'id') {
+        $id = filter_var(trim($searchstring), FILTER_VALIDATE_INT);
+
+        return ['id = ?', 'i', $id === false ? 0 : $id];
+    }
+
+    if (!in_array($searchin, $textFields, true)) {
+        $searchin = $textFields[0];
+    }
+
+    return ['`' . $searchin . '` LIKE ?', 's', '%' . $searchstring . '%'];
+}
+
+/**
  * Check if password is legacy base64 encoded (not bcrypt).
  */
 function pnadmin_is_legacy_password(string $hash): bool
@@ -933,15 +956,9 @@ class user
     {
         global $pn_config, $pn_handler;
 
-        $allowedFields = ['nickname', 'email'];
-
-        if (!in_array($searchin, $allowedFields, true)) {
-            $searchin = 'nickname';
-        }
-
-        $searchPattern = '%' . $searchstring . '%';
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE `' . $searchin . '` LIKE ?');
-        mysqli_stmt_bind_param($stmt, 's', $searchPattern);
+        [$where, $type, $value] = pnadmin_search_condition($searchin, $searchstring, ['nickname', 'email']);
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE ' . $where);
+        mysqli_stmt_bind_param($stmt, $type, $value);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
@@ -956,7 +973,7 @@ class user
                 $i2 = $i - 1;
                 $current = $i2 * 25;
                 $isActive = $current === $activeCurrent ? ' active' : '';
-                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=users&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=users&amp;subpage=search&amp;search=YES&amp;searchin=<?php echo pnadmin_escape($searchin); ?>&amp;searchstring=<?php echo pnadmin_escape(rawurlencode($searchstring)); ?>&amp;current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
         }
     }
@@ -965,15 +982,9 @@ class user
     {
         global $pn_config, $pn_handler;
 
-        $allowedFields = ['nickname', 'email'];
-
-        if (!in_array($searchin, $allowedFields, true)) {
-            $searchin = 'nickname';
-        }
-
-        $searchPattern = '%' . $searchstring . '%';
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE `' . $searchin . '` LIKE ? ORDER BY nickname LIMIT ?, 25');
-        mysqli_stmt_bind_param($stmt, 'si', $searchPattern, $current);
+        [$where, $type, $value] = pnadmin_search_condition($searchin, $searchstring, ['nickname', 'email']);
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE ' . $where . ' ORDER BY nickname LIMIT ?, 25');
+        mysqli_stmt_bind_param($stmt, $type . 'i', $value, $current);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
@@ -1675,7 +1686,12 @@ class news
             }
         }
 
-        $addtime = mktime((int) ($time['hour'] ?? 0), (int) ($time['min'] ?? 0), 0, (int) ($time['month'] ?? 1), (int) ($time['day'] ?? 1), (int) ($time['year'] ?? date('Y')));
+        $addtime = $time === [] ? time() : self::parsetime($time);
+
+        if ($addtime === null) {
+            return L_NEWS_INVALIDDATE;
+        }
+
         $title = addslashes($title);
         $text = addslashes($text);
         $moretext = addslashes($moretext);
@@ -1942,56 +1958,173 @@ class news
         return $error;
     }
 
+    /**
+     * Speichert eine bearbeitete News oder löscht sie samt Kommentaren ($delete === 'YES').
+     *
+     * Leere Arrays für die weiterführenden Links bedeuten „unverändert lassen“: Ist die
+     * Funktion in der Konfiguration abgeschaltet, sendet das Formular keine Linkfelder,
+     * und vorhandene Links dürfen dann nicht verloren gehen.
+     */
     public function editnews(int $newsid, int $catid, string $title, string $text, string $moretext, string $status, string $delete, array $rl_title, array $rl_url, array $rl_target, array $time): string
     {
         global $pn_config, $pn_handler;
-        $relatedlinks = '';
-        $counter = count($rl_title);
-
-        for ($i = 0; $i < $counter; ++$i) {
-            if (trim((string) $rl_title[$i]) && trim((string) $rl_url[$i])) {
-                $relatedlinks .= $rl_title[$i] . '!@!@!' . $rl_url[$i] . '!@!@!' . ($rl_target[$i] ?? '') . "\n";
-            }
-        }
-
-        $newtime = mktime((int) ($time['hour'] ?? 0), (int) ($time['min'] ?? 0), 0, (int) ($time['month'] ?? 1), (int) ($time['day'] ?? 1), (int) ($time['year'] ?? date('Y')));
-        $error = '';
 
         if ($delete === 'YES') {
-            $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['newstable'] . ' WHERE id = ?');
-            mysqli_stmt_bind_param($stmt, 'i', $newsid);
+            return $this->deletenews($newsid);
+        }
 
-            if (!mysqli_stmt_execute($stmt)) {
-                $error = L_NEWS_NEWSNOTDELETED;
-            }
-        } else {
-            $title = addslashes($title);
-            $text = addslashes($text);
-            $moretext = addslashes($moretext);
-            $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['newstable'] . ' SET time = ?, catid = ?, title = ?, text = ?, moretext = ?, status = ?, relatedlinks = ? WHERE id = ?');
-            mysqli_stmt_bind_param($stmt, 'iisssssi', $newtime, $catid, $title, $text, $moretext, $status, $relatedlinks, $newsid);
+        $current = $this->getnewsdata($newsid);
 
-            if (!mysqli_stmt_execute($stmt)) {
-                $error = L_NEWS_NEWSNOTEDITED;
+        if ($current === null) {
+            return L_NEWS_CHOOSENEWS;
+        }
+
+        $relatedlinks = (string) $current['relatedlinks'];
+
+        if ($rl_title !== [] || $rl_url !== []) {
+            $relatedlinks = '';
+            $counter = count($rl_title);
+
+            for ($i = 0; $i < $counter; ++$i) {
+                if (trim((string) $rl_title[$i]) && trim((string) ($rl_url[$i] ?? ''))) {
+                    $relatedlinks .= $rl_title[$i] . '!@!@!' . $rl_url[$i] . '!@!@!' . ($rl_target[$i] ?? '') . "\n";
+                }
             }
         }
 
-        return $error;
+        $newtime = self::parsetime($time);
+
+        if ($newtime === null) {
+            return L_NEWS_INVALIDDATE;
+        }
+
+        $title = addslashes($title);
+        $text = addslashes($text);
+        $moretext = addslashes($moretext);
+        $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['newstable'] . ' SET time = ?, catid = ?, title = ?, text = ?, moretext = ?, status = ?, relatedlinks = ? WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'iisssssi', $newtime, $catid, $title, $text, $moretext, $status, $relatedlinks, $newsid);
+
+        if (!mysqli_stmt_execute($stmt)) {
+            return L_NEWS_NEWSNOTEDITED;
+        }
+
+        return '';
+    }
+
+    /**
+     * Löscht eine News und alle zugehörigen Kommentare.
+     */
+    public function deletenews(int $newsid): string
+    {
+        global $pn_config, $pn_handler;
+
+        $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['newstable'] . ' WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $newsid);
+
+        if (!mysqli_stmt_execute($stmt)) {
+            return L_NEWS_NEWSNOTDELETED;
+        }
+
+        $cstmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ?');
+        mysqli_stmt_bind_param($cstmt, 'i', $newsid);
+        mysqli_stmt_execute($cstmt);
+
+        return '';
+    }
+
+    /**
+     * Wandelt die Formularwerte des Erscheinungstermins in einen Zeitstempel um.
+     * Liefert null, wenn ein Wert fehlt oder das Datum nicht existiert (z. B. 31.02.).
+     */
+    public static function parsetime(array $time): ?int
+    {
+        $parts = [];
+
+        foreach (['day' => [1, 31], 'month' => [1, 12], 'year' => [1970, 2100], 'hour' => [0, 23], 'min' => [0, 59]] as $key => [$min, $max]) {
+            $value = filter_var($time[$key] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => $min, 'max_range' => $max]]);
+
+            if ($value === false) {
+                return null;
+            }
+            $parts[$key] = $value;
+        }
+
+        if (!checkdate($parts['month'], $parts['day'], $parts['year'])) {
+            return null;
+        }
+
+        $timestamp = mktime($parts['hour'], $parts['min'], 0, $parts['month'], $parts['day'], $parts['year']);
+
+        return $timestamp === false ? null : $timestamp;
+    }
+
+    /**
+     * Gibt die Auswahlfelder für den Erscheinungstermin aus. Die Jahresliste reicht zehn
+     * Jahre zurück (Archivpflege) und fünf Jahre voraus und enthält immer das Jahr der News.
+     */
+    public function timeselect(int $timestamp): void
+    {
+        $selected = [
+            'day' => (int) date('j', $timestamp),
+            'month' => (int) date('n', $timestamp),
+            'year' => (int) date('Y', $timestamp),
+            'hour' => (int) date('G', $timestamp),
+            'min' => (int) date('i', $timestamp),
+        ];
+        $currentYear = (int) date('Y');
+        $monthNames = [
+            1 => L_NEWS_JANUARY, 2 => L_NEWS_FEBRUARY, 3 => L_NEWS_MARCH, 4 => L_NEWS_APRIL,
+            5 => L_NEWS_MAY, 6 => L_NEWS_JUNE, 7 => L_NEWS_JULY, 8 => L_NEWS_AUGUST,
+            9 => L_NEWS_SEPTEMBER, 10 => L_NEWS_OCTOBER, 11 => L_NEWS_NOVEMBER, 12 => L_NEWS_DECEMBER,
+        ];
+        $fields = [
+            'day' => [L_NEWS_DAY, range(1, 31)],
+            'month' => [L_NEWS_MONTH, range(1, 12)],
+            'year' => [L_NEWS_YEAR, range(min($currentYear - 10, $selected['year']), max($currentYear + 5, $selected['year']))],
+            'hour' => [L_NEWS_HOUR, range(0, 23)],
+            'min' => [L_NEWS_MIN, range(0, 59)],
+        ];
+
+        foreach ($fields as $key => [$label, $values]) {
+            if ($key === 'hour') {
+                echo '<span aria-hidden="true">&#64;</span>';
+            } elseif ($key === 'min') {
+                echo '<span aria-hidden="true">:</span>';
+            }
+            echo '<select class="form-select form-select-sm w-auto" name="time[' . $key . ']" aria-label="' . pnadmin_escape($label) . '">';
+
+            foreach ($values as $value) {
+                $text = match ($key) {
+                    'month' => $monthNames[$value],
+                    'year' => (string) $value,
+                    default => sprintf('%02d', $value),
+                };
+                echo '<option value="' . $value . '"' . ($value === $selected[$key] ? ' selected' : '') . '>' . pnadmin_escape($text) . '</option>';
+            }
+            echo '</select>';
+        }
+    }
+
+    /**
+     * Hinweis unter den Textfeldern, ob BB-Code in News ausgewertet wird.
+     */
+    public function formathint(): string
+    {
+        global $pnconfig;
+
+        $active = in_array($pnconfig['bbcode'] ?? 'NO', ['News', 'Comments/News'], true);
+
+        return '(<a href="index.php?page=other&amp;subpage=help#help-other-bbcode" target="_blank" rel="noopener noreferrer">'
+            . L_NEWS_BBCODE . '</a> <strong>' . ($active ? L_NEWS_ON : L_NEWS_OFF) . '</strong>)';
     }
 
     public function listsearchpages(string $searchin, string $searchstring): void
     {
         global $pn_config, $pn_handler;
 
-        $allowedFields = ['title', 'text'];
-
-        if (!in_array($searchin, $allowedFields, true)) {
-            $searchin = 'title';
-        }
-
-        $searchPattern = '%' . $searchstring . '%';
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' WHERE `' . $searchin . '` LIKE ?');
-        mysqli_stmt_bind_param($stmt, 's', $searchPattern);
+        [$where, $type, $value] = pnadmin_search_condition($searchin, $searchstring, ['title', 'text', 'moretext']);
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' WHERE ' . $where);
+        mysqli_stmt_bind_param($stmt, $type, $value);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
@@ -2006,7 +2139,7 @@ class news
                 $i2 = $i - 1;
                 $current = $i2 * 25;
                 $isActive = $current === $activeCurrent ? ' active' : '';
-                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&subpage=search&searchin=<?php echo pnadmin_escape($searchin); ?>&searchstring=<?php echo pnadmin_escape($searchstring); ?>&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&amp;subpage=search&amp;search=YES&amp;searchin=<?php echo pnadmin_escape($searchin); ?>&amp;searchstring=<?php echo pnadmin_escape(rawurlencode($searchstring)); ?>&amp;current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
         }
     }
@@ -2015,15 +2148,9 @@ class news
     {
         global $pn_config, $pnconfig, $pn_handler;
 
-        $allowedFields = ['title', 'text'];
-
-        if (!in_array($searchin, $allowedFields, true)) {
-            $searchin = 'title';
-        }
-
-        $searchPattern = '%' . $searchstring . '%';
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' WHERE `' . $searchin . '` LIKE ? ORDER BY id DESC LIMIT ?, 25');
-        mysqli_stmt_bind_param($stmt, 'si', $searchPattern, $current);
+        [$where, $type, $value] = pnadmin_search_condition($searchin, $searchstring, ['title', 'text', 'moretext']);
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' WHERE ' . $where . ' ORDER BY id DESC LIMIT ?, 25');
+        mysqli_stmt_bind_param($stmt, $type . 'i', $value, $current);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);

@@ -11,10 +11,6 @@ declare(strict_types=1);
 $newsid = pn_get_id('newsid');
 $edit = pn_get_string('edit', 10);
 $editcomments = pn_get_string('editcomments', 10);
-$catid = pn_get_id('catid');
-$title = pn_get_string('title', 150);
-$delete = pn_get_string('delete', 10);
-$moretext = pn_get_string('moretext', 65535);
 
 if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
     if ($newsid > 0) {
@@ -60,14 +56,21 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                         }
                     }
                 } else {
+                    // Alle Formularwerte kommen per POST (B02). Felder, die das Formular je nach
+                    // Konfiguration nicht anzeigt, behalten ihren gespeicherten Wert.
+                    $current = $editnews->getnewsdata($newsid) ?? [];
+                    $delete = pn_validate_yesno($_POST['delete'] ?? '');
+                    $title = pn_post_string('title', 150);
                     $text = pn_post_string('text', 65535);
-                    $status = pn_validate_status($_POST['status'] ?? '');
-                    $rl_title = $_POST['rl_title'] ?? [];
-                    $rl_url = $_POST['rl_url'] ?? [];
-                    $rl_target = $_POST['rl_target'] ?? [];
-                    $time = $_POST['time'] ?? [];
+                    $catid = isset($_POST['catid']) ? pn_post_id('catid') : (int) ($current['catid'] ?? 0);
+                    $moretext = isset($_POST['moretext']) ? pn_post_string('moretext', 65535) : (string) ($current['moretext'] ?? '');
+                    $status = pn_validate_status($_POST['status'] ?? '', (string) ($current['status'] ?? 'Activated'));
+                    $rl_title = is_array($_POST['rl_title'] ?? null) ? $_POST['rl_title'] : [];
+                    $rl_url = is_array($_POST['rl_url'] ?? null) ? $_POST['rl_url'] : [];
+                    $rl_target = is_array($_POST['rl_target'] ?? null) ? $_POST['rl_target'] : [];
+                    $time = is_array($_POST['time'] ?? null) ? $_POST['time'] : [];
 
-                    if (($pnconfig['categories'] == 'YES' && $catid === 0) || $title === '' || $text === '') {
+                    if ($delete !== 'YES' && (($pnconfig['categories'] == 'YES' && $catid === 0) || $title === '' || $text === '')) {
                         ?>
                         <div class="alert alert-danger" role="alert">
                             <?php echo L_NEWS_TITLEANDTEXTNEEDED; ?>
@@ -107,11 +110,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                     }
                 }
             } else {
-                $data = $editnews->getnewsdata($newsid);
-
-                if (isset($data['showemail']) && $data['showemail'] == 'YES') {
-                    $showemail = 'checked';
-                }
+                $data = $editnews->getnewsdata($newsid) ?? [];
                 ?>
           <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>" method="post" novalidate>
               <fieldset>
@@ -128,10 +127,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
 <?php if ($pnconfig['categories'] == 'YES') { ?>
                   <div class="mb-3">
                       <label class="form-label fw-bold"><?php echo L_NEWS_CATEGORY; ?></label>
-<?php
-                      $news = new news();
-                      $news->getcatdropdown($data['catid']);
-?>
+<?php $editnews->getcatdropdown((int) $data['catid']); ?>
                       <div class="form-text"><?php echo L_NEWS_CATEGORY_DESC; ?></div>
                   </div>
 <?php } ?>
@@ -139,89 +135,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                   <div class="mb-3">
                       <label class="form-label fw-bold"><?php echo L_NEWS_TIME; ?></label>
                       <div class="d-flex flex-wrap gap-2 align-items-center">
-                          <select class="form-select form-select-sm w-auto" name="time[day]" aria-label="<?php echo L_NEWS_DAY; ?>">
-                              <option value=""><?php echo L_NEWS_DAY; ?></option>
-<?php
-                              $this_day = date('d', $data['time']);
-                              for ($i = 1; $i < 32; ++$i) {
-                                  if ($i < 10) {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-                                  } else {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_day == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-                                  }
-                              }
-?>
-                          </select>
-                          <select class="form-select form-select-sm w-auto" name="time[month]" aria-label="<?php echo L_NEWS_MONTH; ?>">
-                              <option value=""><?php echo L_NEWS_MONTH; ?></option>
-<?php
-                              $this_month = date('m', $data['time']);
-                              for ($i = 1; $i < 13; ++$i) {
-                                  if ($i === 1) {
-                                      $month = L_NEWS_JANUARY;
-                                  } elseif ($i === 2) {
-                                      $month = L_NEWS_FEBRUARY;
-                                  } elseif ($i === 3) {
-                                      $month = L_NEWS_MARCH;
-                                  } elseif ($i === 4) {
-                                      $month = L_NEWS_APRIL;
-                                  } elseif ($i === 5) {
-                                      $month = L_NEWS_MAY;
-                                  } elseif ($i === 6) {
-                                      $month = L_NEWS_JUNE;
-                                  } elseif ($i === 7) {
-                                      $month = L_NEWS_JULY;
-                                  } elseif ($i === 8) {
-                                      $month = L_NEWS_AUGUST;
-                                  } elseif ($i === 9) {
-                                      $month = L_NEWS_SEPTEMBER;
-                                  } elseif ($i === 10) {
-                                      $month = L_NEWS_OCTOBER;
-                                  } elseif ($i === 11) {
-                                      $month = L_NEWS_NOVEMBER;
-                                  } elseif ($i === 12) {
-                                      $month = L_NEWS_DECEMBER;
-                                  }
-                                  ?><option value="<?php echo $i; ?>" <?php echo $this_month == $i ? 'selected' : ''; ?>><?php echo $month; ?></option><?php
-                              }
-?>
-                          </select>
-                          <select class="form-select form-select-sm w-auto" name="time[year]" aria-label="<?php echo L_NEWS_YEAR; ?>">
-                              <option value=""><?php echo L_NEWS_YEAR; ?></option>
-<?php
-                              $this_year = date('Y', $data['time']);
-                              ?><option value="<?php echo $this_year; ?>" selected><?php echo $this_year; ?></option><?php
-                              ?><option value="<?php echo ++$this_year; ?>"><?php echo $this_year; ?></option><?php
-?>
-                          </select>
-                          <span aria-hidden="true">&#64;</span>
-                          <select class="form-select form-select-sm w-auto" name="time[hour]" aria-label="<?php echo L_NEWS_HOUR; ?>">
-                              <option value=""><?php echo L_NEWS_HOUR; ?></option>
-<?php
-                              $this_hour = date('H', $data['time']);
-                              for ($i = 0; $i < 24; ++$i) {
-                                  if ($i < 10) {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-                                  } else {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_hour == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-                                  }
-                              }
-?>
-                          </select>
-                          <span aria-hidden="true">:</span>
-                          <select class="form-select form-select-sm w-auto" name="time[min]" aria-label="<?php echo L_NEWS_MIN; ?>">
-                              <option value=""><?php echo L_NEWS_MIN; ?></option>
-<?php
-                              $this_min = date('i', $data['time']);
-                              for ($i = 0; $i < 60; ++$i) {
-                                  if ($i < 10) {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>>0<?php echo $i; ?></option><?php
-                                  } else {
-                                      ?><option value="<?php echo $i; ?>" <?php echo $this_min == $i ? 'selected' : ''; ?>><?php echo $i; ?></option><?php
-                                  }
-                              }
-?>
-                          </select>
+                          <?php $editnews->timeselect((int) $data['time']); ?>
                       </div>
                       <div class="form-text"><?php echo L_NEWS_TIME_DESC; ?></div>
                   </div>
@@ -236,7 +150,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                       <label for="pn_text" class="form-label fw-bold"><?php echo L_NEWS_TEXT; ?></label>
                       <textarea class="form-control" name="text" id="pn_text" rows="10" required aria-describedby="pn_text_help"><?php echo pnadmin_escape($data['text']); ?></textarea>
                       <div id="pn_text_help" class="form-text">
-                          <?php echo L_NEWS_TEXT_DESC; ?>
+                          <?php echo L_NEWS_TEXT_DESC; ?> <?php echo $editnews->formathint(); ?>
                       </div>
                   </div>
 
@@ -244,7 +158,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                   <div class="mb-3">
                       <label for="pn_moretext" class="form-label fw-bold"><?php echo L_NEWS_LONGTEXT; ?></label>
                       <textarea class="form-control" name="moretext" id="pn_moretext" rows="10" aria-describedby="pn_moretext_help"><?php echo pnadmin_escape($data['moretext']); ?></textarea>
-                      <div id="pn_moretext_help" class="form-text"><?php echo L_NEWS_LONGTEXT_DESC; ?></div>
+                      <div id="pn_moretext_help" class="form-text"><?php echo L_NEWS_LONGTEXT_DESC; ?> <?php echo $editnews->formathint(); ?></div>
                   </div>
 <?php } ?>
 
