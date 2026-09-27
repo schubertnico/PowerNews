@@ -16,7 +16,6 @@ return RectorConfig::configure()
         __DIR__ . '/archive.php',
         __DIR__ . '/user.php',
         __DIR__ . '/sendnews.php',
-        __DIR__ . '/convert.php',
         __DIR__ . '/install.php',
         __DIR__ . '/update.php',
         __DIR__ . '/header.inc.php',
