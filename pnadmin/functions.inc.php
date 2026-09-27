@@ -106,58 +106,28 @@ function pnadmin_hash_password(string $password): string
 }
 
 /**
- * Prueft, ob der aktuelle pncookie einen eingeloggten Admin mit canwriteconfig=YES
- * in pn_permissions hinterlegt. Gibt das kombinierte User+Permissions-Array zurueck
- * oder null.
+ * Prüft, ob das Admin-Cookie zu einem eingeloggten Admin mit canwriteconfig=YES gehört.
+ * Gibt das kombinierte User+Permissions-Array zurück oder null.
  *
  * Wird von update.php und convert.php genutzt, um den Admin-Zugriff zu verifizieren,
- * ohne dass der volle phpheader-Flow benoetigt wird.
+ * ohne dass der volle phpheader-Flow benötigt wird.
  */
 function pnadmin_auth_check(): ?array
 {
     global $pn_config, $pn_handler;
 
-    if (empty($_COOKIE['pncookie'])) {
+    $session = pn_session_parse_cookie(PN_COOKIE_ADMIN);
+
+    if ($session === null) {
         return null;
     }
 
-    $decoded = base64_decode((string) $_COOKIE['pncookie'], true);
-    if ($decoded === false) {
+    [$userId, $token] = $session;
+    $user = (new getadmin())->getuserdata($userId, $token);
+
+    if (($user['loggedin'] ?? 'NO') !== 'YES') {
         return null;
     }
-
-    $parts = explode('@@@@@', $decoded, 2);
-    if (count($parts) !== 2) {
-        return null;
-    }
-
-    $userId = (int) $parts[0];
-    $token = $parts[1];
-
-    if ($userId <= 0 || !preg_match('/^[a-f0-9]{64}$/', $token)) {
-        return null;
-    }
-
-    $tokenHash = hash('sha256', $token);
-    $now = time();
-
-    // User muss Activated sein UND eine gueltige, nicht abgelaufene Session in pn_sessions haben.
-    $stmt = mysqli_prepare(
-        $pn_handler,
-        'SELECT u.* FROM ' . $pn_config['usertable'] . ' u '
-        . 'INNER JOIN pn_sessions s ON s.userid = u.id '
-        . 'WHERE u.id = ? AND s.token_hash = ? AND s.expires > ? AND u.status = ' . "'Activated'"
-    );
-    if (!$stmt) {
-        return null;
-    }
-    mysqli_stmt_bind_param($stmt, 'isi', $userId, $tokenHash, $now);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if (mysqli_num_rows($result) !== 1) {
-        return null;
-    }
-    $user = mysqli_fetch_array($result);
 
     // Permissions laden.
     $pstmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
@@ -224,7 +194,7 @@ class login
             return L_USR_LOGINFAILED;
         }
 
-        $this->logincookie($userId, '');
+        $this->logincookie($userId);
 
         return 'loggedin';
     }
@@ -246,33 +216,17 @@ class login
         return '';
     }
 
-    public function logincookie(int $userid, string $password): void
+    /**
+     * Legt eine Admin-Sitzung an (B25/B26): Token nur in pn_sessions (gehasht), Laufzeit
+     * 8 Stunden mit gleitender Verlängerung, Cookie „pnadmincookie“ endet mit dem Browser.
+     */
+    public function logincookie(int $userid): void
     {
         global $pncookie, $pn_handler;
 
-        // Neue Session (analog pn_user::setusercookie): userId:token in pn_sessions speichern,
-        // Cookie weiterhin als base64(userid@@@@@token) schreiben, damit phpheader.inc.php
-        // das Format parsen kann. Das Passwort-Argument wird nicht mehr im Cookie abgelegt.
-        $token = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $token);
-        $now = time();
-        $expires = $now + 360 * 24 * 3600;
-        $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
-        $ip = pn_client_ip();
-
-        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmt, 'isiiss', $userid, $tokenHash, $now, $expires, $ua, $ip);
-        mysqli_stmt_execute($stmt);
-
-        $cookiestring = base64_encode($userid . '@@@@@' . $token);
-
-        setcookie('pncookie', $cookiestring, [
-            'expires' => $expires,
-            'path' => '/',
-            'secure' => isset($_SERVER['HTTPS']),
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ]);
+        $token = pn_session_create($pn_handler, $userid, 'admin');
+        $cookiestring = $userid . ':' . $token;
+        pn_session_cookie(PN_COOKIE_ADMIN, $cookiestring, 0);
 
         $pncookie = $cookiestring;
     }
@@ -281,29 +235,14 @@ class login
     {
         global $pn_handler;
 
-        // Session-Row in pn_sessions entfernen, falls Cookie vorhanden.
-        if (!empty($_COOKIE['pncookie'])) {
-            $decoded = base64_decode((string) $_COOKIE['pncookie'], true);
-            if ($decoded !== false) {
-                $parts = explode('@@@@@', $decoded, 2);
-                if (count($parts) === 2 && preg_match('/^[a-f0-9]{64}$/', $parts[1])) {
-                    $tokenHash = hash('sha256', $parts[1]);
-                    $stmt = mysqli_prepare($pn_handler, 'DELETE FROM pn_sessions WHERE token_hash = ?');
-                    if ($stmt) {
-                        mysqli_stmt_bind_param($stmt, 's', $tokenHash);
-                        mysqli_stmt_execute($stmt);
-                    }
-                }
-            }
+        $session = pn_session_parse_cookie(PN_COOKIE_ADMIN);
+
+        if ($session !== null) {
+            pn_session_delete($pn_handler, $session[1], 'admin');
         }
 
-        setcookie('pncookie', '', [
-            'expires' => time() - 10,
-            'path' => '/',
-            'secure' => isset($_SERVER['HTTPS']),
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ]);
+        pn_session_cookie(PN_COOKIE_ADMIN, '', time() - 3600);
+        unset($_COOKIE[PN_COOKIE_ADMIN]);
     }
 }
 
@@ -621,13 +560,11 @@ class email
 class getadmin
 {
     /**
-     * Holt User-Daten und validiert die Session.
-     * Der zweite Parameter ist entweder (neu) ein 64-hex Session-Token, dessen sha256
-     * in pn_sessions existieren und nicht abgelaufen sein muss, oder (legacy) der
-     * bcrypt-Passwort-Hash aus der DB - Abwaertskompatibilitaet fuer aeltere Tests
-     * und etwaige bestehende Cookies.
+     * Holt die Benutzerdaten und prüft die Admin-Sitzung. Als Nachweis gilt ausschließlich
+     * ein gültiges Sitzungstoken aus pn_sessions; der gespeicherte Passwort-Hash wird nicht
+     * mehr akzeptiert (B25).
      */
-    public function getuserdata(int $userid, string $password): array
+    public function getuserdata(int $userid, string $token): array
     {
         global $pn_config, $pn_handler;
 
@@ -648,21 +585,7 @@ class getadmin
                 return $user;
             }
 
-            // Neuer Pfad: 64-hex Token, Session-Row in pn_sessions pruefen.
-            if (preg_match('/^[a-f0-9]{64}$/', $password)) {
-                $tokenHash = hash('sha256', $password);
-                $now = time();
-                $sstmt = mysqli_prepare($pn_handler, 'SELECT id FROM pn_sessions WHERE userid = ? AND token_hash = ? AND expires > ?');
-                if ($sstmt) {
-                    mysqli_stmt_bind_param($sstmt, 'isi', $userid, $tokenHash, $now);
-                    mysqli_stmt_execute($sstmt);
-                    $sres = mysqli_stmt_get_result($sstmt);
-                    if (mysqli_num_rows($sres) === 1) {
-                        $user['loggedin'] = 'YES';
-                    }
-                }
-            } elseif ($password !== '' && $password === $user['password']) {
-                // Legacy-Pfad: Vergleich mit gespeichertem Passwort-Hash.
+            if (preg_match('/^[a-f0-9]{64}$/', $token) === 1 && pn_session_validate($pn_handler, $userid, $token, 'admin')) {
                 $user['loggedin'] = 'YES';
             }
         }
@@ -972,6 +895,7 @@ class user
                         $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET password = ? WHERE id = ?');
                         mysqli_stmt_bind_param($stmt, 'si', $hashedPassword, $userid);
                         mysqli_stmt_execute($stmt);
+                        pn_sessions_delete_for_user($pn_handler, $userid);
                     }
 
                     $showemail = pn_validate_yesno($showemail, 'NO');
@@ -981,6 +905,10 @@ class user
 
                     if (!pnadmin_execute($stmt)) {
                         return L_USR_SAVEFAILED;
+                    }
+
+                    if ($status === 'Deactivated') {
+                        pn_sessions_delete_for_user($pn_handler, $userid);
                     }
 
                     if ($sendemail === 'YES') {
@@ -1147,6 +1075,9 @@ class profile
 
                     if (!pnadmin_execute($stmt3)) {
                         $error = L_USR_SAVEFAILED;
+                    } elseif ($changePassword) {
+                        // Neues Passwort: alle Sitzungen beenden, auch die aktuelle (B26).
+                        pn_sessions_delete_for_user($pn_handler, $userid);
                     }
                 } else {
                     $error = L_USR_USRALREADYEXISTS;

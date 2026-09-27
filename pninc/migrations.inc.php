@@ -29,6 +29,7 @@ function pn_migrations(): array
 {
     return [
         '3.12-unslash-content' => 'pn_migration_unslash_content',
+        '3.12-purge-legacy-admin-sessions' => 'pn_migration_purge_legacy_sessions',
     ];
 }
 
@@ -143,4 +144,22 @@ function pn_migration_unslash_content(mysqli $db, array $pn_config): string
     }
 
     return sprintf('%d Datensätze von überzähligen Backslashes bereinigt.', $changed);
+}
+
+/**
+ * B25/B26: Admin-Sitzungen liefen bis 3.11 fast ein Jahr und wurden mit demselben Hash wie
+ * Frontend-Sitzungen gespeichert. Sie werden beendet; abgelaufene Sitzungen entfernt.
+ *
+ * @param array<string, mixed> $pn_config
+ */
+function pn_migration_purge_legacy_sessions(mysqli $db, array $pn_config): string
+{
+    $maxLifetime = PN_SESSION_FRONTEND_LIFETIME + 86400;
+    $stmt = mysqli_prepare($db, 'DELETE FROM pn_sessions WHERE expires - created > ?');
+    mysqli_stmt_bind_param($stmt, 'i', $maxLifetime);
+    mysqli_stmt_execute($stmt);
+    $removed = mysqli_stmt_affected_rows($stmt);
+    pn_sessions_purge_expired($db);
+
+    return sprintf('%d langlaufende Admin-Sitzungen beendet.', max(0, (int) $removed));
 }

@@ -814,27 +814,9 @@ class pn_user
             return null;
         }
 
-        $token = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $token);
-        $now = time();
-        $expires = $now + 3600 * 24 * 30;
         $userId = (int) $pnuser['id'];
-        $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
-        $ip = pn_client_ip();
-
-        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmt, 'isiiss', $userId, $tokenHash, $now, $expires, $ua, $ip);
-        mysqli_stmt_execute($stmt);
-
-        $cookieValue = $userId . ':' . $token;
-
-        setcookie('pncookie', $cookieValue, [
-            'expires' => $expires,
-            'path' => '/',
-            'secure' => isset($_SERVER['HTTPS']),
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ]);
+        $token = pn_session_create($pn_handler, $userId, 'frontend');
+        pn_session_cookie(PN_COOKIE_FRONTEND, $userId . ':' . $token, time() + PN_SESSION_FRONTEND_LIFETIME);
 
         $pnuser['loggedin'] = 'YES';
 
@@ -846,23 +828,14 @@ class pn_user
     {
         global $pn_config, $pn_handler;
 
-        if (empty($_COOKIE['pncookie'])) {
+        $session = pn_session_parse_cookie(PN_COOKIE_FRONTEND);
+
+        if ($session === null) {
             return null;
         }
 
-        $parts = explode(':', (string) $_COOKIE['pncookie'], 2);
-        if (count($parts) !== 2) {
-            return null;
-        }
-
-        $userId = (int) $parts[0];
-        $token = $parts[1];
-
-        if ($userId <= 0 || !preg_match('/^[a-f0-9]{64}$/', $token)) {
-            return null;
-        }
-
-        $tokenHash = hash('sha256', $token);
+        [$userId, $token] = $session;
+        $tokenHash = pn_session_hash($token, 'frontend');
         $now = time();
 
         $stmt = mysqli_prepare($pn_handler, 'SELECT u.* FROM ' . $pn_config['usertable'] . ' u INNER JOIN pn_sessions s ON s.userid = u.id WHERE u.id = ? AND s.token_hash = ? AND s.expires > ? AND u.status = ' . "'Activated'");
@@ -889,9 +862,11 @@ class pn_user
         $loginFlag = $_GET['pndata']['login'] ?? '';
 
         if ($loginFlag !== 'YES') {
+            // Bereits angemeldet: head.inc.php leitet vor jeder Ausgabe zum Profil weiter.
+            // Ist PowerNews anders eingebunden, erscheint ein Link statt einer leeren Seite (B32).
             if (($pnuser['loggedin'] ?? 'NO') === 'YES') {
-                header('Location: ' . $pn_config['userfile'] . '?page=profile');
-                exit;
+                $template->message(L_USR_ALREADYLOGGEDIN, $pn_config['userfile'] . '?page=profile');
+                return;
             }
             $template->loginform();
             return;
@@ -1115,6 +1090,11 @@ class pn_user
         }
         mysqli_stmt_execute($stmt);
 
+        if ($updatePw) {
+            // Neues Passwort: alle Sitzungen dieses Kontos beenden (B26).
+            pn_sessions_delete_for_user($pn_handler, $userId);
+        }
+
         $template->message(L_USR_PROFILEEDITED, $pn_config['userfile'] . '?page=profile');
     }
 
@@ -1136,27 +1116,18 @@ class pn_user
     {
         global $pn_config, $pn_handler, $pnuser;
 
-        if (!empty($_COOKIE['pncookie'])) {
-            $parts = explode(':', (string) $_COOKIE['pncookie'], 2);
-            if (count($parts) === 2 && preg_match('/^[a-f0-9]{64}$/', $parts[1])) {
-                $tokenHash = hash('sha256', $parts[1]);
-                $stmt = mysqli_prepare($pn_handler, 'DELETE FROM pn_sessions WHERE token_hash = ?');
-                mysqli_stmt_bind_param($stmt, 's', $tokenHash);
-                mysqli_stmt_execute($stmt);
-            }
+        $session = pn_session_parse_cookie(PN_COOKIE_FRONTEND);
+
+        if ($session !== null) {
+            pn_session_delete($pn_handler, $session[1], 'frontend');
         }
 
-        setcookie('pncookie', '', [
-            'expires' => time() - 10,
-            'path' => '/',
-            'secure' => isset($_SERVER['HTTPS']),
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ]);
+        pn_session_cookie(PN_COOKIE_FRONTEND, '', time() - 3600);
+        unset($pnuser, $_COOKIE[PN_COOKIE_FRONTEND]);
 
-        unset($pnuser, $_COOKIE['pncookie']);
-
-        header('Location: ./' . $pn_config['userfile'] . '?page=login');
+        if (!headers_sent()) {
+            header('Location: ./' . $pn_config['userfile'] . '?page=login');
+        }
     }
 }
 

@@ -40,6 +40,7 @@ define('L_USR_PASSNOTEQUAL', 'Die beiden angegebenen Passwörter stimmen nicht �
 define('L_USR_NOTLOGGEDIN', 'Du bist nicht eingeloggt!');
 define('L_USR_CANNOTLOGOUT', 'Du kannst Dich nicht ausloggen, wenn Du nicht eingeloggt bist!');
 define('L_USR_PROFILEEDITED', 'Dein Profil wurde erfolgreich editiert. Solltest Du Dein Passwort geändert haben, so musst Du Dich erneut einloggen!');
+define('L_USR_ALREADYLOGGEDIN', 'Du bist bereits eingeloggt.');
 define('L_USR_INVALIDREGISTRATION', 'Ungültige Eingabe. Der Nickname muss 3 bis 30 Zeichen lang sein (Buchstaben, Ziffern, Punkt, Unterstrich, Bindestrich), und die E-Mail-Adresse muss gültig sein.');
 define('L_USR_REGISTRATIONFAILED', 'Die Registrierung ist fehlgeschlagen. Bitte versuche es später erneut.');
 define('L_USR_TOOMANYATTEMPTS', 'Zu viele Fehlversuche. Bitte versuche es in 15 Minuten erneut.');

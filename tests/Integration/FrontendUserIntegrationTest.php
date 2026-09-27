@@ -86,7 +86,7 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
     #[Test]
     public function checkcookie_returns_null_when_no_cookie(): void
     {
-        unset($_COOKIE['pnuser']);
+        unset($_COOKIE[PN_COOKIE_FRONTEND]);
 
         $result = $this->user->checkcookie();
 
@@ -96,7 +96,7 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
     #[Test]
     public function checkcookie_returns_null_for_invalid_cookie_format(): void
     {
-        $_COOKIE['pnuser'] = 'invalid-cookie-data';
+        $_COOKIE[PN_COOKIE_FRONTEND] = 'invalid-cookie-data';
 
         $result = $this->user->checkcookie();
 
@@ -106,18 +106,17 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
     #[Test]
     public function checkcookie_returns_user_array_for_valid_cookie(): void
     {
-        $userId = $this->insertTestUser('cookieuser', 'cookie@example.com', 'pass123', 'Activated', 'NO');
+        global $pn_handler;
 
-        $_COOKIE['pnuser'] = base64_encode($userId . ':' . md5('pass123'));
+        $userId = $this->insertTestUser('cookieuser', 'cookie@example.com', 'pass123', 'Activated', 'NO');
+        $token = pn_session_create($pn_handler, $userId, 'frontend');
+        $_COOKIE[PN_COOKIE_FRONTEND] = $userId . ':' . $token;
 
         $result = $this->user->checkcookie();
 
-        if ($result !== null) {
-            $this->assertIsArray($result);
-            $this->assertSame('YES', $result['loggedin']);
-        } else {
-            $this->markTestSkipped('Cookie format may differ from expected encoding');
-        }
+        $this->assertIsArray($result);
+        $this->assertSame('YES', $result['loggedin']);
+        $this->assertSame('cookieuser', $result['nickname']);
     }
 
     // ── login ──

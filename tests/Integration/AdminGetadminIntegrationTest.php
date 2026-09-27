@@ -21,25 +21,30 @@ class AdminGetadminIntegrationTest extends DatabaseTestCase
     // ── getuserdata ──
 
     #[Test]
-    public function getuserdata_valid_user_correct_password_returns_loggedin_yes(): void
+    public function getuserdata_valid_session_token_returns_loggedin_yes(): void
     {
-        $password = 'testpass123';
-        $userId = $this->insertTestUser('validuser', 'valid@test.com', $password);
+        global $pn_handler;
 
-        // Retrieve the stored hash from the database to use as the password parameter
-        global $pn_handler, $pn_config;
-        $stmt = mysqli_prepare($pn_handler, 'SELECT password FROM ' . $pn_config['usertable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $userId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_array($result);
-        $storedHash = $row['password'];
+        $userId = $this->insertTestUser('validuser', 'valid@test.com', 'testpass123');
+        $token = pn_session_create($pn_handler, $userId, 'admin');
 
-        $userData = $this->getadmin->getuserdata($userId, $storedHash);
+        $userData = $this->getadmin->getuserdata($userId, $token);
 
         $this->assertSame('YES', $userData['loggedin']);
         $this->assertSame('validuser', $userData['nickname']);
         $this->assertSame('valid@test.com', $userData['email']);
+    }
+
+    #[Test]
+    public function getuserdata_rejects_stored_password_hash_as_session_proof(): void
+    {
+        // B25: Der Passwort-Hash aus der Datenbank (Backup, Dump) ist kein Sitzungsnachweis.
+        $userId = $this->insertTestUser('hashuser', 'hash@test.com', 'testpass123');
+        $storedHash = (new \profile())->getdata($userId)['password'];
+
+        $userData = $this->getadmin->getuserdata($userId, $storedHash);
+
+        $this->assertSame('NO', $userData['loggedin']);
     }
 
     #[Test]
@@ -66,16 +71,12 @@ class AdminGetadminIntegrationTest extends DatabaseTestCase
     #[Test]
     public function getuserdata_returns_user_array_with_all_fields(): void
     {
+        global $pn_handler;
+
         $userId = $this->insertTestUser('fulluser', 'full@test.com', 'pass');
+        $token = pn_session_create($pn_handler, $userId, 'admin');
 
-        global $pn_handler, $pn_config;
-        $stmt = mysqli_prepare($pn_handler, 'SELECT password FROM ' . $pn_config['usertable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $userId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_array($result);
-
-        $userData = $this->getadmin->getuserdata($userId, $row['password']);
+        $userData = $this->getadmin->getuserdata($userId, $token);
 
         $this->assertSame('YES', $userData['loggedin']);
         $this->assertArrayHasKey('id', $userData);

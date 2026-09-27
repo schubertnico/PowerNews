@@ -80,23 +80,33 @@ if (isset($_GET['page']) && $_GET['page'] == 'login'
     && !empty($_POST['pndata']['nickname']) && !empty($_POST['pndata']['password'])
     && pn_csrf_verify($_POST['csrf_token'] ?? null)) {
     $pnuserlogin = new pn_user();
-    $pnuser = $pnuserlogin->setusercookie();
+    $pnuser = $pnuserlogin->setusercookie() ?? ['loggedin' => 'NO'];
 } elseif (
     isset($_GET['page']) && $_GET['page'] === 'logout'
     && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
     && pn_csrf_verify($_POST['csrf_token'] ?? null)
-    && !empty($_COOKIE['pncookie'])
+    && !empty($_COOKIE[PN_COOKIE_FRONTEND])
 ) {
     $pnuserlogout = new pn_user();
     $pnuserlogout->delusercookie();
-    unset($pnuser, $_COOKIE['pncookie']);
-
-    $pnuser['loggedin'] = 'NO';
+    exit;
 }
 
-if (isset($_COOKIE['pncookie']) && $_COOKIE['pncookie']) {
+if (($pnuser['loggedin'] ?? 'NO') !== 'YES' && !empty($_COOKIE[PN_COOKIE_FRONTEND])) {
     $pnusercheck = new pn_user();
-    $pnuser = $pnusercheck->checkcookie();
+    // Ungültige oder abgelaufene Cookies ergeben einen Gast, nie null (B33).
+    $pnuser = $pnusercheck->checkcookie() ?? ['loggedin' => 'NO'];
+}
+
+// Eingeloggt „Login“ aufrufen: vor jeder Ausgabe zum Profil weiterleiten (B32).
+if (($pnuser['loggedin'] ?? 'NO') === 'YES'
+    && ($_GET['page'] ?? '') === 'login'
+    && !isset($_GET['pndata']['login'])
+    && basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === $pn_config['userfile']
+    && !headers_sent()
+) {
+    header('Location: ./' . $pn_config['userfile'] . '?page=profile');
+    exit;
 }
 
 setlocale(LC_TIME, 'de_DE');

@@ -59,27 +59,21 @@ if (isset($_GET['pnlogin']) && $_GET['pnlogin'] == 'YES') {
     $logout = new login();
     $logout->logout();
     $pnloggedin = 'NO';
-    unset($_COOKIE['pncookie']);
 }
 
-//var_dump($loginerror, $pnloggedin, $_COOKIE);
+// Admin-Sitzung aus dem eigenen Cookie lesen (B04/B33). Das Frontend-Cookie „pncookie“
+// wird hier nicht mehr ausgewertet; ein ungültiges Format führt einfach zum Login.
+$pnloggedin = 'NO';
+$pnadminsession = pn_session_parse_cookie(PN_COOKIE_ADMIN);
 
-// Check if cookie was set and read data
-if (isset($_COOKIE['pncookie']) && $_COOKIE['pncookie']) {
-    $cookiecontent = base64_decode((string) $_COOKIE['pncookie'], true);
-    $cookiecontent = explode('@@@@@', $cookiecontent);
+if ($pnadminsession !== null) {
     $checkdata = new getadmin();
-    $pnuser = $checkdata->getuserdata((int) $cookiecontent[0], $cookiecontent[1]);
-    $pnloggedin = $pnuser['loggedin'];
+    $pnuser = $checkdata->getuserdata($pnadminsession[0], $pnadminsession[1]);
 
-    if ($pnloggedin == 'YES') {
-        $pnadmin = $checkdata->getpermissions((int) $cookiecontent[0]);
+    if ($pnuser['loggedin'] === 'YES') {
+        $pnadmin = $checkdata->getpermissions($pnadminsession[0]);
         $pnloggedin = $pnadmin['loggedin'];
-    } else {
-        $pnloggedin = 'NO';
     }
-} else {
-    $pnloggedin = 'NO';
 }
 
 // Get configuration data

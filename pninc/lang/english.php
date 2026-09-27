@@ -40,6 +40,7 @@ define('L_USR_PASSNOTEQUAL', 'The passwords do not match!');
 define('L_USR_NOTLOGGEDIN', 'You are not logged in!');
 define('L_USR_CANNOTLOGOUT', 'You can not log out, if you are not logged in!');
 define('L_USR_PROFILEEDITED', 'Your profile was edited. If you changed your password, you have to log in again!');
+define('L_USR_ALREADYLOGGEDIN', 'You are already logged in.');
 define('L_USR_INVALIDREGISTRATION', 'Invalid input. The nickname must be 3 to 30 characters long (letters, digits, dot, underscore, hyphen) and the e-mail address must be valid.');
 define('L_USR_REGISTRATIONFAILED', 'Registration failed. Please try again later.');
 define('L_USR_TOOMANYATTEMPTS', 'Too many failed attempts. Please try again in 15 minutes.');
