@@ -73,7 +73,7 @@ include __DIR__ . '/pninc/head.inc.php';
 <div class="container my-3">
   <div class="alert alert-warning border" role="alert">
     <strong>Bitte beachten</strong><br>
-    Bitte lesen Sie sich die <a href="readme.html" target="_blank" rel="noopener noreferrer" class="alert-link">ReadMe</a> durch falls Sie Schwierigkeiten haben.<br>
+    Bitte lesen Sie sich die <a href="README.html" target="_blank" rel="noopener noreferrer" class="alert-link">ReadMe</a> durch falls Sie Schwierigkeiten haben.<br>
     Dieses Design ist nur zu Testzwecken eingerichtet, Sie sollten PowerNews also an Ihr eigenes Seitendesign anpassen. Es m&uuml;ssen weder Dateinamen noch HTML Strukturen &uuml;bernommen werden!
   </div>
 </div>

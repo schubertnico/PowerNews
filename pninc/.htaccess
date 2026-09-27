@@ -1,2 +1,5 @@
 # PowerNews – Interne Include-Dateien, niemals direkt per HTTP ausliefern.
+# Gilt auch für pninc/installer/ (Installer- und Update-Logik) und die vom
+# Installer geschriebenen Dateien config.local.php (Zugangsdaten) und
+# install.lock (Sperre des Installers).
 Require all denied
