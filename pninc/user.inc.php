@@ -33,6 +33,9 @@ switch ($page) {
     case 'senddata':
         $pn_user->senddata();
         break;
+    case 'resetpassword':
+        $pn_user->resetpassword();
+        break;
     case 'login':
         $pn_user->login();
         break;

@@ -946,15 +946,12 @@ class pn_user
             return;
         }
 
-        // Rate limit per IP (BUG-020 partial)
+        // Eigene Bremse für „Passwort vergessen“ (B40): Anfragen zählen nicht mehr als
+        // Login-Fehlversuche und sperren damit keine fremden Konten.
+        pn_password_resets_prepare($pn_handler);
         $ip = pn_client_ip();
-        $window = time() - 3600;
-        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM pn_login_attempts WHERE ip = ? AND success = ' . "'NO'" . ' AND attempted_at > ?');
-        mysqli_stmt_bind_param($stmt, 'si', $ip, $window);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        [$rpHourly] = mysqli_fetch_array($result);
-        if ((int) $rpHourly > 20) {
+
+        if (pn_password_reset_requests($pn_handler, $ip) >= PN_RESET_MAX_PER_IP) {
             $template->message(L_USR_TOOMANYREQUESTS, $senddataUrl);
             return;
         }
@@ -962,35 +959,116 @@ class pn_user
         // Specific lookup: email if it contains @, else nickname (avoids BUG-022 collision)
         $isEmail = filter_var($search, FILTER_VALIDATE_EMAIL) !== false;
         $sql = $isEmail
-            ? 'SELECT nickname, email FROM ' . $pn_config['usertable'] . ' WHERE email = ?'
-            : 'SELECT nickname, email FROM ' . $pn_config['usertable'] . ' WHERE nickname = ?';
+            ? 'SELECT id, nickname, email FROM ' . $pn_config['usertable'] . " WHERE email = ? AND status = 'Activated'"
+            : 'SELECT id, nickname, email FROM ' . $pn_config['usertable'] . " WHERE nickname = ? AND status = 'Activated'";
         $stmt = mysqli_prepare($pn_handler, $sql);
         mysqli_stmt_bind_param($stmt, 's', $search);
         mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
-        // Log attempt
-        $now = time();
-        $stmt2 = mysqli_prepare($pn_handler, 'INSERT INTO pn_login_attempts (ip, nickname, success, attempted_at) VALUES (?, ?, ' . "'NO'" . ', ?)');
-        mysqli_stmt_bind_param($stmt2, 'ssi', $ip, $search, $now);
-        mysqli_stmt_execute($stmt2);
+        // B22: Kein Sofort-Reset mehr. Das bisherige Passwort bleibt gültig; der Inhaber
+        // bekommt einen Einmal-Link (60 Minuten) und legt das neue Passwort selbst fest.
+        $userId = is_array($row) ? (int) $row['id'] : 0;
+        $send = $userId > 0 && !pn_password_reset_recent($pn_handler, $userId);
+        $token = bin2hex(random_bytes(32));
+        pn_password_reset_store($pn_handler, $send ? $userId : 0, $token, $ip);
 
-        if (mysqli_num_rows($result) === 1) {
-            $row = mysqli_fetch_array($result);
-            $newPassword = $this->generate_password();
-            $pnemail = new pn_email();
-
-            // Mail FIRST, update password only on success (BUG-020)
-            if ($pnemail->dataemail($row['nickname'], $row['email'], $newPassword)) {
-                $hashedPassword = pn_hash_password($newPassword);
-                $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET password = ? WHERE nickname = ?');
-                mysqli_stmt_bind_param($stmt, 'ss', $hashedPassword, $row['nickname']);
-                mysqli_stmt_execute($stmt);
-            }
+        if ($send && is_array($row)) {
+            (new pn_email())->dataemail((string) $row['nickname'], (string) $row['email'], $this->resetlink($token));
         }
 
         // Always reply generic (BUG-021)
         $template->message($genericMsg, $pn_config['userfile'] . '?page=login');
+    }
+
+    /**
+     * Absoluter Link zum Festlegen eines neuen Passworts. Basis ist die konfigurierte URL,
+     * nie der Host-Header der Anfrage (sonst ließe sich der Link auf fremde Server umbiegen).
+     */
+    public function resetlink(string $token): string
+    {
+        global $pn_config, $pnconfig;
+
+        return rtrim((string) ($pnconfig['url'] ?? ''), '/') . '/' . $pn_config['userfile'] . '?page=resetpassword&token=' . $token;
+    }
+
+    /**
+     * Seite „Neues Passwort festlegen“ hinter dem Link aus der Reset-Mail (B22).
+     */
+    public function resetpassword(): void
+    {
+        global $pn_config, $pn_handler;
+
+        $template = new pn_template();
+        $token = (string) ($_POST['pndata']['token'] ?? $_GET['token'] ?? '');
+
+        pn_password_resets_prepare($pn_handler);
+        $user = pn_password_reset_user($pn_handler, $pn_config, $token);
+
+        if ($user === null) {
+            $template->message(L_USR_RESETINVALID, $pn_config['userfile'] . '?page=senddata');
+            return;
+        }
+
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            $this->resetform($user, $token, '');
+            return;
+        }
+
+        if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
+            $this->resetform($user, $token, L_ALL_CSRFINVALID);
+            return;
+        }
+
+        $password = (string) ($_POST['pndata']['password'] ?? '');
+        $password2 = (string) ($_POST['pndata']['password2'] ?? '');
+
+        if ($password !== $password2) {
+            $this->resetform($user, $token, L_USR_PASSNOTEQUAL);
+            return;
+        }
+
+        if (strlen($password) < 8) {
+            $this->resetform($user, $token, L_USR_PASSWORDTOOSHORT);
+            return;
+        }
+
+        pn_password_reset_complete($pn_handler, $pn_config, (int) $user['id'], $password);
+        $template->message(L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login');
+    }
+
+    /**
+     * Formular für das neue Passwort.
+     *
+     * @param array<string, mixed> $user
+     */
+    private function resetform(array $user, string $token, string $error): void
+    {
+        global $pn_config;
+
+        $action = pn_escape($pn_config['userfile']) . '?page=resetpassword';
+        ?>
+<form accept-charset="UTF-8" action="<?php echo $action; ?>" method="post" class="card mb-4">
+    <h2 class="card-header h6 mb-0"><?php echo L_USR_RESETTITLE; ?></h2>
+    <div class="card-body">
+<?php if ($error !== '') { ?>
+        <div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
+<?php } ?>
+        <p><?php echo sprintf(L_USR_RESETINTRO, pn_escape((string) $user['nickname'])); ?></p>
+        <div class="mb-3">
+            <label for="pn_newpassword" class="form-label fw-bold"><?php echo L_USR_NEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password]" id="pn_newpassword" minlength="8" maxlength="128" autocomplete="new-password" required>
+        </div>
+        <div class="mb-3">
+            <label for="pn_newpassword2" class="form-label fw-bold"><?php echo L_USR_REPEATNEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password2]" id="pn_newpassword2" minlength="8" maxlength="128" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary"><?php echo L_USR_SAVEPASSWORD; ?></button>
+        <input type="hidden" name="pndata[token]" value="<?php echo pn_escape($token); ?>">
+        <input type="hidden" name="csrf_token" value="<?php echo pn_escape(pn_csrf_token()); ?>">
+    </div>
+</form>
+        <?php
     }
 
     // Print out usermenu
@@ -1152,12 +1230,12 @@ class pn_email
         return false;
     }
 
-    // Sending data-E-Mail
-    public function dataemail(string $nickname, string $email, string $password): bool
+    // Mail „Passwort vergessen“ mit Einmal-Link (B22)
+    public function dataemail(string $nickname, string $email, string $resetlink): bool
     {
         global $pnconfig;
         $template = new pn_template();
-        $dataemail = $template->dataemail($nickname, $email, $password);
+        $dataemail = $template->dataemail($nickname, $email, $resetlink);
 
         if ($dataemail) {
             $headers = 'From: ' . L_EMAIL_AUTHOR . ' <' . $pnconfig['email'] . '>';
@@ -1609,8 +1687,12 @@ class pn_template
         return false;
     }
 
-    // Get template for data-E-Mail
-    public function dataemail(string $nickname, string $email, string $password): string|false
+    /**
+     * Text der Mail „Passwort vergessen“ (B22). Sie enthält einen Einmal-Link, nie ein
+     * Passwort. Vorlagen bis 3.11 kennen {RESETLINK} nicht; dann gilt der Standardtext
+     * aus der Sprachdatei.
+     */
+    public function dataemail(string $nickname, string $email, string $resetlink): string|false
     {
         global $pnconfig, $pn_config, $pn_handler;
 
@@ -1623,11 +1705,18 @@ class pn_template
 
         if ($num == 1) {
             [$dataemail] = mysqli_fetch_array($result);
+            $dataemail = (string) $dataemail;
 
-            return pn_template_fill((string) $dataemail, [
+            if (!str_contains($dataemail, '{RESETLINK}')) {
+                $dataemail = L_USR_RESETMAIL_BODY;
+            }
+
+            return pn_template_fill($dataemail, [
                 'NICKNAME' => $nickname,
                 'EMAIL' => $email,
-                'PASSWORD' => $password,
+                'PASSWORD' => '',
+                'RESETLINK' => $resetlink,
+                'VALIDMINUTES' => intdiv(PN_RESET_LIFETIME, 60),
                 'URL' => (string) $pnconfig['url'],
             ]);
         }

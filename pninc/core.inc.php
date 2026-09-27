@@ -360,3 +360,120 @@ function pn_session_cookie(string $name, string $value, int $expires): void
         'samesite' => 'Strict',
     ]);
 }
+
+/** Gültigkeit eines Links zum Festlegen eines neuen Passworts in Sekunden (60 Minuten). */
+const PN_RESET_LIFETIME = 3600;
+
+/** Höchstzahl an „Passwort vergessen“-Anfragen je IP-Adresse und Stunde. */
+const PN_RESET_MAX_PER_IP = 5;
+
+/** Mindestabstand zwischen zwei Reset-Mails an dasselbe Konto in Sekunden. */
+const PN_RESET_MIN_INTERVAL = 300;
+
+/**
+ * Legt die Tabelle für Einmal-Token an (falls das Update noch nicht gelaufen ist) und
+ * entfernt abgelaufene Einträge.
+ */
+function pn_password_resets_prepare(mysqli $db): void
+{
+    mysqli_query(
+        $db,
+        'CREATE TABLE IF NOT EXISTS pn_password_resets ('
+        . '`id` int(11) NOT NULL AUTO_INCREMENT, `userid` int(11) NOT NULL, `token_hash` char(64) NOT NULL, '
+        . '`created` int(14) NOT NULL, `expires` int(14) NOT NULL, `ip` varchar(64) NOT NULL DEFAULT \'\', '
+        . 'PRIMARY KEY (`id`), KEY `idx_token` (`token_hash`), KEY `idx_userid` (`userid`), KEY `idx_ip_created` (`ip`, `created`)'
+        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci'
+    );
+
+    $now = time();
+    $stmt = mysqli_prepare($db, 'DELETE FROM pn_password_resets WHERE expires <= ?');
+    mysqli_stmt_bind_param($stmt, 'i', $now);
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Anzahl der Reset-Anfragen einer IP-Adresse in der letzten Stunde. Anfragen für unbekannte
+ * Konten zählen mit (Zeile mit userid 0), damit sich Adressen nicht durchprobieren lassen.
+ */
+function pn_password_reset_requests(mysqli $db, string $ip): int
+{
+    $since = time() - 3600;
+    $stmt = mysqli_prepare($db, 'SELECT COUNT(*) FROM pn_password_resets WHERE ip = ? AND created > ?');
+    mysqli_stmt_bind_param($stmt, 'si', $ip, $since);
+    mysqli_stmt_execute($stmt);
+    $row = mysqli_fetch_row(mysqli_stmt_get_result($stmt));
+
+    return (int) ($row[0] ?? 0);
+}
+
+/**
+ * Wurde für das Konto gerade erst ein Link verschickt? Verhindert Mailfluten an Dritte.
+ */
+function pn_password_reset_recent(mysqli $db, int $userId): bool
+{
+    $since = time() - PN_RESET_MIN_INTERVAL;
+    $stmt = mysqli_prepare($db, 'SELECT id FROM pn_password_resets WHERE userid = ? AND created > ?');
+    mysqli_stmt_bind_param($stmt, 'ii', $userId, $since);
+    mysqli_stmt_execute($stmt);
+
+    return mysqli_num_rows(mysqli_stmt_get_result($stmt)) > 0;
+}
+
+/**
+ * Speichert eine Reset-Anfrage. Gespeichert wird nur der Hash des Tokens.
+ */
+function pn_password_reset_store(mysqli $db, int $userId, string $token, string $ip): void
+{
+    $tokenHash = hash('sha256', $token);
+    $now = time();
+    $expires = $now + PN_RESET_LIFETIME;
+    $stmt = mysqli_prepare($db, 'INSERT INTO pn_password_resets (userid, token_hash, created, expires, ip) VALUES (?, ?, ?, ?, ?)');
+    mysqli_stmt_bind_param($stmt, 'isiis', $userId, $tokenHash, $now, $expires, $ip);
+    mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Liefert das freigeschaltete Konto zu einem gültigen, nicht abgelaufenen Reset-Token.
+ *
+ * @param array<string, mixed> $pn_config
+ *
+ * @return array<string, mixed>|null
+ */
+function pn_password_reset_user(mysqli $db, array $pn_config, string $token): ?array
+{
+    if (preg_match('/^[a-f0-9]{64}$/', $token) !== 1) {
+        return null;
+    }
+
+    $tokenHash = hash('sha256', $token);
+    $now = time();
+    $stmt = mysqli_prepare(
+        $db,
+        'SELECT u.* FROM ' . $pn_config['usertable'] . ' u INNER JOIN pn_password_resets r ON r.userid = u.id '
+        . "WHERE r.token_hash = ? AND r.expires > ? AND u.status = 'Activated'"
+    );
+    mysqli_stmt_bind_param($stmt, 'si', $tokenHash, $now);
+    mysqli_stmt_execute($stmt);
+    $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+    return is_array($row) ? $row : null;
+}
+
+/**
+ * Setzt das neue Passwort, verwirft alle Reset-Token des Kontos und beendet alle Sitzungen.
+ *
+ * @param array<string, mixed> $pn_config
+ */
+function pn_password_reset_complete(mysqli $db, array $pn_config, int $userId, string $password): void
+{
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = mysqli_prepare($db, 'UPDATE ' . $pn_config['usertable'] . ' SET password = ? WHERE id = ?');
+    mysqli_stmt_bind_param($stmt, 'si', $hash, $userId);
+    mysqli_stmt_execute($stmt);
+
+    $cleanup = mysqli_prepare($db, 'DELETE FROM pn_password_resets WHERE userid = ?');
+    mysqli_stmt_bind_param($cleanup, 'i', $userId);
+    mysqli_stmt_execute($cleanup);
+
+    pn_sessions_delete_for_user($db, $userId);
+}

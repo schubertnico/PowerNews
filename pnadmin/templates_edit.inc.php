@@ -178,7 +178,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_dataemail" class="form-label fw-bold"><?php echo L_TEMPL_DATAMAIL; ?></label>
                       <textarea class="form-control font-monospace small" name="dataemail" id="pn_t_dataemail" rows="6"><?php echo pnadmin_escape($data['dataemail']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_DATAMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{PASSWORD}</code></div>
+                      <div class="form-text"><?php echo L_TEMPL_DATAMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{RESETLINK}</code> <code>{VALIDMINUTES}</code></div>
                   </div>
 
                   <div class="d-flex gap-2">

@@ -30,6 +30,7 @@ function pn_migrations(): array
     return [
         '3.12-unslash-content' => 'pn_migration_unslash_content',
         '3.12-purge-legacy-admin-sessions' => 'pn_migration_purge_legacy_sessions',
+        '3.12-password-resets' => 'pn_migration_password_resets',
     ];
 }
 
@@ -162,4 +163,16 @@ function pn_migration_purge_legacy_sessions(mysqli $db, array $pn_config): strin
     pn_sessions_purge_expired($db);
 
     return sprintf('%d langlaufende Admin-Sitzungen beendet.', max(0, (int) $removed));
+}
+
+/**
+ * B22: Tabelle pn_password_resets für die Einmal-Links „Passwort vergessen“.
+ *
+ * @param array<string, mixed> $pn_config
+ */
+function pn_migration_password_resets(mysqli $db, array $pn_config): string
+{
+    pn_password_resets_prepare($db);
+
+    return 'Tabelle pn_password_resets angelegt.';
 }

@@ -299,14 +299,14 @@ class FrontendTemplateIntegrationTest extends DatabaseTestCase
     #[Test]
     public function dataemail_returns_string_with_placeholders_replaced(): void
     {
-        $result = $this->template->dataemail('datanick', 'data@test.com', 'datapass');
+        $link = 'https://news.example.org/user.php?page=resetpassword&token=' . str_repeat('a', 64);
+        $result = $this->template->dataemail('datanick', 'data@test.com', $link);
 
         $this->assertIsString($result);
         $this->assertStringContainsString('datanick', $result);
-        $this->assertStringContainsString('data@test.com', $result);
-        $this->assertStringContainsString('datapass', $result);
+        $this->assertStringContainsString($link, $result);
         $this->assertStringNotContainsString('{NICKNAME}', $result);
-        $this->assertStringNotContainsString('{EMAIL}', $result);
+        $this->assertStringNotContainsString('{RESETLINK}', $result);
         $this->assertStringNotContainsString('{PASSWORD}', $result);
     }
 
