@@ -196,6 +196,8 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'Du musst Nickname und E-Mail-Adresse ang
 define('L_USR_NOUSRFOUND', 'Es wurde kein Benutzer gefunden!');
 define('L_USR_PWNOTCONFIRMED', 'Das Passwort wurde nicht korrekt bestätigt!');
 define('L_USR_HELLO', 'Hallo');
+define('L_USR_LOGINFAILED', 'Die Anmeldung ist fehlgeschlagen. Bitte prüfe Nickname und Passwort. Anmelden können sich nur freigeschaltete Konten mit Administrationsrechten.');
+define('L_USR_TOOMANYATTEMPTS', 'Zu viele Fehlversuche. Bitte versuche es in 15 Minuten erneut.');
 define('L_USR_INVALIDNICKNAME', 'Ungültiger Nickname: erlaubt sind 3 bis 30 Zeichen (Buchstaben, Ziffern, Punkt, Unterstrich, Bindestrich), keine Leerzeichen.');
 define('L_USR_PASSWORDTOOSHORT', 'Das Passwort muss mindestens 8 Zeichen lang sein.');
 define('L_USR_SAVEFAILED', 'Die Daten konnten nicht gespeichert werden. Details stehen im Fehlerlog.');

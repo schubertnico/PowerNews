@@ -196,6 +196,8 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'You have to insert nickname and E-Mail!'
 define('L_USR_NOUSRFOUND', 'No users found!');
 define('L_USR_PWNOTCONFIRMED', 'Password confirmation failed!');
 define('L_USR_HELLO', 'Hello');
+define('L_USR_LOGINFAILED', 'Login failed. Please check nickname and password. Only activated accounts with administration rights can log in here.');
+define('L_USR_TOOMANYATTEMPTS', 'Too many failed attempts. Please try again in 15 minutes.');
 define('L_USR_INVALIDNICKNAME', 'Invalid nickname: 3 to 30 characters (letters, digits, dot, underscore, hyphen), no spaces.');
 define('L_USR_PASSWORDTOOSHORT', 'The password must be at least 8 characters long.');
 define('L_USR_SAVEFAILED', 'The data could not be saved. See the error log for details.');

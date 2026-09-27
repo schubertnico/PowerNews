@@ -183,35 +183,50 @@ function pnadmin_auth_check(): ?array
 // Function for checking logindata
 class login
 {
+    /**
+     * Prüft die Admin-Anmeldung (B09): Fehlversuchsbremse wie im Frontend, eine einheitliche
+     * Meldung für unbekannte Nicknames, falsche Passwörter, deaktivierte Konten und fehlende
+     * Rechte sowie Protokollierung jedes Versuchs in pn_login_attempts.
+     */
     public function checklogin(string $nickname, string $password): string
     {
         global $pn_handler, $pn_config;
 
-        $error = '';
+        $ip = pn_client_ip();
+
+        if (pn_login_throttled($pn_handler, $ip)) {
+            return L_USR_TOOMANYATTEMPTS;
+        }
+
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ?');
         mysqli_stmt_bind_param($stmt, 's', $nickname);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
+        $valid = false;
+        $userId = 0;
 
-        if ($num == 1) {
+        if (mysqli_num_rows($result) === 1) {
             $row = mysqli_fetch_array($result);
-
-            if (pnadmin_verify_password($password, $row['password'], (int) $row['id'])) {
-                $error = $this->checkpermissions((int) $row['id']);
-
-                if ($error === '' || $error === '0') {
-                    $this->logincookie((int) $row['id'], $row['password']);
-                    $error = 'loggedin';
-                }
-            } else {
-                $error = L_USR_WRONGPW;
-            }
+            $userId = (int) $row['id'];
+            $valid = pnadmin_verify_password($password, (string) $row['password'], $userId)
+                && ($row['status'] ?? 'Activated') === 'Activated'
+                && $this->checkpermissions($userId) === '';
         } else {
-            $error = L_USR_NOUSR;
+            // Gleiche Rechenzeit wie bei vorhandenen Konten (keine Benutzer-Enumeration).
+            password_verify($password, PN_DUMMY_PASSWORD_HASH);
         }
 
-        return $error;
+        pn_login_record($pn_handler, $ip, $nickname, $valid);
+
+        if (!$valid) {
+            error_log(sprintf('[PowerNews] Fehlgeschlagener Admin-Login für Nickname "%s" von %s', addcslashes(mb_substr($nickname, 0, 100), "\0..\37\"\\"), $ip));
+
+            return L_USR_LOGINFAILED;
+        }
+
+        $this->logincookie($userId, '');
+
+        return 'loggedin';
     }
 
     public function checkpermissions(int $userid): string
@@ -243,8 +258,7 @@ class login
         $now = time();
         $expires = $now + 360 * 24 * 3600;
         $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
-        $ip = substr((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
-        $ip = substr(explode(',', $ip)[0], 0, 64);
+        $ip = pn_client_ip();
 
         $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmt, 'isiiss', $userid, $tokenHash, $now, $expires, $ua, $ip);

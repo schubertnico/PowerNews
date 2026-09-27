@@ -30,6 +30,10 @@ abstract class DatabaseTestCase extends BaseTestCase
             self::$schemaSetUp = true;
         }
 
+        // Jeder Test beginnt ohne Login-Fehlversuche, sonst greift die Fehlversuchsbremse
+        // testübergreifend (alle Tests laufen mit derselben, leeren IP-Adresse).
+        mysqli_query(self::$dbHandler, 'DELETE FROM pn_login_attempts');
+
         $this->initGlobals();
         $this->clearSuperglobals();
     }

@@ -416,9 +416,8 @@ class pn_news
             return;
         }
 
-        // X-Forwarded-For (BUG-030)
-        $remoteAddr = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
-        $remoteAddr = substr(explode(',', (string) $remoteAddr)[0], 0, 64);
+        // IP nur aus REMOTE_ADDR bzw. hinter konfigurierten Proxys (B23)
+        $remoteAddr = pn_client_ip();
 
         $now = time();
         $spamprotectiontime = $now - (int) $pnconfig['spamprotection'];
@@ -821,8 +820,7 @@ class pn_user
         $expires = $now + 3600 * 24 * 30;
         $userId = (int) $pnuser['id'];
         $ua = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
-        $ip = substr((string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
-        $ip = substr(explode(',', $ip)[0], 0, 64);
+        $ip = pn_client_ip();
 
         $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_sessions (userid, token_hash, created, expires, user_agent, ip) VALUES (?, ?, ?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmt, 'isiiss', $userId, $tokenHash, $now, $expires, $ua, $ip);
@@ -909,22 +907,16 @@ class pn_user
 
         $nickname = trim($_POST['pndata']['nickname'] ?? '');
         $password = $_POST['pndata']['password'] ?? '';
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
-        $ip = substr(explode(',', (string) $ip)[0], 0, 64);
+        $ip = pn_client_ip();
 
         if ($nickname === '' || $password === '') {
             $template->message(L_ALL_FILLALL, $loginUrl);
             return;
         }
 
-        // Rate limit (BUG-011)
-        $window = time() - 900;
-        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM pn_login_attempts WHERE (ip = ? OR nickname = ?) AND success = ' . "'NO'" . ' AND attempted_at > ?');
-        mysqli_stmt_bind_param($stmt, 'ssi', $ip, $nickname, $window);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        [$failedCount] = mysqli_fetch_array($result);
-        if ((int) $failedCount >= 10) {
+        // Fehlversuchsbremse nur je IP-Adresse (B40): Fehlversuche gegen einen fremden
+        // Nickname sperren dessen Inhaber nicht aus.
+        if (pn_login_throttled($pn_handler, $ip)) {
             $template->message(L_USR_TOOMANYATTEMPTS, $loginUrl);
             return;
         }
@@ -943,16 +935,11 @@ class pn_user
                 $valid = true;
             }
         } else {
-            // Constant-time dummy to prevent timing-based user enumeration (BUG-046)
-            password_verify($password, '$2y$12$dummyhashdummyhashdummyhashdummyhashdummyhashdummy.');
+            // Gleiche Rechenzeit wie bei vorhandenen Konten (BUG-046), mit gültigem bcrypt-Hash
+            password_verify($password, PN_DUMMY_PASSWORD_HASH);
         }
 
-        // Log attempt
-        $now = time();
-        $success = $valid ? 'YES' : 'NO';
-        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO pn_login_attempts (ip, nickname, success, attempted_at) VALUES (?, ?, ?, ?)');
-        mysqli_stmt_bind_param($stmt, 'sssi', $ip, $nickname, $success, $now);
-        mysqli_stmt_execute($stmt);
+        pn_login_record($pn_handler, $ip, $nickname, $valid);
 
         if ($valid) {
             $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
@@ -985,8 +972,7 @@ class pn_user
         }
 
         // Rate limit per IP (BUG-020 partial)
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
-        $ip = substr(explode(',', (string) $ip)[0], 0, 64);
+        $ip = pn_client_ip();
         $window = time() - 3600;
         $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM pn_login_attempts WHERE ip = ? AND success = ' . "'NO'" . ' AND attempted_at > ?');
         mysqli_stmt_bind_param($stmt, 'si', $ip, $window);

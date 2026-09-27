@@ -25,7 +25,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
     {
         $result = $this->login->checklogin('nonexistent', 'password');
 
-        $this->assertSame(L_USR_NOUSR, $result);
+        $this->assertSame(L_USR_LOGINFAILED, $result);
     }
 
     #[Test]
@@ -35,7 +35,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
 
         $result = $this->login->checklogin('admin', 'wrong_password');
 
-        $this->assertSame(L_USR_WRONGPW, $result);
+        $this->assertSame(L_USR_LOGINFAILED, $result);
     }
 
     #[Test]
@@ -45,7 +45,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
 
         $result = $this->login->checklogin('noperm', 'mypassword');
 
-        $this->assertSame(L_USR_NOADMIN, $result);
+        $this->assertSame(L_USR_LOGINFAILED, $result);
     }
 
     #[Test]
@@ -64,7 +64,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
     {
         $result = $this->login->checklogin('', 'somepass');
 
-        $this->assertSame(L_USR_NOUSR, $result);
+        $this->assertSame(L_USR_LOGINFAILED, $result);
     }
 
     #[Test]
@@ -74,7 +74,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
 
         $result = $this->login->checklogin('testuser', '');
 
-        $this->assertSame(L_USR_WRONGPW, $result);
+        $this->assertSame(L_USR_LOGINFAILED, $result);
     }
 
     // ── checkpermissions ──
@@ -133,7 +133,7 @@ class AdminLoginClassIntegrationTest extends DatabaseTestCase
         $result = $this->login->checklogin('casesensitive', 'thepass');
 
         // Result should be one of the valid return values
-        $this->assertContains($result, [L_USR_NOUSR, L_USR_WRONGPW, L_USR_NOADMIN, 'loggedin']);
+        $this->assertContains($result, [L_USR_LOGINFAILED, 'loggedin']);
     }
 
     #[Test]
