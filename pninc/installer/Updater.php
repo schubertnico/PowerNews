@@ -81,7 +81,7 @@ final readonly class Updater
                 'label' => 'Verwaiste Rechte-Einträge entfernen',
                 'detail' => $orphans === 0
                     ? 'Jeder Eintrag in pn_permissions gehört zu einem vorhandenen Benutzer.'
-                    : $orphans . ' Eintrag/Einträge in pn_permissions ohne Benutzer (3.11 lieferte einen für die nicht vorhandene Benutzer-ID 1 aus).',
+                    : self::entries($orphans) . ' in pn_permissions ohne Benutzer (3.11 lieferte einen für die nicht vorhandene Benutzer-ID 1 aus).',
                 'pending' => $orphans > 0,
             ],
             [
@@ -217,7 +217,7 @@ final readonly class Updater
     {
         $this->mysqli->query('DELETE p FROM pn_permissions p LEFT JOIN pn_users u ON u.id = p.userid WHERE u.id IS NULL');
 
-        return $this->mysqli->affected_rows . ' Eintrag/Einträge entfernt.';
+        return self::entries((int) $this->mysqli->affected_rows) . ' entfernt.';
     }
 
     private function writeLock(string $timestamp): string
@@ -231,6 +231,14 @@ final readonly class Updater
         }
 
         return 'Angelegt: ' . $lockFile . '.';
+    }
+
+    /**
+     * „1 Eintrag“ bzw. „3 Einträge“.
+     */
+    private static function entries(int $count): string
+    {
+        return $count . ($count === 1 ? ' Eintrag' : ' Einträge');
     }
 
     /**
