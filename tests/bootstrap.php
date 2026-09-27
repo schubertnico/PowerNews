@@ -81,72 +81,23 @@ function pn_test_setup_config(): array
 
 /**
  * Set up the test database schema using the SQL dump.
- * Handles semicolons inside quoted strings correctly.
+ *
+ * powernews.sql enthält bewusst kein DROP TABLE mehr (der Installer darf nie
+ * Tabellen verwerfen). Die Testdatenbank wird deshalb hier zurückgesetzt:
+ * zuerst alle Tabellen aus dem Schema verwerfen, dann neu anlegen. Zerlegt
+ * wird mit demselben Splitter wie im Installer (Semikolons in Zeichenketten).
  */
 function pn_test_setup_schema(mysqli $handler): void
 {
-    $dumpFile = __DIR__ . '/../powernews.sql';
-    $content = file_get_contents($dumpFile);
-    if ($content === false) {
-        throw new RuntimeException('Cannot read SQL dump: ' . $dumpFile);
+    require_once __DIR__ . '/../pninc/installer/autoload.php';
+
+    $statements = PowerNews\Installer\Schema::fromFile(__DIR__ . '/../powernews.sql');
+
+    foreach (array_reverse(PowerNews\Installer\Schema::tableNames($statements)) as $table) {
+        mysqli_query($handler, 'DROP TABLE IF EXISTS `' . $table . '`');
     }
 
-    // Remove comment lines
-    $lines = explode("\n", $content);
-    $sql = '';
-    foreach ($lines as $line) {
-        $trimmed = ltrim($line);
-        if ($trimmed !== '' && !str_starts_with($trimmed, '#')) {
-            $sql .= $line . "\n";
-        }
-    }
-
-    // Parse SQL respecting quoted strings
-    $commands = [];
-    $current = '';
-    $inSingleQuote = false;
-    $escaped = false;
-    $len = strlen($sql);
-
-    for ($i = 0; $i < $len; $i++) {
-        $char = $sql[$i];
-
-        if ($escaped) {
-            $current .= $char;
-            $escaped = false;
-            continue;
-        }
-
-        if ($char === '\\') {
-            $current .= $char;
-            $escaped = true;
-            continue;
-        }
-
-        if ($char === "'") {
-            $inSingleQuote = !$inSingleQuote;
-            $current .= $char;
-            continue;
-        }
-
-        if ($char === ';' && !$inSingleQuote) {
-            $trimmed = trim($current);
-            if ($trimmed !== '') {
-                $commands[] = $trimmed;
-            }
-            $current = '';
-            continue;
-        }
-
-        $current .= $char;
-    }
-
-    $trimmed = trim($current);
-    if ($trimmed !== '') {
-        $commands[] = $trimmed;
-    }
-
-    foreach ($commands as $command) {
+    foreach ($statements as $command) {
         @mysqli_query($handler, $command);
     }
 }

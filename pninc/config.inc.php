@@ -11,13 +11,12 @@ declare(strict_types=1);
 /*
  * Configuration file for PowerNews
  *
- * Database credentials can be set via environment variables:
- * - PN_DB_HOST: MySQL server hostname
- * - PN_DB_USER: MySQL username
- * - PN_DB_PASS: MySQL password
- * - PN_DB_NAME: MySQL database name
- *
- * Or edit the fallback values below (not recommended for production)
+ * Zugangsdaten zur Datenbank bitte NICHT hier eintragen – diese Datei wird
+ * bei jedem Update überschrieben. Rangfolge (höchste zuerst):
+ *   1. pninc/config.local.php (legt der Web-Installer install.php an)
+ *   2. Umgebungsvariablen PN_DB_HOST, PN_DB_PORT, PN_DB_USER, PN_DB_PASS, PN_DB_NAME
+ *   3. Vorgaben aus PowerNews\LocalConfig::DEFAULT_DB (localhost, root, powernews)
+ * Details: INSTALLATION.md, Abschnitt „Konfiguration“.
  */
 
 // Error logging configuration
@@ -25,11 +24,17 @@ ini_set('log_errors', '1');
 ini_set('error_log', __DIR__ . '/../logs/php-error.log');
 ini_set('display_errors', '0');
 
-// MySQL settings - prefer environment variables for security
-$pn_config['mysqlhost'] = getenv('PN_DB_HOST') ?: 'localhost';
-$pn_config['mysqluser'] = getenv('PN_DB_USER') ?: 'root';
-$pn_config['mysqlpass'] = getenv('PN_DB_PASS') ?: '';
-$pn_config['mysqldata'] = getenv('PN_DB_NAME') ?: 'powernews';
+// MySQL settings and language: config.local.php > environment variables > defaults
+require_once __DIR__ . '/localconfig.inc.php';
+$pn_local = PowerNews\LocalConfig::load(
+    static fn (string $name): string|false => getenv($name),
+    __DIR__ . '/' . PowerNews\LocalConfig::FILENAME,
+);
+$pn_config['mysqlhost'] = $pn_local['db']['host'];
+$pn_config['mysqlport'] = $pn_local['db']['port'];
+$pn_config['mysqluser'] = $pn_local['db']['user'];
+$pn_config['mysqlpass'] = $pn_local['db']['password'];
+$pn_config['mysqldata'] = $pn_local['db']['database'];
 
 // The names of the tables - don't change, only if you want to install PN two times
 $pn_config['cattable'] = 'pn_categories';
@@ -51,8 +56,9 @@ $pn_config['sendnewsfile'] = 'sendnews.php';
 // Activate puffer in admin center - TRUE or FALSE - Can cause problems on some webservers
 $pn_config['acpuffer'] = true;
 
-// Select your language for PowerNews
-$pn_config['language'] = 'german-du';
+// Select your language for PowerNews (german-du, german-sie, english) - config.local.php may override it
+$pn_config['language'] = $pn_local['language'];
+unset($pn_local);
 
 // Array with targets for related links - example: $pn_config['rltargets'] = array("_blank", "_main", "_top");
 $pn_config['rltargets'] = ['_blank', '_main'];
@@ -68,6 +74,8 @@ if (!isset($pn_handler)) {
             $pn_config['mysqlhost'],
             $pn_config['mysqluser'],
             $pn_config['mysqlpass'],
+            null,
+            $pn_config['mysqlport'],
         );
 
         if (!$pn_handler) {
