@@ -180,10 +180,10 @@ class ConfigData
         public readonly string $categories = 'NO',
         public readonly string $categorypics = 'NO',
         public readonly string $comments = 'NO',
-        public readonly string $commentwriting = 'Guests & Registered',
+        public readonly string $commentwriting = 'Guests/Registered',
         public readonly string $moretext = 'NO',
         public readonly string $sendnews = 'NO',
-        public readonly string $newssending = 'Guests & Registered',
+        public readonly string $newssending = 'Guests/Registered',
         public readonly string $smilies = 'NO',
         public readonly string $bbcode = 'NO',
         public readonly string $html = 'NO',
@@ -200,30 +200,37 @@ class ConfigData
     ) {
     }
 
+    /** Gültige Werte der ENUM-Spalten commentwriting/newssending in pn_config. */
+    public const WRITERS = ['Guests/Registered', 'Registered'];
+
+    /** Gültige Werte der ENUM-Spalten smilies/bbcode/html in pn_config. */
+    public const AREAS = ['NO', 'Comments', 'Comments/News', 'News'];
+
     /**
      * Erstellt ConfigData aus POST-Daten.
+     *
+     * Felder, die das Formular je nach Einstellung nicht anzeigt (z. B. „Kommentare
+     * schreiben“ bei abgeschalteten Kommentaren oder die wirkungslose HTML-Option),
+     * behalten den Wert aus $current, der aktuellen Konfiguration.
+     *
+     * @param array<string, mixed> $current
      */
-    public static function fromPost(): self
+    public static function fromPost(array $current = []): self
     {
+        $keep = static fn (string $key, array $allowed, string $default): string => in_array($current[$key] ?? null, $allowed, true) ? (string) $current[$key] : $default;
+        $choice = static fn (string $key, array $allowed, string $default): string => (string) pn_validate_whitelist($_POST[$key] ?? null, $allowed, $keep($key, $allowed, $default));
+
         return new self(
-            categories: pn_validate_yesno($_POST['categories'] ?? null),
-            categorypics: pn_validate_yesno($_POST['categorypics'] ?? null),
-            comments: pn_validate_yesno($_POST['comments'] ?? null),
-            commentwriting: pn_validate_whitelist(
-                $_POST['commentwriting'] ?? null,
-                ['Guests & Registered', 'Registered'],
-                'Guests & Registered',
-            ),
-            moretext: pn_validate_yesno($_POST['moretext'] ?? null),
-            sendnews: pn_validate_yesno($_POST['sendnews'] ?? null),
-            newssending: pn_validate_whitelist(
-                $_POST['newssending'] ?? null,
-                ['Guests & Registered', 'Registered'],
-                'Guests & Registered',
-            ),
-            smilies: pn_validate_yesno($_POST['smilies'] ?? null),
-            bbcode: pn_validate_yesno($_POST['bbcode'] ?? null),
-            html: pn_validate_yesno($_POST['html'] ?? null),
+            categories: pn_validate_yesno($_POST['categories'] ?? null, $keep('categories', ['YES', 'NO'], 'NO')),
+            categorypics: $choice('categorypics', ['YES', 'NO'], 'NO'),
+            comments: pn_validate_yesno($_POST['comments'] ?? null, $keep('comments', ['YES', 'NO'], 'NO')),
+            commentwriting: $choice('commentwriting', self::WRITERS, 'Registered'),
+            moretext: pn_validate_yesno($_POST['moretext'] ?? null, $keep('moretext', ['YES', 'NO'], 'NO')),
+            sendnews: pn_validate_yesno($_POST['sendnews'] ?? null, $keep('sendnews', ['YES', 'NO'], 'NO')),
+            newssending: $choice('newssending', self::WRITERS, 'Registered'),
+            smilies: $choice('smilies', self::AREAS, 'NO'),
+            bbcode: $choice('bbcode', self::AREAS, 'NO'),
+            html: $choice('html', self::AREAS, 'NO'),
             dateformat: pn_post_string('dateformat', 20),
             timeformat: pn_post_string('timeformat', 20),
             template: pn_post_id('template'),
@@ -233,7 +240,7 @@ class ConfigData
             news: pn_validate_int_range($_POST['news'] ?? null, 1, 100, 5),
             spamprotection: pn_validate_int_range($_POST['spamprotection'] ?? null, 0, 86400, 60),
             relatedlinks: pn_validate_yesno($_POST['relatedlinks'] ?? null),
-            relatedlinks_num: pn_validate_int_range($_POST['relatedlinks_num'] ?? null, 1, 20, 3),
+            relatedlinks_num: pn_validate_int_range($_POST['relatedlinks_num'] ?? null, 1, 20, pn_validate_int_range($current['relatedlinks_num'] ?? null, 1, 20, 3)),
         );
     }
 

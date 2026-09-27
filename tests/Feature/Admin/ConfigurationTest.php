@@ -98,7 +98,7 @@ class ConfigurationTest extends TestCase
         $this->setPost(['comment_access' => 'Registered']);
 
         $access = $_POST['comment_access'] ?? '';
-        $allowedValues = ['Guests & Registered', 'Registered', 'Nobody'];
+        $allowedValues = ['Guests/Registered', 'Registered', 'Nobody'];
 
         $this->assertTrue(in_array($access, $allowedValues));
     }
@@ -109,14 +109,14 @@ class ConfigurationTest extends TestCase
     {
         $this->setPost(['comment_access' => $access]);
 
-        $allowedValues = ['Guests & Registered', 'Registered', 'Nobody'];
+        $allowedValues = ['Guests/Registered', 'Registered', 'Nobody'];
         $this->assertTrue(in_array($access, $allowedValues));
     }
 
     public static function commentAccessProvider(): array
     {
         return [
-            'guests and registered' => ['Guests & Registered'],
+            'guests and registered' => ['Guests/Registered'],
             'registered only' => ['Registered'],
             'nobody' => ['Nobody'],
         ];
@@ -128,7 +128,7 @@ class ConfigurationTest extends TestCase
         $this->setPost(['comment_access' => 'Invalid']);
 
         $access = $_POST['comment_access'] ?? '';
-        $allowedValues = ['Guests & Registered', 'Registered', 'Nobody'];
+        $allowedValues = ['Guests/Registered', 'Registered', 'Nobody'];
 
         $this->assertFalse(in_array($access, $allowedValues));
     }

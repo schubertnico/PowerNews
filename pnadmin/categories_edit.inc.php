@@ -76,7 +76,7 @@ if ($pnadmin['canreadcategories'] == 'YES' && $pnadmin['canwritecategories'] == 
 
                     <div class="mb-3">
                         <label for="pn_description" class="form-label fw-bold"><?php echo L_CAT_DESCRIPTION; ?></label>
-                        <textarea class="form-control" name="description" id="pn_description" rows="3" aria-describedby="pn_description_help"><?php echo pnadmin_escape($data['description']); ?></textarea>
+                        <textarea class="form-control" name="description" id="pn_description" rows="3" maxlength="255" aria-describedby="pn_description_help"><?php echo pnadmin_escape($data['description']); ?></textarea>
                         <div id="pn_description_help" class="form-text"><?php echo L_CAT_DESCRIPTIONDESC; ?></div>
                     </div>
 

@@ -54,7 +54,7 @@ if ($pnadmin['canwriteusers'] == 'YES') {
 
               <div class="mb-3">
                   <label for="pn_nickname" class="form-label fw-bold"><?php echo L_USR_NICKNAME; ?></label>
-                  <input class="form-control" name="nickname" id="pn_nickname" maxlength="100" required aria-describedby="pn_nickname_help">
+                  <input class="form-control" name="nickname" id="pn_nickname" maxlength="30" required aria-describedby="pn_nickname_help">
                   <div id="pn_nickname_help" class="form-text"><?php echo L_USR_NICKNAME_DESC; ?></div>
               </div>
 

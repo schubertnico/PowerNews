@@ -19,6 +19,26 @@ function pnadmin_escape(string $value): string
 }
 
 /**
+ * Führt ein Prepared Statement aus und fängt Datenbankfehler ab. Statt eines HTTP-500
+ * (Fatal Error durch mysqli_sql_exception) erhält der Aufrufer false und kann eine
+ * verständliche Meldung anzeigen. Die technische Ursache landet im Fehlerlog.
+ */
+function pnadmin_execute(mysqli_stmt|false $stmt): bool
+{
+    if ($stmt === false) {
+        return false;
+    }
+
+    try {
+        return mysqli_stmt_execute($stmt);
+    } catch (mysqli_sql_exception $e) {
+        error_log('[PowerNews] Datenbankfehler: ' . $e->getMessage());
+
+        return false;
+    }
+}
+
+/**
  * Baut die WHERE-Bedingung für die Admin-Suche. Textfelder werden per LIKE durchsucht,
  * „id“ als exakter Zahlenvergleich. Unbekannte Felder fallen auf das erste Textfeld zurück.
  *
@@ -751,6 +771,15 @@ class user
         global $pn_config, $pn_handler;
         $error = '';
 
+        // Dieselben Regeln wie bei der Registrierung im Frontend (B45).
+        if (pn_validate_nickname($nickname) === '') {
+            return L_USR_INVALIDNICKNAME;
+        }
+
+        if (pn_validate_email($email) === '') {
+            return L_USR_WRONGEMAIL;
+        }
+
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ? OR email = ?');
         mysqli_stmt_bind_param($stmt, 'ss', $nickname, $email);
         mysqli_stmt_execute($stmt);
@@ -758,26 +787,21 @@ class user
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            if (preg_match("!^[_a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}!", $email)) {
-                $password = $this->generate_password();
-                $hashedPassword = pnadmin_hash_password($password);
+            $password = $this->generate_password();
+            $hashedPassword = pnadmin_hash_password($password);
+            $showemail = pn_validate_yesno($showemail, 'NO');
+            $now = time();
+            $status = 'Activated';
+            $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail, status) VALUES(?, ?, ?, ?, ?, ?)');
+            mysqli_stmt_bind_param($stmt, 'sssiss', $nickname, $email, $hashedPassword, $now, $showemail, $status);
 
-                if ($showemail === '' || $showemail === '0') {
-                    $showemail = 'NO';
-                }
+            if (!pnadmin_execute($stmt)) {
+                return L_USR_SAVEFAILED;
+            }
 
-                $now = time();
-                $status = 'Activated';
-                $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail, status) VALUES(?, ?, ?, ?, ?, ?)');
-                mysqli_stmt_bind_param($stmt, 'sssiss', $nickname, $email, $hashedPassword, $now, $showemail, $status);
-                mysqli_stmt_execute($stmt);
-
-                if ($sendemail === 'YES') {
-                    $emailObj = new email();
-                    $emailObj->addemail($nickname, $email, $password);
-                }
-            } else {
-                $error = L_USR_WRONGEMAIL;
+            if ($sendemail === 'YES') {
+                $emailObj = new email();
+                $emailObj->addemail($nickname, $email, $password);
             }
         } else {
             $error = L_USR_USRALREADYEXISTS;
@@ -917,6 +941,8 @@ class user
 
         if (!$nickname || !$email) {
             $error = L_USR_INSERTNICKNAMEANDEMAIL;
+        } elseif (pn_validate_nickname($nickname) === '') {
+            $error = L_USR_INVALIDNICKNAME;
         } else {
             $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE (nickname = ? OR email = ?) AND id != ?');
             mysqli_stmt_bind_param($stmt, 'ssi', $nickname, $email, $userid);
@@ -925,7 +951,7 @@ class user
             $num = mysqli_num_rows($result);
 
             if ($num == 0) {
-                if (preg_match("!^[_a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}!", $email)) {
+                if (pn_validate_email($email) !== '') {
                     if ($newpassword === 'YES') {
                         $password = $this->generate_password();
                         $hashedPassword = pnadmin_hash_password($password);
@@ -934,13 +960,14 @@ class user
                         mysqli_stmt_execute($stmt);
                     }
 
-                    if ($showemail === '' || $showemail === '0') {
-                        $showemail = 'NO';
-                    }
-
+                    $showemail = pn_validate_yesno($showemail, 'NO');
+                    $status = (string) pn_validate_whitelist($status, ['Activated', 'Deactivated'], 'Activated');
                     $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET nickname = ?, email = ?, showemail = ?, status = ? WHERE id = ?');
                     mysqli_stmt_bind_param($stmt, 'ssssi', $nickname, $email, $showemail, $status, $userid);
-                    mysqli_stmt_execute($stmt);
+
+                    if (!pnadmin_execute($stmt)) {
+                        return L_USR_SAVEFAILED;
+                    }
 
                     if ($sendemail === 'YES') {
                         $emailObj = new email();
@@ -1073,12 +1100,17 @@ class profile
         $num = mysqli_num_rows($result);
 
         if ($num == 1) {
-            // Passwort nur prüfen wenn eines eingegeben wurde
+            // Passwort nur prüfen, wenn eines eingegeben wurde
             $changePassword = ($password !== '' || $password2 !== '');
+            $showemail = pn_validate_yesno($showemail, 'NO');
 
-            if ($changePassword && $password !== $password2) {
+            if (pn_validate_nickname($nickname) === '') {
+                $error = L_USR_INVALIDNICKNAME;
+            } elseif ($changePassword && $password !== $password2) {
                 $error = L_USR_PWNOTCONFIRMED;
-            } elseif (!preg_match("!^[_a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}!", $email)) {
+            } elseif ($changePassword && strlen($password) < 8) {
+                $error = L_USR_PASSWORDTOOSHORT;
+            } elseif (pn_validate_email($email) === '') {
                 $error = L_USR_WRONGEMAIL;
             } else {
                 $stmt2 = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE (nickname = ? OR email = ?) AND id != ?');
@@ -1098,7 +1130,10 @@ class profile
                         $stmt3 = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET nickname = ?, email = ?, showemail = ? WHERE id = ?');
                         mysqli_stmt_bind_param($stmt3, 'sssi', $nickname, $email, $showemail, $userid);
                     }
-                    mysqli_stmt_execute($stmt3);
+
+                    if (!pnadmin_execute($stmt3)) {
+                        $error = L_USR_SAVEFAILED;
+                    }
                 } else {
                     $error = L_USR_USRALREADYEXISTS;
                 }
@@ -1192,7 +1227,7 @@ class permissions
                     $canwritecomments,
                 );
 
-                if (!mysqli_stmt_execute($stmt)) {
+                if (!pnadmin_execute($stmt)) {
                     $error = L_PERM_CANTWRITETODB;
                 }
             } else {
@@ -1328,7 +1363,7 @@ class permissions
                 $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
                 mysqli_stmt_bind_param($stmt, 'i', $userid);
 
-                if (!mysqli_stmt_execute($stmt)) {
+                if (!pnadmin_execute($stmt)) {
                     $error = L_PERM_PERMISSIONSNOTDELETED;
                 }
             } else {
@@ -1367,7 +1402,7 @@ class permissions
                     $userid,
                 );
 
-                if (!mysqli_stmt_execute($stmt)) {
+                if (!pnadmin_execute($stmt)) {
                     $error = L_PERM_CANNOTWRITETODB;
                 }
             }
@@ -1443,7 +1478,7 @@ class configuration
                 $relatedlinks_num,
             );
 
-            if (!mysqli_stmt_execute($stmt)) {
+            if (!pnadmin_execute($stmt)) {
                 $error = L_CONF_EDITFAILED;
             }
         }
@@ -1472,10 +1507,17 @@ class configuration
 
 class category
 {
+    /** pn_categories.description ist ein TINYTEXT (255 Byte, Umlaute zählen doppelt). */
+    public const DESCRIPTION_MAX_BYTES = 255;
+
     public function addcat(string $name, string $description, array $picture = []): string
     {
         global $pn_config, $pnconfig, $pn_handler;
         $error = '';
+
+        if (strlen($description) > self::DESCRIPTION_MAX_BYTES) {
+            return L_CAT_DESCRIPTIONTOOLONG;
+        }
 
         $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['cattable'] . ' WHERE name = ?');
         mysqli_stmt_bind_param($stmt, 's', $name);
@@ -1505,7 +1547,7 @@ class category
                     $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['cattable'] . ' (name, description, picture, status) VALUES(?, ?, ?, ?)');
                     mysqli_stmt_bind_param($stmt, 'ssss', $name, $description, $pic, $status);
 
-                    if (!mysqli_stmt_execute($stmt)) {
+                    if (!pnadmin_execute($stmt)) {
                         $error = L_CAT_CATADDERROR;
                     }
                 }
@@ -1584,6 +1626,10 @@ class category
         global $pn_config, $pnconfig, $pn_handler;
         $error = '';
 
+        if (strlen($description) > self::DESCRIPTION_MAX_BYTES) {
+            return L_CAT_DESCRIPTIONTOOLONG;
+        }
+
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['cattable'] . ' WHERE id = ?');
         mysqli_stmt_bind_param($stmt, 'i', $catid);
         mysqli_stmt_execute($stmt);
@@ -1629,7 +1675,7 @@ class category
                         $stmt3 = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['cattable'] . ' SET name = ?, description = ?, picture = ?, status = ? WHERE id = ?');
                         mysqli_stmt_bind_param($stmt3, 'ssssi', $name, $description, $pic, $status, $catid);
 
-                        if (!mysqli_stmt_execute($stmt3)) {
+                        if (!pnadmin_execute($stmt3)) {
                             $error = L_CAT_CATEDITERROR;
                         }
                     }
@@ -1695,7 +1741,7 @@ class news
         $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['newstable'] . ' (userid, time, catid, title, text, moretext, status, relatedlinks) VALUES(?, ?, ?, ?, ?, ?, ?, ?)');
         mysqli_stmt_bind_param($stmt, 'iiisssss', $userId, $addtime, $catid, $title, $text, $moretext, $status, $relatedlinks);
 
-        if (!mysqli_stmt_execute($stmt)) {
+        if (!pnadmin_execute($stmt)) {
             return L_NEWS_ADDINGFAILED;
         }
 
@@ -1926,7 +1972,7 @@ class news
             $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['commenttable'] . ' SET text = ? WHERE id = ?');
             mysqli_stmt_bind_param($stmt, 'si', $ctext, $cid);
 
-            if (!mysqli_stmt_execute($stmt)) {
+            if (!pnadmin_execute($stmt)) {
                 $error = L_NEWS_COMMENTEDITERROR;
             }
 
@@ -1937,7 +1983,7 @@ class news
                     $stmt2 = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['commenttable'] . ' WHERE id = ?');
                     mysqli_stmt_bind_param($stmt2, 'i', $cid);
 
-                    if (!mysqli_stmt_execute($stmt2)) {
+                    if (!pnadmin_execute($stmt2)) {
                         $error = L_NEWS_COMMENTEDITERROR;
                     }
                 }
@@ -1990,7 +2036,7 @@ class news
         $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['newstable'] . ' SET time = ?, catid = ?, title = ?, text = ?, moretext = ?, status = ?, relatedlinks = ? WHERE id = ?');
         mysqli_stmt_bind_param($stmt, 'iisssssi', $newtime, $catid, $title, $text, $moretext, $status, $relatedlinks, $newsid);
 
-        if (!mysqli_stmt_execute($stmt)) {
+        if (!pnadmin_execute($stmt)) {
             return L_NEWS_NEWSNOTEDITED;
         }
 
@@ -2007,7 +2053,7 @@ class news
         $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['newstable'] . ' WHERE id = ?');
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
 
-        if (!mysqli_stmt_execute($stmt)) {
+        if (!pnadmin_execute($stmt)) {
             return L_NEWS_NEWSNOTDELETED;
         }
 

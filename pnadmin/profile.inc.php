@@ -73,7 +73,7 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
 
             <div class="mb-3">
                 <label for="pn_nickname" class="form-label fw-bold"><?php echo L_USR_NICKNAME; ?></label>
-                <input class="form-control" name="nickname" id="pn_nickname" maxlength="100" value="<?php echo htmlspecialchars($data['nickname'], ENT_QUOTES, 'UTF-8'); ?>" required aria-describedby="pn_nickname_help">
+                <input class="form-control" name="nickname" id="pn_nickname" maxlength="30" value="<?php echo htmlspecialchars($data['nickname'], ENT_QUOTES, 'UTF-8'); ?>" required aria-describedby="pn_nickname_help">
                 <div id="pn_nickname_help" class="form-text"><?php echo L_USR_NICKNAME_DESC_PROF; ?></div>
             </div>
 
@@ -93,10 +93,10 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
                 <label class="form-label fw-bold" for="pn_password"><?php echo L_USR_PASSWORD; ?></label>
                 <div class="row g-2">
                     <div class="col-12 col-md-6">
-                        <input type="password" class="form-control" name="password" id="pn_password" maxlength="25" value="" autocomplete="new-password" placeholder="<?php echo L_USR_NEWPASSWORD_PLACEHOLDER; ?>">
+                        <input type="password" class="form-control" name="password" id="pn_password" maxlength="128" value="" autocomplete="new-password" placeholder="<?php echo L_USR_NEWPASSWORD_PLACEHOLDER; ?>">
                     </div>
                     <div class="col-12 col-md-6">
-                        <input type="password" class="form-control" name="password2" id="pn_password2" maxlength="25" value="" autocomplete="new-password" placeholder="<?php echo L_USR_REPEATPASSWORD; ?>">
+                        <input type="password" class="form-control" name="password2" id="pn_password2" maxlength="128" value="" autocomplete="new-password" placeholder="<?php echo L_USR_REPEATPASSWORD; ?>">
                     </div>
                 </div>
                 <div class="form-text"><?php echo L_USR_PASSWORD_DESC_PROF; ?></div>

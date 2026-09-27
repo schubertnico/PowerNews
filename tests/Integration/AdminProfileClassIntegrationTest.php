@@ -113,9 +113,17 @@ class AdminProfileClassIntegrationTest extends DatabaseTestCase
     {
         $userId = $this->insertTestUser('editprofile', 'editprofile@example.com');
 
-        $result = $this->profile->edit('editprofile', 'editprofile@example.com', 'YES', 'newpass', 'newpass', $userId);
+        $result = $this->profile->edit('editprofile', 'editprofile@example.com', 'YES', 'newpass12', 'newpass12', $userId);
 
         $this->assertSame('', $result);
+    }
+
+    #[Test]
+    public function edit_rejects_too_short_password(): void
+    {
+        $userId = $this->insertTestUser('shortpw', 'shortpw@example.com');
+
+        $this->assertSame(L_USR_PASSWORDTOOSHORT, $this->profile->edit('shortpw', 'shortpw@example.com', 'NO', 'kurz', 'kurz', $userId));
     }
 
     #[Test]

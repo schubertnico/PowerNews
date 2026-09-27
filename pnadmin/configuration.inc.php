@@ -30,7 +30,7 @@ if ($pnadmin['canreadconfig'] == 'YES') {
 
     if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
         if ($pnadmin['canwriteconfig'] == 'YES') {
-            $configData = ConfigData::fromPost();
+            $configData = ConfigData::fromPost($pnconfig);
 
             if ($configData->dateformat === '' || $configData->timeformat === '' || $configData->url === '' || $configData->email === '') {
                 ?>
@@ -185,16 +185,6 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <div id="cfg_bbcode_help" class="form-text"><?php echo L_CONF_BBCODE_DESC; ?></div>
           </div>
 
-          <div class="mb-3">
-              <label for="cfg_html" class="form-label fw-bold"><?php echo L_CONF_HTML; ?></label>
-              <select class="form-select" name="html" id="cfg_html" aria-describedby="cfg_html_help">
-                  <option value="NO" <?php if ($pnconfig['html'] == 'NO') { echo 'selected'; } ?>><?php echo L_ALL_NO; ?></option>
-                  <option value="Comments" <?php if ($pnconfig['html'] == 'Comments') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTS; ?></option>
-                  <option value="Comments/News" <?php if ($pnconfig['html'] == 'Comments/News') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTSANDNEWS; ?></option>
-                  <option value="News" <?php if ($pnconfig['html'] == 'News') { echo 'selected'; } ?>><?php echo L_CONF_NEWS; ?></option>
-              </select>
-              <div id="cfg_html_help" class="form-text"><?php echo L_CONF_HTML_DESC; ?></div>
-          </div>
 
           <div class="row g-3 mb-3">
               <div class="col-12 col-md-6">
@@ -241,7 +231,7 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               </div>
               <div class="col-12 col-md-4">
                   <label for="cfg_spam" class="form-label fw-bold"><?php echo L_CONF_SPAMPROTECT; ?></label>
-                  <input class="form-control" name="spamprotection" id="cfg_spam" maxlength="3" value="<?php echo pnadmin_escape($pnconfig['spamprotection']); ?>" aria-describedby="cfg_spam_help">
+                  <input class="form-control" name="spamprotection" id="cfg_spam" maxlength="5" value="<?php echo pnadmin_escape($pnconfig['spamprotection']); ?>" aria-describedby="cfg_spam_help">
                   <div id="cfg_spam_help" class="form-text"><?php echo L_CONF_SPAMPROTECT_DESC; ?></div>
               </div>
           </div>
