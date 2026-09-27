@@ -153,7 +153,7 @@ docker compose up -d --build
 # Mailpit:    http://localhost:8033/</code></pre>
 
     <div class="highlight">
-        Beim ersten Aufruf von <code>http://localhost:8087/install.php</code> (<strong>einmalig</strong>) wird ein frischer Admin-Zugang mit zufälligem Passwort erzeugt und auf der Seite angezeigt. Passwort bitte notieren und anschließend im Adminbereich ändern. Danach wird automatisch <code>pninc/install.lock</code> gesetzt, sodass die Datenbank nicht mehr überschrieben werden kann.
+        Beim ersten Start spielt der Datenbank-Container <code>powernews.sql</code> und die Entwicklungsdaten <code>.docker/dev-seed.sql</code> ein. Anmeldung im Adminbereich mit Nickname <code>admin</code> und Passwort <code>powernews-dev</code> (nur Entwicklung, nicht im Release). Der Web-Installer ist im Stack gesperrt, weil die Datenbank bereits eingerichtet ist.
     </div>
 
     <h3>Schnellcheck nach der Installation</h3>
@@ -163,37 +163,49 @@ docker compose up -d --build
         </thead>
         <tbody>
             <tr><td><code>curl -I http://localhost:8087/</code></td><td><code>HTTP/1.1 200</code>, <code>Server: Apache</code> (ohne Version)</td></tr>
-            <tr><td><code>curl -X POST http://localhost:8087/install.php -d "install=YES"</code></td><td>Hinweis „Installation bereits erfolgt"</td></tr>
+            <tr><td><code>curl -I http://localhost:8087/install.php</code></td><td><code>HTTP/1.1 403</code> (Installer gesperrt)</td></tr>
             <tr><td>Registrier-Mail</td><td>landet im Mailpit (<a href="http://localhost:8033/">http://localhost:8033/</a>)</td></tr>
         </tbody>
     </table>
 
     <h2>Anforderungen</h2>
     <ul>
-        <li>PHP 8.4 (oder höher)</li>
+        <li>PHP 8.4 (oder höher) mit den Erweiterungen <code>mysqli</code> und <code>mbstring</code></li>
         <li>MariaDB 10.3+ / MySQL 8.0+</li>
         <li>Apache 2.4 mit <code>mod_rewrite</code> + <code>mod_headers</code></li>
         <li>Für Mailversand: <code>msmtp</code> oder ein SMTP-Relay (im Docker-Setup automatisch via Mailpit)</li>
     </ul>
 
-    <h2>Installation ohne Docker</h2>
+    <h2>Installation mit dem Web-Installer</h2>
     <ol>
-        <li>Dateien ins Web-Root hochladen.</li>
-        <li>MariaDB-/MySQL-Datenbank anlegen.</li>
-        <li>Zugangsdaten per Umgebungsvariablen (siehe unten) oder direkt in <code>pninc/config.inc.php</code> hinterlegen.</li>
-        <li><code>http://&lt;dein-host&gt;/install.php</code> einmalig aufrufen – das Skript legt Tabellen an und erzeugt einen Admin mit Random-Passwort.</li>
-        <li><code>install.php</code>, <code>update.php</code>, <code>convert.php</code> nach der Installation löschen (oder hinter Admin-Auth lassen – sie sind im Auslieferungszustand bereits auth-gegated).</li>
+        <li>Inhalt des Release-Archivs per FTP hochladen – auch die versteckten <code>.htaccess</code>-Dateien (im FTP-Programm „versteckte Dateien anzeigen“). <code>logs/</code> beschreibbar machen; ist auch <code>pninc/</code> beschreibbar, legt der Installer die Zugangsdaten selbst ab.</li>
+        <li>Im Kundenmenü des Hosters eine leere MySQL-/MariaDB-Datenbank anlegen und Server, Port, Datenbankname, Benutzer und Passwort notieren.</li>
+        <li><code>https://&lt;ihre-domain&gt;/install.php</code> aufrufen und die fünf Schritte durchlaufen:
+            <ol>
+                <li><strong>Systemprüfung:</strong> PHP-Version, Erweiterungen, Schreibrechte.</li>
+                <li><strong>Datenbank:</strong> Zugangsdaten mit Verbindungstest; MySQL ab 8.0 oder MariaDB ab 10.3. Vorhandene PowerNews-Tabellen werden nie überschrieben.</li>
+                <li><strong>Website:</strong> Adresse (aus dem Aufruf vorbelegt), Absenderadresse für E-Mails, Sprache.</li>
+                <li><strong>Administrator:</strong> Nickname, E-Mail-Adresse, Passwort mit Wiederholung.</li>
+                <li><strong>Abschluss:</strong> Zusammenfassung prüfen, „Jetzt installieren“.</li>
+            </ol>
+        </li>
+        <li>Ist <code>pninc/</code> schreibgeschützt, <code>config.local.php</code> auf der Abschlussseite herunterladen und per FTP nach <code>pninc/</code> legen.</li>
+        <li><code>install.php</code> löschen. Der Installer ist ohnehin gesperrt und antwortet mit HTTP 403.</li>
+        <li>Im Adminbereich <code>pnadmin/</code> mit <strong>Nickname und Passwort</strong> anmelden.</li>
     </ol>
+    <p>Kommandozeile, nginx, Sperre und alle Details: <code>INSTALLATION.md</code> im Programmpaket.</p>
 
     <h2>Konfiguration</h2>
 
-    <h3>Umgebungsvariablen</h3>
+    <h3>Zugangsdaten</h3>
+    <p>Rangfolge: <code>pninc/config.local.php</code> (legt der Installer an, bleibt bei Updates erhalten) &gt; Umgebungsvariablen &gt; Vorgaben. Zugangsdaten nicht in <code>pninc/config.inc.php</code> eintragen – die Datei wird bei Updates überschrieben.</p>
     <table>
         <thead>
             <tr><th>Variable</th><th>Beschreibung</th><th>Standard</th></tr>
         </thead>
         <tbody>
             <tr><td><code>PN_DB_HOST</code></td><td>Datenbank-Host</td><td>localhost</td></tr>
+            <tr><td><code>PN_DB_PORT</code></td><td>Datenbank-Port</td><td>3306</td></tr>
             <tr><td><code>PN_DB_USER</code></td><td>Datenbank-Benutzer</td><td>root</td></tr>
             <tr><td><code>PN_DB_PASS</code></td><td>Datenbank-Passwort</td><td>(leer)</td></tr>
             <tr><td><code>PN_DB_NAME</code></td><td>Datenbank-Name</td><td>powernews</td></tr>
@@ -290,9 +302,9 @@ docker compose up -d --build
 
     <h3>Installer / Infrastruktur</h3>
     <ul>
-        <li><code>install.php</code> wird nach dem ersten Lauf durch Lockfile (<code>pninc/install.lock</code>) gesperrt.</li>
-        <li><code>update.php</code> und <code>convert.php</code> erfordern Admin-Login (<code>canwriteconfig = 'YES'</code>).</li>
-        <li>Kein hardcodierter <code>powernews/powernews</code>-Default-Account mehr.</li>
+        <li>Web-Installer mit CSRF-Schutz; nach der Installation dauerhaft gesperrt (Sperrdatei, <code>config.local.php</code> oder Zeile in <code>pn_config</code>) – gesperrt antwortet er mit HTTP 403 und verwirft nie Tabellen.</li>
+        <li><code>update.php</code> erfordert Admin-Login (<code>canwriteconfig = 'YES'</code>) und ein CSRF-Token.</li>
+        <li>Kein Standard-Administrator: Nickname und Passwort legt der Betreiber im Installer fest.</li>
     </ul>
 
     <h3>Datenbank</h3>
@@ -322,15 +334,15 @@ composer run rector        # Anwenden</code></pre>
     <h3>Pre-Commit-Hook</h3>
     <p>Der Pre-Commit-Hook führt automatisch aus: PHPStan, Superglobal-Scan und PHPUnit-Unit-Tests. Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.</p>
 
-    <h2>Migration von PowerNews ≤ 2.x auf 3.0</h2>
+    <h2>Update von 3.11 auf 3.12</h2>
     <ol>
-        <li>Backup von Datenbank + Dateien anlegen.</li>
-        <li>Dateien durch die 3.0-Version ersetzen.</li>
-        <li><code>http://&lt;host&gt;/update.php</code> als eingeloggter Admin aufrufen (Auth-Gate greift automatisch).</li>
-        <li>Bestehende Nutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt hochgehasht.</li>
-        <li><code>update.php</code> nach dem Update löschen.</li>
+        <li>Datensicherung von Datenbank und Dateien anlegen.</li>
+        <li>Stehen die Zugangsdaten bisher in <code>pninc/config.inc.php</code>, vor dem Hochladen <code>pninc/config.local.php</code> mit denselben Werten anlegen (Vorlage in <code>INSTALLATION.md</code>). Umgebungsvariablen gelten unverändert weiter.</li>
+        <li>Neue Dateien hochladen – <code>install.php</code> weglassen. <code>convert.php</code> und <code>pn_update.sql</code> vom Server löschen (entfallen in 3.12).</li>
+        <li>Im Adminbereich anmelden und <code>update.php</code> aufrufen: Die Seite zeigt, welche Schritte nötig sind (fehlende Tabellen, Testvorlagen aus 3.11, verwaiste Rechte-Einträge, Sperre des Installers), und führt sie mit „Update ausführen“ aus. Ein zweiter Aufruf ändert nichts.</li>
+        <li>Unter „Konfiguration“ URL und E-Mail-Adresse prüfen – 3.11 lieferte Vorgaben auf powerscripts.org aus.</li>
     </ol>
-    <p>Details siehe <a href="changelog.html">changelog.html</a>.</p>
+    <p>Bestehende Nutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt. Alle Änderungen: <code>CHANGELOG.md</code> im Programmpaket.</p>
 
     <h2>Dokumentation</h2>
     <ul>

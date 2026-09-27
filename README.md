@@ -30,44 +30,48 @@ docker compose up -d
 # Mailpit:    http://localhost:8033/
 ```
 
-Beim ersten Aufruf von `http://localhost:8087/install.php` (**einmalig**) wird ein frischer Admin-Zugang mit zufälligem Passwort erzeugt und auf der Seite angezeigt. Bitte notieren und anschließend im Adminbereich das Passwort ändern. Anschließend wird automatisch `pninc/install.lock` gesetzt, damit die Datenbank nicht mehr überschrieben werden kann.
+Beim ersten Start spielt der Datenbank-Container `powernews.sql` und die Entwicklungsdaten `.docker/dev-seed.sql` ein. Anmeldung im Adminbereich mit Nickname **`admin`** und Passwort **`powernews-dev`** (nur Entwicklung, nicht im Release). Der Web-Installer ist im Stack gesperrt, weil die Datenbank bereits eingerichtet ist.
 
 **Schnellcheck nach der Installation:**
 
 | Check | Ergebnis |
 |-------|----------|
 | `curl -I http://localhost:8087/` | `HTTP/1.1 200`, `Server: Apache` (ohne Version) |
-| `curl http://localhost:8087/install.php` (Post) | Hinweis „Installation bereits erfolgt" |
+| `curl -I http://localhost:8087/install.php` | `HTTP/1.1 403` (Installer gesperrt) |
 | Registrierungs-Mail | landet im Mailpit (http://localhost:8033/) |
 
 ---
 
 ## Anforderungen
 
-- PHP 8.4 (oder höher)
+- PHP 8.4 (oder höher) mit den Erweiterungen `mysqli` und `mbstring`
 - MariaDB 10.3+ / MySQL 8.0+
 - Apache 2.4 mit `mod_rewrite` + `mod_headers`
 - Für den Mailversand: `msmtp` oder ein SMTP-Relay (im Docker-Setup automatisch via Mailpit)
 
 ---
 
-## Installation ohne Docker
+## Installation ohne Docker (Web-Installer)
 
-1. Dateien ins Web-Root hochladen.
-2. MariaDB-/MySQL-Datenbank anlegen.
-3. Zugangsdaten per Umgebungsvariablen (siehe unten) oder direkt in `pninc/config.inc.php` hinterlegen.
-4. `http://<dein-host>/install.php` einmalig aufrufen – das Skript legt die Tabellen an und erzeugt einen Admin mit Random-Passwort.
-5. `install.php`, `update.php`, `convert.php` nach der Installation löschen (oder hinter eine Admin-Auth lassen – sie sind im Auslieferungszustand bereits serverseitig auth-gegated).
+1. Inhalt des Release-Archivs hochladen (auch die `.htaccess`-Dateien), `logs/` beschreibbar machen.
+2. Eine leere MariaDB-/MySQL-Datenbank anlegen.
+3. `https://<ihre-domain>/install.php` aufrufen und die fünf Schritte durchlaufen: Systemprüfung, Datenbank (mit Verbindungstest), Website (URL, Absender, Sprache), Administrator (Nickname, E-Mail, Passwort), Abschluss.
+4. `install.php` löschen und im Adminbereich `pnadmin/` mit Nickname und Passwort anmelden.
+
+Die Zugangsdaten landen in `pninc/config.local.php` (bleibt bei Updates erhalten); danach ist der Installer gesperrt. Ausführlich – auch Shared Hosting, Kommandozeile, nginx und Update – in [INSTALLATION.md](INSTALLATION.md).
 
 ---
 
 ## Konfiguration
 
-### Umgebungsvariablen
+### Zugangsdaten
+
+Rangfolge: `pninc/config.local.php` (legt der Installer an) > Umgebungsvariablen > Vorgaben. Zugangsdaten nicht in `pninc/config.inc.php` eintragen – die Datei wird bei Updates überschrieben.
 
 | Variable | Beschreibung | Standard |
 |----------|-------------|----------|
 | `PN_DB_HOST` | Datenbank-Host | `localhost` |
+| `PN_DB_PORT` | Datenbank-Port | `3306` |
 | `PN_DB_USER` | Datenbank-Benutzer | `root` |
 | `PN_DB_PASS` | Datenbank-Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank-Name | `powernews` |
@@ -195,9 +199,9 @@ Nach Audit und Fix-Sweep vom April 2026 sind folgende Härtungen eingebaut. Deta
 
 ### Installer / Infrastruktur
 
-- `install.php` wird nach erstem Lauf durch Lockfile (`pninc/install.lock`) gesperrt.
-- `update.php` und `convert.php` erfordern Admin-Login (`canwriteconfig = 'YES'`).
-- Kein hardcodierter `powernews/powernews`-Default-Account mehr.
+- Web-Installer mit CSRF-Schutz; nach der Installation dauerhaft gesperrt (Sperrdatei, `config.local.php` oder Zeile in `pn_config`) – gesperrt antwortet er mit HTTP 403 und verwirft nie Tabellen.
+- `update.php` erfordert Admin-Login (`canwriteconfig = 'YES'`) und ein CSRF-Token.
+- Kein Standard-Administrator: Nickname und Passwort legt der Betreiber im Installer fest.
 
 ### Datenbank
 
@@ -244,19 +248,16 @@ Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.
 
 ---
 
-## Migration von PowerNews ≤ 2.x auf 3.0
+## Update
 
-1. Backup der Datenbank + Dateien anlegen.
-2. Dateien durch die 3.0-Version ersetzen.
-3. `http://<host>/update.php` als eingeloggter Admin aufrufen (neue Auth-Gate-Prüfung greift automatisch).
-4. Bestehende User mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt hochgehasht.
-5. **Default-Template auf Bootstrap 5 heben:** Beim Update von einer Vor-2026-05-Version müssen die Felder
+Update von 3.11 auf 3.12: Datensicherung, Zugangsdaten nach `pninc/config.local.php` übernehmen, Dateien hochladen (ohne `install.php`), als Admin `update.php` aufrufen – Schritt für Schritt in [INSTALLATION.md](INSTALLATION.md#update-von-311-auf-312). Bestehende Benutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt.
+
+**Default-Template auf Bootstrap 5 heben** (nur bei Installationen von vor Mai 2026): Beim Update von einer Vor-2026-05-Version müssen die Felder
    `news`, `headline`, `comment`, `commentform`, `loginform`, `registerform`, `profileform`,
    `senddataform`, `archive`, `sendnewsform`, `usermenu`, `usermenu2`, `relatedlinks`,
    `logout` und `message` der Zeile `id=1` in `pn_templates` auf das neue Bootstrap-5-
    Markup gehoben werden. Der einfachste Weg: Werte aus einer frischen
    `powernews.sql`-Installation per `UPDATE pn_templates SET … WHERE id=1` einspielen.
-6. `update.php` nach dem Update löschen.
 
 Details siehe [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md).
 
@@ -264,6 +265,8 @@ Details siehe [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootst
 
 ## Dokumentation
 
+- **Installation, Konfiguration und Update:** [`INSTALLATION.md`](INSTALLATION.md)
+- **Änderungen je Version:** [`CHANGELOG.md`](CHANGELOG.md)
 - **Bootstrap-5-Migration & UI-Hardening (2026-05-10):** [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md)
 - **Folgekorrekturen (Pt 2, 2026-05-10):** [`docs/2026-05-10-Pt2-Followup.md`](docs/2026-05-10-Pt2-Followup.md) – Login-Status sichtbar, echte Breadcrumb-Navigation, Default-Template editierbar, Version 3.10, `{RELATEDLINKS}`-Bug, doppeltes Copyright entfernt
 - **i18n-Konsolidierung (Pt 3, 2026-05-10):** [`docs/2026-05-10-Pt3-I18n.md`](docs/2026-05-10-Pt3-I18n.md) – 77 deutsche Strings in `pnadmin/lang/english.php` übersetzt, doppelte Konstanten entfernt, alle drei Sprachdateien deckungsgleich (Version 3.11)
