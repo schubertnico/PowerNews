@@ -25,6 +25,11 @@ final class Requirements
     public const string MIN_PHP = '8.4.0';
 
     /**
+     * Prüfung, die erst in Schritt 2 stattfindet (Version des Datenbankservers).
+     */
+    public const string DEFERRED_CHECK = 'dbserver';
+
+    /**
      * @param array<array-key, mixed> $server $_SERVER
      * @param callable(string): bool $extensionLoaded z. B. extension_loaded(...)
      *
@@ -82,10 +87,10 @@ final class Requirements
                     : 'Nicht beschreibbar – kein Problem: Am Ende bietet der Installer ' . LocalConfig::FILENAME . ' zum Herunterladen an, und die Sperrdatei kommt nach logs/.',
             ),
             self::item(
-                'dbserver',
+                self::DEFERRED_CHECK,
                 'Datenbankserver: ' . ServerVersion::requirement(),
                 true,
-                false,
+                true,
                 'Wird in Schritt 2 geprüft, sobald die Zugangsdaten eingegeben sind.',
             ),
             self::item(

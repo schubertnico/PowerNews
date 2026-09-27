@@ -11,6 +11,7 @@ declare(strict_types=1);
 /* Web-Installer: Schritt 1 (Systemprüfung) */
 
 use PowerNews\Installer\Html;
+use PowerNews\Installer\Requirements;
 
 /**
  * @param list<array{id: string, label: string, ok: bool, required: bool, detail: string}> $checks
@@ -36,7 +37,9 @@ return static function (string $csrf, array $errors, string $message, array $che
     <ul class="list-group mb-3" id="requirements-list">
 <?php
     foreach ($checks as $check) {
-        if ($check['ok']) {
+        if ($check['id'] === Requirements::DEFERRED_CHECK) {
+            $badge = '<span class="badge text-bg-info">folgt in Schritt 2</span>';
+        } elseif ($check['ok']) {
             $badge = '<span class="badge text-bg-success">erfüllt</span>';
         } elseif ($check['required']) {
             $badge = '<span class="badge text-bg-danger">nicht erfüllt</span>';
