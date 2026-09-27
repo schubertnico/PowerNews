@@ -7,6 +7,8 @@ declare(strict_types=1);
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
 
+require_once __DIR__ . '/core.inc.php';
+
 /**
  * Helper function to escape output for HTML.
  */
@@ -1230,15 +1232,34 @@ class pn_template
         if ($num == 1) {
             [$message] = mysqli_fetch_array($result);
 
-            $message = preg_replace('!{MESSAGE}!', $text, (string) $message);
-            $message = preg_replace('!{LINK}!', $link, $message);
-
-            echo $message;
+            echo pn_template_fill((string) $message, ['MESSAGE' => $text, 'LINK' => $link]);
 
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * HTML für den Platzhalter {CATPIC}: das Kategoriebild, wenn Kategoriebilder aktiviert
+     * sind und die Kategorie ein Bild hat, sonst ein Leerstring (der Platzhalter bleibt nie
+     * sichtbar stehen).
+     */
+    public function categorypic(mixed $category): string
+    {
+        global $pnconfig;
+
+        if (($pnconfig['categorypics'] ?? 'NO') !== 'YES' || !is_array($category)) {
+            return '';
+        }
+
+        $picture = basename(trim((string) ($category['picture'] ?? '')));
+
+        if ($picture === '') {
+            return '';
+        }
+
+        return '<img src="./pngfx/categories/' . pn_escape($picture) . '" class="pn-catpic" alt="' . pn_escape((string) ($category['name'] ?? '')) . '">';
     }
 
     // BB replacements
@@ -1318,15 +1339,15 @@ class pn_template
             $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
             $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
-            $headline = preg_replace('!{ID}!', (string) $id, (string) $headline);
-            $headline = preg_replace('!{DATE}!', $date, $headline);
-            $headline = preg_replace('!{TIME}!', $timeStr, $headline);
-            $headline = preg_replace('!{CATEGORY}!', is_array($category) ? $category['name'] : (string) $category, $headline);
-            $headline = preg_replace('!{TITLE}!', $title, $headline);
-            $headline = preg_replace('!{CATPIC}!', is_array($category) ? $category['pic'] : '', $headline);
-            $headline = preg_replace('!{CATID}!', is_array($category) ? (string) $category['id'] : '', $headline);
-
-            echo $headline;
+            echo pn_template_fill((string) $headline, [
+                'ID' => $id,
+                'DATE' => $date,
+                'TIME' => $timeStr,
+                'CATEGORY' => is_array($category) ? pn_escape($category['name']) : (string) $category,
+                'TITLE' => $title,
+                'CATPIC' => $this->categorypic($category),
+                'CATID' => is_array($category) ? (string) $category['id'] : '',
+            ]);
 
             return true;
         }
@@ -1371,30 +1392,14 @@ class pn_template
             $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
             $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
-            $news = preg_replace('!{ID}!', (string) $id, $news);
-            $news = preg_replace('!{AUTHOR}!', $author, $news);
-            $news = preg_replace('!{DATE}!', $date, $news);
-            $news = preg_replace('!{TIME}!', $timeStr, $news);
-            $news = preg_replace('!{CATEGORY}!', is_array($category) ? $category['name'] : (string) $category, $news);
-            $news = preg_replace('!{CATID}!', is_array($category) ? (string) $category['id'] : '', $news);
-            $news = preg_replace('!{TITLE}!', $title, $news);
+            $more = '';
 
             if ($pnconfig['moretext'] == 'YES' && $moretext) {
                 if ($details === 'YES') {
                     $text = '<b>' . $text . '</b><br><br>' . $moretext;
-                    $news = preg_replace('!{MORE}!', '', $news);
                 } else {
-                    $news = preg_replace('!{MORE}!', '[ <a href="' . $pn_config['detailfile'] . '?newsid=' . $id . '">' . L_NEWS_MORE . '</a> ]', $news);
+                    $more = '[ <a href="' . pn_escape($pn_config['detailfile']) . '?newsid=' . $id . '">' . L_NEWS_MORE . '</a> ]';
                 }
-            } else {
-                $news = preg_replace('!{MORE}!', '', $news);
-            }
-
-            $news = preg_replace('!{TEXT}!', $text, $news);
-            $news = preg_replace('!{COMMENTS}!', (string) $comments, $news);
-
-            if ($pnconfig['categorypics'] == 'YES') {
-                $news = preg_replace('!{CATPIC}!', is_array($category) ? $category['pic'] : '', $news);
             }
 
             // Related Links auswerten. {RELATEDLINKS} muss IMMER ersetzt werden,
@@ -1413,13 +1418,26 @@ class pn_template
                     }
                 }
             }
-            $news = preg_replace('!{RELATEDLINKS}!', $rlinks, $news);
+            $news = pn_template_fill((string) $news, [
+                'ID' => $id,
+                'AUTHOR' => $author,
+                'DATE' => $date,
+                'TIME' => $timeStr,
+                'CATEGORY' => is_array($category) ? pn_escape($category['name']) : (string) $category,
+                'CATID' => is_array($category) ? (string) $category['id'] : '',
+                'TITLE' => $title,
+                'MORE' => $more,
+                'TEXT' => $text,
+                'COMMENTS' => $comments,
+                'CATPIC' => $this->categorypic($category),
+                'RELATEDLINKS' => $rlinks,
+            ]);
 
             // Optionale Related-Links-Section ueber Konditional-Marker
             // <!--RELATEDLINKS_START-->...<!--RELATEDLINKS_END--> komplett ausblenden,
             // wenn keine Links generiert wurden. So bleibt die Sidebar im Template
             // gestaltbar, verschwindet aber automatisch bei leerem Inhalt.
-            $newsStr = is_string($news) ? $news : '';
+            $newsStr = $news;
             if ($rlinks === '') {
                 $newsStr = (string) preg_replace('/<!--\s*RELATEDLINKS_START\s*-->.*?<!--\s*RELATEDLINKS_END\s*-->/s', '', $newsStr);
             } else {
@@ -1476,13 +1494,13 @@ class pn_template
             $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
             $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
 
-            $comment = preg_replace('!{ID}!', (string) $id, (string) $comment);
-            $comment = preg_replace('!{AUTHOR}!', $user, $comment);
-            $comment = preg_replace('!{DATE}!', $date, $comment);
-            $comment = preg_replace('!{TIME}!', $timeStr, $comment);
-            $comment = preg_replace('!{TEXT}!', $text, $comment);
-
-            echo $comment;
+            echo pn_template_fill((string) $comment, [
+                'ID' => $id,
+                'AUTHOR' => $user,
+                'DATE' => $date,
+                'TIME' => $timeStr,
+                'TEXT' => $text,
+            ]);
 
             return true;
         }
@@ -1505,10 +1523,11 @@ class pn_template
         if ($num == 1) {
             [$relatedlink] = mysqli_fetch_array($result);
 
-            $relatedlink = preg_replace('!{TITLE}!', pn_escape($title), (string) $relatedlink);
-            $relatedlink = preg_replace('!{URL}!', pn_escape($url), $relatedlink);
-
-            return preg_replace('!{TARGET}!', pn_escape($target), $relatedlink);
+            return pn_template_fill((string) $relatedlink, [
+                'TITLE' => pn_escape($title),
+                'URL' => pn_escape($url),
+                'TARGET' => pn_escape($target),
+            ]);
         }
 
         return false;
@@ -1529,11 +1548,11 @@ class pn_template
         if ($num == 1) {
             [$commentform] = mysqli_fetch_array($result);
 
-            $commentform = preg_replace('!{NEWSID}!', (string) $newsid, (string) $commentform);
-            $commentform = preg_replace('!{NAME}!', pn_escape($name), $commentform);
-            $commentform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $commentform);
-
-            echo $commentform;
+            echo pn_template_fill((string) $commentform, [
+                'NEWSID' => $newsid,
+                'NAME' => pn_escape($name),
+                'CSRF' => pn_csrf_token(),
+            ]);
 
             return true;
         }
@@ -1555,8 +1574,7 @@ class pn_template
 
         if ($num == 1) {
             [$registerform] = mysqli_fetch_array($result);
-            $registerform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $registerform);
-            echo $registerform;
+            echo pn_template_fill((string) $registerform, ['CSRF' => pn_csrf_token()]);
 
             return true;
         }
@@ -1579,11 +1597,12 @@ class pn_template
         if ($num == 1) {
             [$registeremail] = mysqli_fetch_array($result);
 
-            $registeremail = preg_replace('!{NICKNAME}!', $nickname, (string) $registeremail);
-            $registeremail = preg_replace('!{EMAIL}!', $email, $registeremail);
-            $registeremail = preg_replace('!{PASSWORD}!', $password, $registeremail);
-
-            return preg_replace('!{URL}!', (string) $pnconfig['url'], $registeremail);
+            return pn_template_fill((string) $registeremail, [
+                'NICKNAME' => $nickname,
+                'EMAIL' => $email,
+                'PASSWORD' => $password,
+                'URL' => (string) $pnconfig['url'],
+            ]);
         }
 
         return false;
@@ -1603,8 +1622,7 @@ class pn_template
 
         if ($num == 1) {
             [$loginform] = mysqli_fetch_array($result);
-            $loginform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $loginform);
-            echo $loginform;
+            echo pn_template_fill((string) $loginform, ['CSRF' => pn_csrf_token()]);
 
             return true;
         }
@@ -1626,8 +1644,7 @@ class pn_template
 
         if ($num == 1) {
             [$senddataform] = mysqli_fetch_array($result);
-            $senddataform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $senddataform);
-            echo $senddataform;
+            echo pn_template_fill((string) $senddataform, ['CSRF' => pn_csrf_token()]);
 
             return true;
         }
@@ -1650,11 +1667,12 @@ class pn_template
         if ($num == 1) {
             [$dataemail] = mysqli_fetch_array($result);
 
-            $dataemail = preg_replace('!{NICKNAME}!', $nickname, (string) $dataemail);
-            $dataemail = preg_replace('!{EMAIL}!', $email, $dataemail);
-            $dataemail = preg_replace('!{PASSWORD}!', $password, $dataemail);
-
-            return preg_replace('!{URL}!', (string) $pnconfig['url'], $dataemail);
+            return pn_template_fill((string) $dataemail, [
+                'NICKNAME' => $nickname,
+                'EMAIL' => $email,
+                'PASSWORD' => $password,
+                'URL' => (string) $pnconfig['url'],
+            ]);
         }
 
         return false;
@@ -1719,22 +1737,19 @@ class pn_template
         if ($num == 1) {
             [$profileform] = mysqli_fetch_array($result);
 
-            $profileform = preg_replace('!{NICKNAME}!', pn_escape($pnuser['nickname']), (string) $profileform);
-            $profileform = preg_replace('!{EMAIL}!', pn_escape($pnuser['email']), $profileform);
-
-            if (($pnuser['showemail'] ?? '') == 'YES') {
-                $profileform = preg_replace('!{SHOWEMAIL}!', 'checked', $profileform);
-            }
-            // Don't display password - user must enter new one
-            $profileform = preg_replace('!{PASSWORD}!', '', $profileform);
-            $profileform = preg_replace('!{REALNAME}!', pn_escape($pnuser['realname'] ?? ''), $profileform);
-            $profileform = preg_replace('!{CITY}!', pn_escape($pnuser['city'] ?? ''), $profileform);
-            $profileform = preg_replace('!{AGE}!', pn_escape($pnuser['age'] ?? ''), $profileform);
-            $profileform = preg_replace('!{HOMEPAGE}!', pn_escape($pnuser['homepage'] ?? ''), $profileform);
-            $profileform = preg_replace('!{ICQ}!', pn_escape($pnuser['icq'] ?? ''), $profileform);
-            $profileform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $profileform);
-
-            echo $profileform;
+            echo pn_template_fill((string) $profileform, [
+                'NICKNAME' => pn_escape($pnuser['nickname']),
+                'EMAIL' => pn_escape($pnuser['email']),
+                'SHOWEMAIL' => (($pnuser['showemail'] ?? '') == 'YES') ? 'checked' : '',
+                // Das Passwort wird nie angezeigt, der Benutzer gibt bei Bedarf ein neues ein.
+                'PASSWORD' => '',
+                'REALNAME' => pn_escape($pnuser['realname'] ?? ''),
+                'CITY' => pn_escape($pnuser['city'] ?? ''),
+                'AGE' => pn_escape($pnuser['age'] ?? ''),
+                'HOMEPAGE' => pn_escape($pnuser['homepage'] ?? ''),
+                'ICQ' => pn_escape($pnuser['icq'] ?? ''),
+                'CSRF' => pn_csrf_token(),
+            ]);
 
             return true;
         }
@@ -1757,10 +1772,10 @@ class pn_template
         if ($num == 1) {
             [$logout] = mysqli_fetch_array($result);
 
-            $logout = preg_replace('!{NICKNAME}!', pn_escape($pnuser['nickname']), (string) $logout);
-            $logout = preg_replace('!{CSRF}!', pn_csrf_token(), $logout);
-
-            echo $logout;
+            echo pn_template_fill((string) $logout, [
+                'NICKNAME' => pn_escape($pnuser['nickname']),
+                'CSRF' => pn_csrf_token(),
+            ]);
 
             return true;
         }
@@ -1796,11 +1811,11 @@ class pn_template
             }
             $monthselect .= "</select>\n";
 
-            $archive = preg_replace('!{SELECTYEAR}!', $pndata['yearselect'] ?? '', (string) $archive);
-            $archive = preg_replace('!{SELECTMONTH}!', $monthselect, $archive);
-            $archive = preg_replace('!{SEARCHSTRING}!', pn_escape($pndata['searchstring'] ?? ''), $archive);
-
-            echo $archive;
+            echo pn_template_fill((string) $archive, [
+                'SELECTYEAR' => $pndata['yearselect'] ?? '',
+                'SELECTMONTH' => $monthselect,
+                'SEARCHSTRING' => pn_escape($pndata['searchstring'] ?? ''),
+            ]);
 
             return true;
         }
@@ -1823,8 +1838,6 @@ class pn_template
         if ($num == 1) {
             [$sendnewsform] = mysqli_fetch_array($result);
 
-            $sendnewsform = preg_replace('!{USER}!', $user, (string) $sendnewsform);
-            $sendnewsform = preg_replace('!{CATEGORYSELECT}!', $catselect, $sendnewsform);
 
             $relatedlinks = '';
 
@@ -1844,10 +1857,12 @@ class pn_template
                 }
                 $relatedlinks .= '</table>';
             }
-            $sendnewsform = preg_replace('!{RELATEDLINKS}!', $relatedlinks, $sendnewsform);
-            $sendnewsform = preg_replace('!{CSRF}!', pn_csrf_token(), (string) $sendnewsform);
-
-            echo $sendnewsform;
+            echo pn_template_fill((string) $sendnewsform, [
+                'USER' => $user,
+                'CATEGORYSELECT' => $catselect,
+                'RELATEDLINKS' => $relatedlinks,
+                'CSRF' => pn_csrf_token(),
+            ]);
 
             return true;
         }

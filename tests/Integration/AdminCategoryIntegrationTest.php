@@ -36,7 +36,7 @@ class AdminCategoryIntegrationTest extends DatabaseTestCase
         $this->category->addcat('Science', 'Science articles');
 
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['cattable'] . ' WHERE name = ?');
-        $name = addslashes('Science');
+        $name = 'Science';
         mysqli_stmt_bind_param($stmt, 's', $name);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);

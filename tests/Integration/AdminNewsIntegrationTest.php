@@ -242,14 +242,16 @@ class AdminNewsIntegrationTest extends DatabaseTestCase
     }
 
     #[Test]
-    public function getnewsdata_stripslashes_title_text_moretext(): void
+    public function getnewsdata_returns_stored_text_unchanged(): void
     {
         global $pn_handler, $pn_config;
 
+        // B03: Die Anzeige darf Bestandsdaten nicht per stripslashes() „reparieren“,
+        // sonst verschwinden legitime Backslashes.
         $userId = $this->insertTestUser('author', 'author@test.com');
-        $title = addslashes("It's a test");
-        $text = addslashes("Body with 'quotes'");
-        $moretext = addslashes("More 'text'");
+        $title = "It's a test";
+        $text = 'Pfad C:\temp und "Zitat"';
+        $moretext = "More 'text'";
         $time = time();
         $status = 'Activated';
         $relatedlinks = '';
@@ -262,7 +264,7 @@ class AdminNewsIntegrationTest extends DatabaseTestCase
         $data = $this->news->getnewsdata($newsId);
 
         $this->assertSame("It's a test", $data['title']);
-        $this->assertSame("Body with 'quotes'", $data['text']);
+        $this->assertSame('Pfad C:\temp und "Zitat"', $data['text']);
         $this->assertSame("More 'text'", $data['moretext']);
     }
 

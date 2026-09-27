@@ -7,6 +7,9 @@ declare(strict_types=1);
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
 
+require_once __DIR__ . '/../pninc/core.inc.php';
+require_once __DIR__ . '/../pninc/migrations.inc.php';
+
 /**
  * Helper function to escape output for HTML (admin).
  */
@@ -287,11 +290,12 @@ class template
 
         if ($num == 1) {
             [$addemail] = mysqli_fetch_array($result);
-            $addemail = preg_replace('!{NICKNAME}!', $nickname, (string) $addemail);
-            $addemail = preg_replace('!{EMAIL}!', $email, $addemail);
-            $addemail = preg_replace('!{PASSWORD}!', $password, $addemail);
-
-            return preg_replace('!{URL}!', (string) $pnconfig['url'], $addemail);
+            return pn_template_fill((string) $addemail, [
+                'NICKNAME' => $nickname,
+                'EMAIL' => $email,
+                'PASSWORD' => $password,
+                'URL' => (string) $pnconfig['url'],
+            ]);
         }
 
         return false;
@@ -310,11 +314,12 @@ class template
 
         if ($num == 1) {
             [$editemail] = mysqli_fetch_array($result);
-            $editemail = preg_replace('!{NICKNAME}!', $nickname, (string) $editemail);
-            $editemail = preg_replace('!{EMAIL}!', $email, $editemail);
-            $editemail = preg_replace('!{PASSWORD}!', $password, $editemail);
-
-            return preg_replace('!{URL}!', (string) $pnconfig['url'], $editemail);
+            return pn_template_fill((string) $editemail, [
+                'NICKNAME' => $nickname,
+                'EMAIL' => $email,
+                'PASSWORD' => $password,
+                'URL' => (string) $pnconfig['url'],
+            ]);
         }
 
         return false;
@@ -1496,8 +1501,6 @@ class category
                 }
 
                 if ($error === '') {
-                    $name = addslashes($name);
-                    $description = addslashes($description);
                     $status = 'Activated';
                     $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['cattable'] . ' (name, description, picture, status) VALUES(?, ?, ?, ?)');
                     mysqli_stmt_bind_param($stmt, 'ssss', $name, $description, $pic, $status);
@@ -1525,7 +1528,7 @@ class category
             while ($row = mysqli_fetch_array($result)) {
                 ?>
                 <tr>
-                    <td><a href="index.php?page=categories&amp;subpage=edit&amp;catid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['name'])); ?></a></td>
+                    <td><a href="index.php?page=categories&amp;subpage=edit&amp;catid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['name']); ?></a></td>
                     <td><?php echo pnadmin_escape($row['description']); ?></td>
                     <td class="text-center">
                 <?php
@@ -1570,11 +1573,7 @@ class category
         $num = mysqli_num_rows($result);
 
         if ($num == 1) {
-            $data = mysqli_fetch_array($result);
-            $data['name'] = stripslashes((string) $data['name']);
-            $data['description'] = stripslashes((string) $data['description']);
-
-            return $data;
+            return mysqli_fetch_array($result);
         }
 
         return null;
@@ -1627,8 +1626,6 @@ class category
                     }
 
                     if ($error === '') {
-                        $name = addslashes($name);
-                        $description = addslashes($description);
                         $stmt3 = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['cattable'] . ' SET name = ?, description = ?, picture = ?, status = ? WHERE id = ?');
                         mysqli_stmt_bind_param($stmt3, 'ssssi', $name, $description, $pic, $status, $catid);
 
@@ -1662,7 +1659,7 @@ class news
             }
 
             while ($row = mysqli_fetch_array($result)) {
-                ?><option value="<?php echo (int) $row['id']; ?>" <?php if ($catid == $row['id']) { ?>selected<?php } ?>><?php echo pnadmin_escape(stripslashes((string) $row['name'])); ?></option><?php
+                ?><option value="<?php echo (int) $row['id']; ?>" <?php if ($catid == $row['id']) { ?>selected<?php } ?>><?php echo pnadmin_escape((string) $row['name']); ?></option><?php
             }
             ?></select><?php
         } else {
@@ -1692,9 +1689,6 @@ class news
             return L_NEWS_INVALIDDATE;
         }
 
-        $title = addslashes($title);
-        $text = addslashes($text);
-        $moretext = addslashes($moretext);
         $status = 'Activated';
         $userId = (int) $pnuser['id'];
 
@@ -1743,7 +1737,7 @@ class news
         if ($num == 1) {
             [$name] = mysqli_fetch_array($result);
 
-            return stripslashes((string) $name);
+            return (string) $name;
         }
 
         return L_NEWS_BADCAT;
@@ -1775,7 +1769,7 @@ class news
                 <?php if ($pnconfig['categories'] == 'YES') { ?>
                     <td><?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?></td>
                 <?php } ?>
-                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a></td>
+                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['title']); ?></a></td>
                     <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
@@ -1821,12 +1815,7 @@ class news
         $num = mysqli_num_rows($result);
 
         if ($num == 1) {
-            $row = mysqli_fetch_array($result);
-            $row['title'] = stripslashes((string) $row['title']);
-            $row['text'] = stripslashes((string) $row['text']);
-            $row['moretext'] = stripslashes((string) $row['moretext']);
-
-            return $row;
+            return mysqli_fetch_array($result);
         }
 
         return null;
@@ -1864,7 +1853,7 @@ class news
 
                         <div class="mb-3">
                             <label class="form-label fw-bold" for="pn_commenttext_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_TEXT; ?></label>
-                            <textarea class="form-control" name="commenttext[]" id="pn_commenttext_<?php echo (int) $row['id']; ?>" rows="4" aria-describedby="pn_commenttext_help_<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['text'])); ?></textarea>
+                            <textarea class="form-control" name="commenttext[]" id="pn_commenttext_<?php echo (int) $row['id']; ?>" rows="4" aria-describedby="pn_commenttext_help_<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['text']); ?></textarea>
                             <div id="pn_commenttext_help_<?php echo (int) $row['id']; ?>" class="form-text"><?php echo L_NEWS_COMMENTEXT_DESC; ?></div>
                         </div>
 
@@ -1932,7 +1921,7 @@ class news
 
         for ($i = 0; $i < $counter; ++$i) {
             $cid = (int) $commentid[$i];
-            $ctext = addslashes($commenttext[$i] ?? '');
+            $ctext = (string) ($commenttext[$i] ?? '');
 
             $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['commenttable'] . ' SET text = ? WHERE id = ?');
             mysqli_stmt_bind_param($stmt, 'si', $ctext, $cid);
@@ -1998,9 +1987,6 @@ class news
             return L_NEWS_INVALIDDATE;
         }
 
-        $title = addslashes($title);
-        $text = addslashes($text);
-        $moretext = addslashes($moretext);
         $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['newstable'] . ' SET time = ?, catid = ?, title = ?, text = ?, moretext = ?, status = ?, relatedlinks = ? WHERE id = ?');
         mysqli_stmt_bind_param($stmt, 'iisssssi', $newtime, $catid, $title, $text, $moretext, $status, $relatedlinks, $newsid);
 
@@ -2171,7 +2157,7 @@ class news
                 <?php if ($pnconfig['categories'] == 'YES') { ?>
                     <td><?php echo pnadmin_escape($this->getcatname((int) $row['catid'])); ?></td>
                 <?php } ?>
-                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape(stripslashes((string) $row['title'])); ?></a></td>
+                    <td><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['title']); ?></a></td>
                     <td class="text-center">
                 <?php
                 if ($row['status'] == 'Activated') {
