@@ -25,7 +25,7 @@ declare(strict_types=1);
 /* English language file written by PowerScripts (Stefan Kraemer) */
 
 /* Categories */
-define('L_CAT_TITLE_CATEGORIES', 'C A T E G O R I E S');
+define('L_CAT_TITLE_CATEGORIES', 'Categories');
 define('L_CAT_ADDCAT', 'Add category');
 define('L_CAT_SHOWCATS', 'Show categories');
 define('L_CAT_FILLALL', 'Please insert title and description');
@@ -57,10 +57,11 @@ define('L_CAT_CANNOTDELETEOLDPIC', 'The old picture can not be deleted!');
 define('L_CAT_PICRENAMEERROR', 'Renaming the picture failed!');
 define('L_CAT_CATEDITERROR', 'Editing category failed!');
 define('L_CAT_CLICKFORDETAILS', 'Please click on the title of a category for edit!');
+define('L_CAT_ADDMORE', 'Add another category');
 define('L_CAT_PICSONLYINTHISFORMAT', 'Pictures may only be uploaded in GIF/JPG/JPEG/PNG format!');
 
 /* Configuration */
-define('L_TITLE_CONFIGURATION', 'C O N F I G U R A T I O N');
+define('L_TITLE_CONFIGURATION', 'Configuration');
 define('L_CONF_FILLALL', 'You have to fill in all fields!');
 define('L_CONF_EDITED', 'The configuration was edited successfully!');
 define('L_CONF_CATEGORIES', 'Categories');
@@ -194,6 +195,10 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'You have to insert nickname and E-Mail!'
 define('L_USR_NOUSRFOUND', 'No users found!');
 define('L_USR_PWNOTCONFIRMED', 'Password confirmation failed!');
 define('L_USR_HELLO', 'Hello');
+define('L_USR_ADDMORE', 'Add another user');
+define('L_USR_BACKTOLOGIN', 'Back to login');
+define('L_USR_NEWPASSWORD_PLACEHOLDER', 'New password (leave empty to keep the current one)');
+define('L_USR_REPEATPASSWORD', 'Repeat password');
 
 /* Templates */
 define('L_TEMPL_ADDTEMPLATE', 'Add template');
@@ -201,10 +206,10 @@ define('L_TEMPL_SHOWTEMPLATES', 'Show templates');
 define('L_TEMPL_TITLE', 'Title');
 define('L_TEMPL_TITLE_DESC', 'The title of the template');
 define('L_TEMPL_EDITTEMPLATE', 'Edit template');
-define('L_TEMPL_GENERAL', 'G E N E R A L');
-define('L_TEMPL_OUTPUT', 'O U T P U T');
-define('L_TEMPL_INPUT', 'F O R M S / I N P U T');
-define('L_TEMPL_EMAILS', 'E - M A I L S');
+define('L_TEMPL_GENERAL', 'General');
+define('L_TEMPL_OUTPUT', 'Output');
+define('L_TEMPL_INPUT', 'Forms and input');
+define('L_TEMPL_EMAILS', 'E-mails');
 define('L_TEMPL_DELETE', 'Delete');
 define('L_TEMPL_DELETE_DESC', 'Should the template be deleted?');
 define('L_TEMPL_MESSAGE', 'Message');
@@ -258,6 +263,8 @@ define('L_TEMPL_RIGHTTEMPLATENEEDED', 'A valid template must be chosen!');
 define('L_TEMPL_TEMPLATEDELETED', 'The template was deleted successfully!');
 define('L_TEMPL_RELATEDLINKS', 'Related Links');
 define('L_TEMPL_RELATEDLINKS_DESC', 'The output for a single related link');
+define('L_TEMPL_DEFAULTNOTDELETABLE', 'The default template (ID 1) cannot be deleted because it is the basis for all new templates. You can still edit it.');
+define('L_TEMPL_DEFAULTEDITHINT', 'You are editing the <strong>default template</strong> (ID 1). It is copied when new templates are created, so changes also affect all templates created in the future. For this reason it cannot be deleted.');
 
 /* Permissions */
 define('L_PERM_ADDPERMISSIONS', 'Add permissions');
@@ -290,7 +297,7 @@ define('L_PERM_NOPERMISSIONS', 'No permissions available');
 define('L_PERM_SECTION', 'Section');
 define('L_PERM_PERMISSIONSNOTDELETED', 'The permissions could not be deleted!');
 define('L_PERM_NOADMIN', 'The chosen user is not an admin!');
-define('L_PERM_CANNOTWRITETODB', '');
+define('L_PERM_CANNOTWRITETODB', 'The permissions could not be saved!');
 
 /* News */
 define('L_NEWS_WRITENEWS', 'Write news');
@@ -371,6 +378,7 @@ define('L_NEWS_OCTOBER', 'October');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'December');
 define('L_NEWS_NOCOMMENTTEXT', 'One or more comments are missing the text!');
+define('L_NEWS_WRITEMORE', 'Write more news');
 
 /* Other */
 define('L_OTHER_HELP', 'Help');
@@ -379,15 +387,15 @@ define('L_OTHER_LICENSE_DESC', 'PowerNews is distributed under the terms of the 
 define('L_OTHER_NOLOCALLICENSE', 'Access to the local copy of the license failed. The file may have been deleted.');
 
 /* Titles */
-define('L_TITLE_LOGIN', 'L O G I N');
-define('L_TITLE_MAIN', 'W E L C O M E');
-define('L_TITLE_NEWS', 'N E W S');
-define('L_TITLE_PERMISSIONS', 'P E R M I S S I O N S');
-define('L_TITLE_TEMPLATES', 'T E M P L A T E S');
-define('L_TITLE_OTHER', 'O T H E R');
-define('L_TITLE_PROFILE', 'P R O F I L E');
-define('L_TITLE_USERS', 'U S E R S');
-define('L_TITLE_DOCUMENTNOTFOUND', '4 0 4&nbsp;&nbsp;-&nbsp;&nbsp;D O C U M E N T&nbsp;&nbsp;N O T&nbsp;&nbsp;F O U N D');
+define('L_TITLE_LOGIN', 'Login');
+define('L_TITLE_MAIN', 'Welcome');
+define('L_TITLE_NEWS', 'News');
+define('L_TITLE_PERMISSIONS', 'Permissions');
+define('L_TITLE_TEMPLATES', 'Templates');
+define('L_TITLE_OTHER', 'Other');
+define('L_TITLE_PROFILE', 'Profile');
+define('L_TITLE_USERS', 'Users');
+define('L_TITLE_DOCUMENTNOTFOUND', '404 – Document not found');
 
 /* E-Mails */
 define('L_EMAIL_SUBJECT', 'PowerNews Auto Notification');
@@ -401,11 +409,31 @@ define('L_ALL_ACTIVATED', 'Activated');
 define('L_ALL_DEACTIVATED', 'Deactivated');
 define('L_ALL_UNCHECKED', 'Unchecked');
 define('L_ALL_ACCESSDENIED', 'Access denied!');
-define('L_ALL_RESETDATA', 'Reset data');
+define('L_ALL_RESETDATA', 'Reset input');
 define('L_ALL_YES', 'Yes');
 define('L_ALL_NO', 'No');
 define('L_ALL_NOPAGES', 'No pages');
-define('L_QUICKLINKS', 'Quicklinks');
+define('L_QUICKLINKS', 'Quick links');
 define('L_ALL_PAGECREATEDIN', 'Page created in');
 define('L_ALL_SECONDSBY', 'seconds by');
-define('L_ALL_WELCOME', 'Welcome to the PowerNews Admincenter<br><br>Please send any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews Bug">bugs@powerscripts.org</a>!');
+define('L_ALL_WELCOME', 'Welcome to the PowerNews administration!<br><br>Please report any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a>.');
+define('L_ALL_BACK', 'Back');
+define('L_ALL_BACKTOFORM', 'Back to the form');
+define('L_ALL_BACKTOLIST', 'Back to the list');
+define('L_ALL_BACKTOSEARCH', 'Back to the search form');
+define('L_ALL_EDITAGAIN', 'Edit again');
+define('L_ALL_ATTENTION', 'Attention:');
+define('L_ALL_NOTE', 'Note:');
+define('L_ALL_START', 'Home');
+define('L_ALL_ADMINCENTER', 'Administration');
+define('L_ALL_TOGGLENAV', 'Toggle navigation');
+define('L_ALL_BREADCRUMB', 'Breadcrumb');
+define('L_ALL_PAGINATION_TOP', 'Pagination (top)');
+define('L_ALL_PAGINATION_BOTTOM', 'Pagination (bottom)');
+define('L_ALL_MAINNAV', 'Main navigation');
+define('L_SUB_ADD', 'Add');
+define('L_SUB_SHOW', 'Show');
+define('L_SUB_EDIT', 'Edit');
+define('L_SUB_SEARCH', 'Search');
+define('L_SUB_HELP', 'Help');
+define('L_SUB_LICENSE', 'License');

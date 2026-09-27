@@ -51,7 +51,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> &mdash; AdminCenter</title>
+    <title><?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> &mdash; <?php echo L_ALL_ADMINCENTER; ?></title>
     <link href="../assets/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./poweradmin.css" type="text/css">
     <style>
@@ -70,6 +70,9 @@ $isLoggedIn = ($pnloggedin === 'YES');
             background-color: #0d6efd;
             color: #ffffff;
             font-weight: 600;
+            /* Sperrung per CSS statt "K O N F I G U R A T I O N" im Text (Screenreader lesen ganze Wörter). */
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
         .pn-admin-status {
             background-color: #e7f1ff;
@@ -157,13 +160,13 @@ $isLoggedIn = ($pnloggedin === 'YES');
 <body class="pn-admin-body">
 <div class="pn-admin-shell">
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Hauptnavigation">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="<?php echo L_ALL_MAINNAV; ?>">
         <div class="container-fluid">
             <a class="navbar-brand" href="./">
-                <?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> AdminCenter
+                <?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> &ndash; <?php echo L_ALL_ADMINCENTER; ?>
             </a>
 <?php if ($isLoggedIn) { ?>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pnAdminNav" aria-controls="pnAdminNav" aria-expanded="false" aria-label="Navigation umschalten">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pnAdminNav" aria-controls="pnAdminNav" aria-expanded="false" aria-label="<?php echo L_ALL_TOGGLENAV; ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="pnAdminNav">
@@ -213,32 +216,32 @@ $isLoggedIn = ($pnloggedin === 'YES');
 <?php
         // Lokalisierte Sektions- und Subpage-Namen fuer die Brotkrumen-Navigation.
         $sectionLabels = [
-            'templates'     => 'Templates',
-            'users'         => 'Benutzer',
-            'permissions'   => 'Berechtigungen',
-            'configuration' => 'Konfiguration',
-            'categories'    => 'Kategorien',
-            'news'          => 'News',
-            'other'         => 'Sonstiges',
-            'profile'       => 'Profil',
-            'main'          => 'Start',
+            'templates' => L_MENU_TEMPLATES,
+            'users' => L_MENU_USERS,
+            'permissions' => L_MENU_PERMISSIONS,
+            'configuration' => L_MENU_CONFIG,
+            'categories' => L_MENU_CATEGORIES,
+            'news' => L_MENU_NEWS,
+            'other' => L_MENU_OTHER,
+            'profile' => L_TITLE_PROFILE,
+            'main' => L_ALL_START,
         ];
         $subpageLabels = [
-            'add'     => 'Anlegen',
-            'show'    => 'Anzeigen',
-            'edit'    => 'Bearbeiten',
-            'search'  => 'Suchen',
-            'help'    => 'Hilfe',
-            'license' => 'Lizenz',
+            'add' => L_SUB_ADD,
+            'show' => L_SUB_SHOW,
+            'edit' => L_SUB_EDIT,
+            'search' => L_SUB_SEARCH,
+            'help' => L_SUB_HELP,
+            'license' => L_SUB_LICENSE,
         ];
         $sectionKey = (string) $_GET['page'];
         $sectionLabel = $sectionLabels[$sectionKey] ?? ucfirst($sectionKey);
         $subpageKey = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
         $subpageLabel = $subpageKey !== '' ? ($subpageLabels[$subpageKey] ?? ucfirst($subpageKey)) : '';
 ?>
-        <nav aria-label="Brotkrumen-Navigation" class="mb-3">
+        <nav aria-label="<?php echo L_ALL_BREADCRUMB; ?>" class="mb-3">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="index.php">Start</a></li>
+                <li class="breadcrumb-item"><a href="index.php"><?php echo L_ALL_START; ?></a></li>
 <?php if ($subpageLabel === '') { ?>
                 <li class="breadcrumb-item active" aria-current="page"><?php echo pnadmin_escape($sectionLabel); ?></li>
 <?php } else { ?>
@@ -249,7 +252,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
         </nav>
 
 <?php if (isset($individualmenus)) { ?>
-        <nav aria-label="Schnellzugriff" class="card mb-3">
+        <nav aria-label="<?php echo L_QUICKLINKS; ?>" class="card mb-3">
             <div class="card-body py-2 d-flex flex-wrap gap-2 align-items-center">
 <?php
                 $individualmenus->submenu($sectionKey);

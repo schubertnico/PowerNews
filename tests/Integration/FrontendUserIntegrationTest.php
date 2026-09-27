@@ -167,7 +167,7 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
         $output = $this->captureOutput(fn() => $this->user->login());
 
         // Unified message gegen User-/Password-Enumeration (BUG-010)
-        $this->assertStringContainsString('Nickname oder Passwort ist nicht korrekt', $output);
+        $this->assertStringContainsString(\L_USR_LOGINFAILED, $output);
     }
 
     // ── senddata ──
@@ -191,7 +191,7 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
         $output = $this->captureOutput(fn() => $this->user->senddata());
 
         // Privacy-Haertung: generische Meldung gegen User-Enumeration
-        $this->assertStringContainsString('Falls ein Account mit diesen Daten existiert', $output);
+        $this->assertStringContainsString(\L_USR_DATAREQUESTSENT, $output);
     }
 
     // ── usermenu ──

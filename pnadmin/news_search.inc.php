@@ -19,13 +19,13 @@ if ($pnadmin['canreadnews'] == 'YES') {
             ?>
             <div class="alert alert-warning" role="alert">
                 <?php echo L_NEWS_SEARCHSTRINGNEEDED; ?>
-                <div class="mt-2"><a href="index.php?page=news&amp;subpage=search" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Suchformular</a></div>
+                <div class="mt-2"><a href="index.php?page=news&amp;subpage=search" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOSEARCH; ?></a></div>
             </div>
             <?php
         } else {
             $searchnews = new news();
             ?>
-            <nav aria-label="Seitennavigation oben" class="mb-3">
+            <nav aria-label="<?php echo L_ALL_PAGINATION_TOP; ?>" class="mb-3">
                 <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $searchnews->listsearchpages($searchin, $searchstring); ?></ul>
             </nav>
 
@@ -47,7 +47,7 @@ if ($pnadmin['canreadnews'] == 'YES') {
                 </table>
             </div>
 
-            <nav aria-label="Seitennavigation unten" class="mb-3">
+            <nav aria-label="<?php echo L_ALL_PAGINATION_BOTTOM; ?>" class="mb-3">
                 <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $searchnews->listsearchpages($searchin, $searchstring); ?></ul>
             </nav>
             <p class="pn-help mb-0"><?php echo L_NEWS_SHOW_DESC; ?></p>

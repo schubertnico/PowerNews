@@ -46,7 +46,7 @@
 <?php } else { ?>
                 <div class="alert alert-danger mb-0" role="alert">
                     <p class="mb-2"><?php echo pnadmin_escape($loginerror); ?></p>
-                    <a href="./" class="btn btn-sm btn-outline-secondary">Zur Anmeldung</a>
+                    <a href="./" class="btn btn-sm btn-outline-secondary"><?php echo L_USR_BACKTOLOGIN; ?></a>
                 </div>
 <?php } ?>
             </div>

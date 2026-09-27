@@ -306,7 +306,7 @@ class template
             ?>
             <div class="alert alert-warning" role="alert">
                 <?php echo L_TEMPL_TITLENEEDED; ?>
-                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
             </div>
             <?php
         } else {
@@ -352,14 +352,14 @@ class template
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_TEMPL_TEMPLATEADDED; ?>
-                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_ALL_BACKTOLIST; ?></a></div>
                     </div>
                     <?php
                 } else {
                     ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo L_TEMPL_TEMPLATEALREADYEXISTS; ?>
-                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                     </div>
                     <?php
                 }
@@ -367,7 +367,7 @@ class template
                 ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo L_TEMPL_NOSTANDARDTEMPLATE; ?>
-                    <div class="mt-2"><a href="index.php?page=templates" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck</a></div>
+                    <div class="mt-2"><a href="index.php?page=templates" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACK; ?></a></div>
                 </div>
                 <?php
             }
@@ -402,7 +402,7 @@ class template
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo L_TEMPL_INSERTALL; ?>
-                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
             </div>
             <?php
         } else {
@@ -410,8 +410,8 @@ class template
             if ($templateid === 1 && $delete === 'YES') {
                 ?>
                 <div class="alert alert-warning" role="alert">
-                    Das Default-Template (ID&nbsp;1) kann nicht gel&ouml;scht werden, weil es als Vorlage f&uuml;r alle neuen Templates dient. Du kannst es weiterhin editieren.
-                    <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=1" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    <?php echo L_TEMPL_DEFAULTNOTDELETABLE; ?>
+                    <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=1" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                 </div>
                 <?php
             } else {
@@ -422,7 +422,7 @@ class template
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_TEMPL_TEMPLATEDELETED; ?>
-                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_ALL_BACKTOLIST; ?></a></div>
                     </div>
                     <?php
                 } else {
@@ -476,7 +476,7 @@ class template
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_TEMPL_TEMPLATEEDITED; ?>
-                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+                        <div class="mt-2"><a href="index.php?page=templates&amp;subpage=edit&amp;templateid=<?php echo $templateid; ?>" class="btn btn-sm btn-success"><?php echo L_ALL_EDITAGAIN; ?></a></div>
                     </div>
                     <?php
                 }
@@ -766,7 +766,7 @@ class user
         $num = mysqli_num_rows($result);
 
         if ($num == 0) {
-            ?><li class="page-item disabled"><span class="page-link">[ Keine Seiten ]</span></li><?php
+            ?><li class="page-item disabled"><span class="page-link">[ <?php echo L_ALL_NOPAGES; ?> ]</span></li><?php
         } else {
             $pagenum = (int) ceil($num / 25);
             $activeCurrent = (int) ($_GET['current'] ?? 0);
@@ -1211,9 +1211,9 @@ class permissions
                     [$nickname] = mysqli_fetch_array($result2);
                     $permIcon = static function (string $value): string {
                         if ($value == 'YES') {
-                            return '<span class="badge text-bg-success" aria-label="ja">&check;</span>';
+                            return '<span class="badge text-bg-success" aria-label="' . L_ALL_YES . '">&check;</span>';
                         }
-                        return '<span class="badge text-bg-secondary" aria-label="nein">&minus;</span>';
+                        return '<span class="badge text-bg-secondary" aria-label="' . L_ALL_NO . '">&minus;</span>';
                     };
                     ?>
                     <tr>

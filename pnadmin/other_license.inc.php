@@ -20,7 +20,7 @@
 
 ?>
 <div class="card pn-admin-card mb-4">
-    <h2 class="card-header h6 mb-0">Lizenz</h2>
+    <h2 class="card-header h6 mb-0"><?php echo L_OTHER_LICENSE; ?></h2>
     <div class="card-body">
         <p class="mb-3"><?php echo L_OTHER_LICENSE_DESC; ?></p>
 <?php if (@file_exists('./gnulicense.txt')) { ?>

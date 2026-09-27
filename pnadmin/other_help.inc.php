@@ -20,7 +20,7 @@
 
 ?>
 <div class="card pn-admin-card mb-4">
-    <h2 class="card-header h6 mb-0">Hilfe</h2>
+    <h2 class="card-header h6 mb-0"><?php echo L_OTHER_HELP; ?></h2>
     <div class="card-body">
 <?php
 if (@file_exists('./lang/' . $pn_config['language'] . '_help.php')) {

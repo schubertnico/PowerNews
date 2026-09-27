@@ -25,7 +25,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo pnadmin_escape($error); ?>
-                <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zur Liste</a></div>
+                <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
             </div>
             <?php
         } else {
@@ -37,7 +37,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                         ?>
                         <div class="alert alert-danger" role="alert">
                             <?php echo pnadmin_escape($error); ?>
-                            <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck</a></div>
+                            <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACK; ?></a></div>
                         </div>
                         <?php
                     } else {
@@ -47,14 +47,14 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                             ?>
                             <div class="alert alert-danger" role="alert">
                                 <?php echo pnadmin_escape($error); ?>
-                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                             </div>
                             <?php
                         } else {
                             ?>
                             <div class="alert alert-success" role="alert">
                                 <?php echo L_NEWS_COMMENTSEDITED; ?>
-                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-success">Zur&uuml;ck</a></div>
+                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-success"><?php echo L_ALL_BACK; ?></a></div>
                             </div>
                             <?php
                         }
@@ -74,7 +74,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                             <?php if ($pnconfig['categories'] == 'YES') {
                                 echo L_NEWS_ALSOCATEGORY;
                             } ?>!
-                            <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                            <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                         </div>
                         <?php
                     } else {
@@ -84,7 +84,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                             ?>
                             <div class="alert alert-danger" role="alert">
                                 <?php echo pnadmin_escape($error); ?>
-                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                             </div>
                             <?php
                         } else {
@@ -92,14 +92,14 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                                 ?>
                                 <div class="alert alert-success" role="alert">
                                     <?php echo L_NEWS_NEWSDELETED; ?>
-                                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_ALL_BACKTOLIST; ?></a></div>
                                 </div>
                                 <?php
                             } else {
                                 ?>
                                 <div class="alert alert-success" role="alert">
                                     <?php echo L_NEWS_NEWSEDITED; ?>
-                                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+                                    <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-success"><?php echo L_ALL_EDITAGAIN; ?></a></div>
                                 </div>
                                 <?php
                             }
@@ -121,7 +121,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                       <div class="form-check">
                           <input class="form-check-input" type="checkbox" name="delete" value="YES" id="pn_delete" aria-describedby="pn_delete_help">
                           <label class="form-check-label fw-bold text-danger" for="pn_delete"><?php echo L_NEWS_DELETE; ?></label>
-                          <div id="pn_delete_help" class="form-text"><strong>Achtung:</strong> <?php echo L_NEWS_DELETE_DESC; ?></div>
+                          <div id="pn_delete_help" class="form-text"><strong><?php echo L_ALL_ATTENTION; ?></strong> <?php echo L_NEWS_DELETE_DESC; ?></div>
                       </div>
                   </div>
 
@@ -342,7 +342,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
         ?>
         <div class="alert alert-info" role="alert">
             <?php echo L_NEWS_CHOOSENEWS; ?>
-            <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-primary">Zur&uuml;ck zur Liste</a></div>
+            <div class="mt-2"><a href="index.php?page=news&amp;subpage=show" class="btn btn-sm btn-primary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
         </div>
         <?php
     }

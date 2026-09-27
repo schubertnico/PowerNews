@@ -24,7 +24,7 @@ if ($pnadmin['canwritecategories'] == 'YES') {
                     <?php if ($pnconfig['categorypics'] == 'YES') {
                         echo L_CAT_ANDPIC;
                     } ?>!
-                    <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                 </div>
                 <?php
             } else {
@@ -35,14 +35,14 @@ if ($pnadmin['canwritecategories'] == 'YES') {
                     ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo pnadmin_escape($error); ?>
-                        <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                        <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                     </div>
                     <?php
                 } else {
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_CAT_CATADDED; ?>
-                        <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-success">Weitere Kategorie anlegen</a></div>
+                        <div class="mt-2"><a href="index.php?page=categories&amp;subpage=add" class="btn btn-sm btn-success"><?php echo L_CAT_ADDMORE; ?></a></div>
                     </div>
                     <?php
                 }

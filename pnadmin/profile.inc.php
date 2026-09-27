@@ -35,8 +35,8 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
     if (!$nickname || !$email) {
         ?>
         <div class="alert alert-warning" role="alert">
-            Nickname und Email m&uuml;ssen ausgef&uuml;llt werden.
-            <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+            <?php echo L_USR_INSERTNICKNAMEANDEMAIL; ?>
+            <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
         </div>
         <?php
     } else {
@@ -46,14 +46,14 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo pnadmin_escape($error); ?>
-                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
             </div>
             <?php
         } else {
             ?>
             <div class="alert alert-success" role="alert">
                 <?php echo L_USR_PROFILEEDITED; ?>
-                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+                <div class="mt-2"><a href="index.php?page=profile" class="btn btn-sm btn-success"><?php echo L_ALL_EDITAGAIN; ?></a></div>
             </div>
             <?php
         }
@@ -93,10 +93,10 @@ if (isset($_GET['edit']) && $_GET['edit'] == 'YES') {
                 <label class="form-label fw-bold" for="pn_password"><?php echo L_USR_PASSWORD; ?></label>
                 <div class="row g-2">
                     <div class="col-12 col-md-6">
-                        <input type="password" class="form-control" name="password" id="pn_password" maxlength="25" value="" autocomplete="new-password" placeholder="Neues Passwort (leer = keine &Auml;nderung)">
+                        <input type="password" class="form-control" name="password" id="pn_password" maxlength="25" value="" autocomplete="new-password" placeholder="<?php echo L_USR_NEWPASSWORD_PLACEHOLDER; ?>">
                     </div>
                     <div class="col-12 col-md-6">
-                        <input type="password" class="form-control" name="password2" id="pn_password2" maxlength="25" value="" autocomplete="new-password" placeholder="Passwort wiederholen">
+                        <input type="password" class="form-control" name="password2" id="pn_password2" maxlength="25" value="" autocomplete="new-password" placeholder="<?php echo L_USR_REPEATPASSWORD; ?>">
                     </div>
                 </div>
                 <div class="form-text"><?php echo L_USR_PASSWORD_DESC_PROF; ?></div>

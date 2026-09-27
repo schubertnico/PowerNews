@@ -354,7 +354,7 @@ class AdminUserClassIntegrationTest extends DatabaseTestCase
 
         $output = $this->captureOutput(fn () => $this->user->listpages());
 
-        $this->assertStringContainsString('Keine Seiten', $output);
+        $this->assertStringContainsString(\L_ALL_NOPAGES, $output);
     }
 
     // ── searchuser ──

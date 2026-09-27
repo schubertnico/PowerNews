@@ -21,7 +21,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo pnadmin_escape($error); ?>
-                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zur Liste</a></div>
+                <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
             </div>
             <?php
         } else {
@@ -36,7 +36,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                 ?>
 <?php if ($isDefaultTemplate) { ?>
           <div class="alert alert-warning" role="alert">
-              <strong>Hinweis:</strong> Du editierst das <strong>Default-Template</strong> (ID&nbsp;1). Dieses Template wird beim Anlegen neuer Templates als Grundlage kopiert. &Auml;nderungen wirken sich also auch auf alle k&uuml;nftig neu angelegten Templates aus. L&ouml;schen ist aus diesem Grund nicht m&ouml;glich.
+              <strong><?php echo L_ALL_NOTE; ?></strong> <?php echo L_TEMPL_DEFAULTEDITHINT; ?>
           </div>
 <?php } ?>
           <form action="index.php?page=templates&amp;subpage=edit&amp;edit=YES&amp;templateid=<?php echo (int) ($_GET['templateid'] ?? 0); ?>" method="post" novalidate>
@@ -50,7 +50,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                       <div class="form-check">
                           <input class="form-check-input" type="checkbox" name="delete" value="YES" id="pn_tdelete" aria-describedby="pn_tdelete_help">
                           <label class="form-check-label fw-bold text-danger" for="pn_tdelete"><?php echo L_TEMPL_DELETE; ?></label>
-                          <div id="pn_tdelete_help" class="form-text"><strong>Achtung:</strong> <?php echo L_TEMPL_DELETE_DESC; ?></div>
+                          <div id="pn_tdelete_help" class="form-text"><strong><?php echo L_ALL_ATTENTION; ?></strong> <?php echo L_TEMPL_DELETE_DESC; ?></div>
                       </div>
                   </div>
 <?php } ?>
@@ -194,7 +194,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
         ?>
         <div class="alert alert-info" role="alert">
             <?php echo L_TEMPL_CHOOSETEMPLATE; ?>
-            <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-primary">Zur&uuml;ck zur Liste</a></div>
+            <div class="mt-2"><a href="index.php?page=templates&amp;subpage=show" class="btn btn-sm btn-primary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
         </div>
         <?php
     }

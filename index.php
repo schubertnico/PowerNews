@@ -1,6 +1,6 @@
 <?php
 /*
-  Einf�gen der header.inc.php mit dem Designcode bis zum Hauptinhalt der Seite
+  Einfügen der header.inc.php mit dem Designcode bis zum Hauptinhalt der Seite
   Um die Grundstruktur der Seite zu editieren muss die header.inc.php und die footer.inc.php editiert
   werden
 */
@@ -13,7 +13,7 @@ include __DIR__ . '/header.inc.php';
   <div class="card-body pn-content">
 <?php
       /*
-        Die headlines.inc.php f�gt an der Stelle an der sie eingebaut ist die X neuesten Headlines ein
+        Die headlines.inc.php fügt an der Stelle an der sie eingebaut ist die X neuesten Headlines ein
       */
       include __DIR__ . '/pninc/headlines.inc.php';
 ?>
@@ -23,14 +23,14 @@ include __DIR__ . '/header.inc.php';
 
 <?php
 /*
-  Die news.inc.php f�gt die X neusten Newseintr�ge an der Stelle ein wo sie eingebaut ist
+  Die news.inc.php fügt die X neusten Newseinträge an der Stelle ein wo sie eingebaut ist
 */
 include __DIR__ . '/pninc/news.inc.php';
 ?>
 
 <?php
 /*
-  Einf�gen der footer.inc.php mit dem Designcode der nach dem Hauptinhalt der Seite kommt
+  Einfügen der footer.inc.php mit dem Designcode der nach dem Hauptinhalt der Seite kommt
 */
 include __DIR__ . '/footer.inc.php';
 ?>

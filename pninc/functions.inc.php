@@ -387,7 +387,7 @@ class pn_news
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $backToNews);
+            $template->message(L_ALL_CSRFINVALID, $backToNews);
             return;
         }
 
@@ -401,7 +401,7 @@ class pn_news
         // Length limit (BUG-038)
         $maxLen = 5000;
         if (mb_strlen($text) > $maxLen) {
-            $template->message('Kommentar zu lang (max. ' . $maxLen . ' Zeichen).', $backToNews);
+            $template->message(sprintf(L_NEWS_COMMENTTOOLONG, $maxLen), $backToNews);
             return;
         }
 
@@ -410,7 +410,7 @@ class pn_news
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
         mysqli_stmt_execute($stmt);
         if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) !== 1) {
-            $template->message('News nicht gefunden.', $pn_config['newsfile']);
+            $template->message(L_NEWS_NEWSNOTFOUND, $pn_config['newsfile']);
             return;
         }
 
@@ -643,7 +643,7 @@ class pn_news
                 if ($sendFlag == 'YES') {
                     // CSRF-Token pruefen (IMP-003)
                     if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-                        $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $pn_config['sendnewsfile']);
+                        $template->message(L_ALL_CSRFINVALID, $pn_config['sendnewsfile']);
                         return;
                     }
 
@@ -740,7 +740,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $registerUrl);
+            $template->message(L_ALL_CSRFINVALID, $registerUrl);
             return;
         }
 
@@ -749,7 +749,7 @@ class pn_user
         $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
 
         if ($nickname === '' || $email === '') {
-            $template->message('Ungueltige Eingabe. Nickname: 3-30 Zeichen (Buchstaben/Ziffern/._-), E-Mail muss gueltig sein.', $registerUrl);
+            $template->message(L_USR_INVALIDREGISTRATION, $registerUrl);
             return;
         }
 
@@ -782,7 +782,7 @@ class pn_user
         } catch (Throwable $e) {
             mysqli_rollback($pn_handler);
             error_log('[register] ' . $e->getMessage());
-            $template->message('Registrierung fehlgeschlagen. Bitte sp&auml;ter erneut versuchen.', $registerUrl);
+            $template->message(L_USR_REGISTRATIONFAILED, $registerUrl);
         }
     }
 
@@ -901,7 +901,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $loginUrl);
+            $template->message(L_ALL_CSRFINVALID, $loginUrl);
             return;
         }
 
@@ -923,7 +923,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
         [$failedCount] = mysqli_fetch_array($result);
         if ((int) $failedCount >= 10) {
-            $template->message('Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.', $loginUrl);
+            $template->message(L_USR_TOOMANYATTEMPTS, $loginUrl);
             return;
         }
 
@@ -956,7 +956,7 @@ class pn_user
             $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
         } else {
             // Unified message (BUG-010)
-            $template->message('Nickname oder Passwort ist nicht korrekt.', $loginUrl);
+            $template->message(L_USR_LOGINFAILED, $loginUrl);
         }
     }
 
@@ -967,7 +967,7 @@ class pn_user
 
         $template = new pn_template();
         $search = trim($_POST['pndata']['searchstring'] ?? '');
-        $genericMsg = 'Falls ein Account mit diesen Daten existiert, wurde eine E-Mail an die hinterlegte Adresse versendet.';
+        $genericMsg = L_USR_DATAREQUESTSENT;
 
         if ($search === '') {
             $template->senddataform();
@@ -978,7 +978,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $senddataUrl);
+            $template->message(L_ALL_CSRFINVALID, $senddataUrl);
             return;
         }
 
@@ -992,7 +992,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
         [$rpHourly] = mysqli_fetch_array($result);
         if ((int) $rpHourly > 20) {
-            $template->message('Zu viele Anfragen. Bitte sp&auml;ter erneut versuchen.', $senddataUrl);
+            $template->message(L_USR_TOOMANYREQUESTS, $senddataUrl);
             return;
         }
 
@@ -1066,7 +1066,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message('CSRF-Token ungueltig. Bitte Seite neu laden.', $profileUrl);
+            $template->message(L_ALL_CSRFINVALID, $profileUrl);
             return;
         }
 
@@ -1083,7 +1083,7 @@ class pn_user
         $icq = pn_validate_int_range($_POST['pndata']['icq'] ?? 0, 0, 2147483647, 0);
 
         if ($nickname === '' || $email === '' || ($homepageInput !== '' && $homepage === '')) {
-            $template->message('Ungueltige Eingabe. Bitte Nickname, E-Mail und Homepage pruefen.', $profileUrl);
+            $template->message(L_USR_INVALIDPROFILE, $profileUrl);
             return;
         }
 
@@ -1096,7 +1096,7 @@ class pn_user
                 return;
             }
             if (strlen($password) < 8) {
-                $template->message('Passwort muss mindestens 8 Zeichen haben.', $profileUrl);
+                $template->message(L_USR_PASSWORDTOOSHORT, $profileUrl);
                 return;
             }
             $hashedPassword = pn_hash_password($password);

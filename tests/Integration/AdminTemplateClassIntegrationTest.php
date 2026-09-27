@@ -158,8 +158,7 @@ class AdminTemplateClassIntegrationTest extends DatabaseTestCase
 
         $output = $this->captureOutput(fn() => $this->template->edittemplate(1, 'YES', $data));
 
-        $this->assertStringContainsString('Default-Template', $output);
-        $this->assertStringContainsString('nicht gel', $output); // "nicht geloescht"
+        $this->assertStringContainsString(\L_TEMPL_DEFAULTNOTDELETABLE, $output);
 
         // Zeile darf nicht weg sein.
         global $pn_handler, $pn_config;

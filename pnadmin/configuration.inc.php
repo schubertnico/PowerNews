@@ -36,7 +36,7 @@ if ($pnadmin['canreadconfig'] == 'YES') {
                 ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo L_CONF_FILLALL; ?>
-                    <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                 </div>
                 <?php
             } else {
@@ -46,14 +46,14 @@ if ($pnadmin['canreadconfig'] == 'YES') {
                     ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo $error; ?>
-                        <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                        <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                     </div>
                     <?php
                 } else {
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_CONF_EDITED; ?>
-                        <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-success">Erneut bearbeiten</a></div>
+                        <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-success"><?php echo L_ALL_EDITAGAIN; ?></a></div>
                     </div>
                     <?php
                 }

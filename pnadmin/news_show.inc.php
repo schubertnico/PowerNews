@@ -24,7 +24,7 @@ if ($pnadmin['canreadnews'] == 'YES') {
         $_GET['current'] = '0';
     }
     ?>
-    <nav aria-label="Seitennavigation oben" class="mb-3">
+    <nav aria-label="<?php echo L_ALL_PAGINATION_TOP; ?>" class="mb-3">
         <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $news->listpages(); ?></ul>
     </nav>
 
@@ -46,7 +46,7 @@ if ($pnadmin['canreadnews'] == 'YES') {
         </table>
     </div>
 
-    <nav aria-label="Seitennavigation unten" class="mb-3">
+    <nav aria-label="<?php echo L_ALL_PAGINATION_BOTTOM; ?>" class="mb-3">
         <ul class="pagination pagination-sm mb-0 flex-wrap"><?php $news->listpages(); ?></ul>
     </nav>
 

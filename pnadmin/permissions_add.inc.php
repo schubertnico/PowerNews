@@ -25,7 +25,7 @@ if ($pnadmin['canwritepermissions'] == 'YES') {
             ?>
             <div class="alert alert-warning" role="alert">
                 <?php echo L_PERM_INSERTNICK; ?>
-                <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
             </div>
             <?php
         } else {
@@ -38,14 +38,14 @@ if ($pnadmin['canwritepermissions'] == 'YES') {
                 ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo $error; ?>
-                    <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                 </div>
                 <?php
             } else {
                 ?>
                 <div class="alert alert-success" role="alert">
                     <?php echo L_PERM_PERMISSIONADDED; ?>
-                    <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=show" class="btn btn-sm btn-success">Berechtigungen anzeigen</a></div>
+                    <div class="mt-2"><a href="index.php?page=permissions&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_PERM_SHOWPERMISSIONS; ?></a></div>
                 </div>
                 <?php
             }

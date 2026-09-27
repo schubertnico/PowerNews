@@ -1,6 +1,6 @@
 <?php
 /*
-Hier wird die head.inc.php in die Datei eingef�gt.
+Hier wird die head.inc.php in die Datei eingefügt.
 Es ist wichtig, dass es vor dem <?PHP keine anderen Zeichen in der Datei gibt!
 */
 include __DIR__ . '/pninc/head.inc.php';
@@ -78,7 +78,7 @@ include __DIR__ . '/pninc/head.inc.php';
   </div>
 </div>
 
-<!--Das kleine Men� der Seite-->
+<!--Das kleine Menü der Seite-->
 <div class="container">
   <div class="row g-3">
     <aside class="col-12 col-md-3">
@@ -95,7 +95,7 @@ include __DIR__ . '/pninc/head.inc.php';
           <div class="mb-3">
 <?php
     /*
-      Hier wird die usermenu.inc.php Datei eingef�gt um das Benutzermen� anzeigen zu lassen.
+      Hier wird die usermenu.inc.php Datei eingefügt um das Benutzermenü anzeigen zu lassen.
     */
     include __DIR__ . '/pninc/usermenu.inc.php';
 ?>

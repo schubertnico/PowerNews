@@ -25,7 +25,7 @@ declare(strict_types=1);
 /* English language file written by PowerScripts (Stefan Kraemer) */
 
 /* Users */
-define('L_USR_WRONGEMAIL', 'Your E-Mail adress seems to be incorrect!');
+define('L_USR_WRONGEMAIL', 'Your e-mail address seems to be incorrect!');
 define('L_USR_USRALREADYEXISTS', 'This username or email already exists!');
 define('L_USR_REGISTERED', 'You registered successfully. A mail with your userdata is on the way.');
 define('L_USR_LOGGEDIN', 'You logged in successfully!');
@@ -35,11 +35,19 @@ define('L_USR_NOUSRREGISTERED', 'No existing user with this nickname or this ema
 define('L_USR_TOOMANYSEARCHRESULTS', 'Too many users found. Please specify your request!');
 define('L_USR_DATASENT', 'Userdata successfully mailed!');
 define('L_USR_CANTSENDMAIL', 'Problem with sending your userdata, please retry!');
-define('L_USR_NICKNAMEOREMAILALREADYUSED', 'The chosen nickname or the chosen E-Mail adress are already used by another user!');
-define('L_USR_PASSNOTEQUAL', 'Passwords are not equal!');
+define('L_USR_NICKNAMEOREMAILALREADYUSED', 'The chosen nickname or e-mail address is already used by another user!');
+define('L_USR_PASSNOTEQUAL', 'The passwords do not match!');
 define('L_USR_NOTLOGGEDIN', 'You are not logged in!');
 define('L_USR_CANNOTLOGOUT', 'You can not log out, if you are not logged in!');
 define('L_USR_PROFILEEDITED', 'Your profile was edited. If you changed your password, you have to log in again!');
+define('L_USR_INVALIDREGISTRATION', 'Invalid input. The nickname must be 3 to 30 characters long (letters, digits, dot, underscore, hyphen) and the e-mail address must be valid.');
+define('L_USR_REGISTRATIONFAILED', 'Registration failed. Please try again later.');
+define('L_USR_TOOMANYATTEMPTS', 'Too many failed attempts. Please try again in 15 minutes.');
+define('L_USR_LOGINFAILED', 'Nickname or password is incorrect.');
+define('L_USR_DATAREQUESTSENT', 'If an account with these details exists, an e-mail has been sent to the stored address.');
+define('L_USR_TOOMANYREQUESTS', 'Too many requests. Please try again later.');
+define('L_USR_INVALIDPROFILE', 'Invalid input. Please check nickname, e-mail address and homepage.');
+define('L_USR_PASSWORDTOOSHORT', 'The password must be at least 8 characters long.');
 
 /* News */
 define('L_NEWS_NONEWS', 'No news');
@@ -50,8 +58,8 @@ define('L_NEWS_GUEST', 'Guest');
 define('L_NEWS_CATSDEACTIVATED', 'Categories are deactivated');
 define('L_NEWS_WRONGCAT', 'Invalid category');
 define('L_NEWS_NOHEADLINES', 'No headlines');
-define('L_NEWS_CANNOTPOSTCOMMENTS', 'You are not allowed to post comments if you are not registed and logged in!');
-define('L_NEWS_COMMENTPOSTED', 'You comment was posted successfully!');
+define('L_NEWS_CANNOTPOSTCOMMENTS', 'You are not allowed to post comments unless you are registered and logged in!');
+define('L_NEWS_COMMENTPOSTED', 'Your comment was posted successfully!');
 define('L_NEWS_HOURS', 'Hours');
 define('L_NEWS_MINUTES', 'Minutes');
 define('L_NEWS_SECONDS', 'Seconds');
@@ -69,6 +77,8 @@ define('L_NEWS_MORE', 'more');
 define('L_NEWS_RL_TITLE', 'Title');
 define('L_NEWS_RL_URL', 'URL');
 define('L_NEWS_RL_TARGET', 'Target');
+define('L_NEWS_COMMENTTOOLONG', 'The comment is too long (at most %d characters).');
+define('L_NEWS_NEWSNOTFOUND', 'The news entry was not found.');
 
 /* E-Mail */
 define('L_EMAIL_TITLE', 'PowerNews Automailer');
@@ -91,3 +101,4 @@ define('L_TEMPL_DECEMBER', 'December');
 
 /* Other */
 define('L_ALL_FILLALL', 'Please fill in all fields!');
+define('L_ALL_CSRFINVALID', 'The form has expired or is invalid. Please reload the page and try again.');

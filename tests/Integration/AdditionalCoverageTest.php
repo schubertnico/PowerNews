@@ -372,7 +372,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $output = $this->captureOutput(fn() => $user->register());
 
         // Validierung greift vor leer-Check und liefert eine kombinierte Meldung
-        $this->assertStringContainsString('Ungueltige Eingabe', $output);
+        $this->assertStringContainsString(\L_USR_INVALIDREGISTRATION, $output);
     }
 
     #[Test]
@@ -384,7 +384,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $user = new \pn_user();
         $output = $this->captureOutput(fn() => $user->register());
 
-        $this->assertStringContainsString('Ungueltige Eingabe', $output);
+        $this->assertStringContainsString(\L_USR_INVALIDREGISTRATION, $output);
     }
 
     #[Test]
@@ -480,7 +480,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $user = new \pn_user();
         $output = $this->captureOutput(fn() => $user->profile());
 
-        $this->assertStringContainsString('Ungueltige Eingabe', $output);
+        $this->assertStringContainsString(\L_USR_INVALIDPROFILE, $output);
     }
 
     #[Test]
@@ -500,7 +500,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $user = new \pn_user();
         $output = $this->captureOutput(fn() => $user->profile());
 
-        $this->assertStringContainsString('Ungueltige Eingabe', $output);
+        $this->assertStringContainsString(\L_USR_INVALIDPROFILE, $output);
     }
 
     #[Test]
@@ -695,7 +695,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $output = $this->captureOutput(fn() => @$user->senddata());
 
         // Privacy-Haertung: generische Meldung unabhaengig vom Mail-Erfolg
-        $this->assertStringContainsString('Falls ein Account mit diesen Daten existiert', $output);
+        $this->assertStringContainsString(\L_USR_DATAREQUESTSENT, $output);
     }
 
     // ══════════════════════════════════════════════════════════════════

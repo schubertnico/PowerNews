@@ -20,7 +20,7 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo pnadmin_escape($error); ?>
-                <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zur Liste</a></div>
+                <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
             </div>
             <?php
         } else {
@@ -40,14 +40,14 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                     ?>
                     <div class="alert alert-danger" role="alert">
                         <?php echo pnadmin_escape($error); ?>
-                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=edit&amp;userid=<?php echo pn_int($userid); ?>" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=edit&amp;userid=<?php echo pn_int($userid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                     </div>
                     <?php
                 } else {
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_USR_USREDITED; ?>
-                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-success">Zur&uuml;ck zur Liste</a></div>
+                        <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_ALL_BACKTOLIST; ?></a></div>
                     </div>
                     <?php
                 }
@@ -117,7 +117,7 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
         ?>
         <div class="alert alert-info" role="alert">
             <?php echo L_USR_CHOOSEUSER; ?>
-            <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-primary">Zur&uuml;ck zur Liste</a></div>
+            <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-primary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
         </div>
         <?php
     }

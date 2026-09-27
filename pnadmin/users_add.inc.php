@@ -22,7 +22,7 @@ if ($pnadmin['canwriteusers'] == 'YES') {
             ?>
             <div class="alert alert-danger" role="alert">
                 <?php echo L_USR_NICKANDEMAIL; ?>
-                <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
             </div>
             <?php
         } else {
@@ -33,14 +33,14 @@ if ($pnadmin['canwriteusers'] == 'YES') {
                 ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo pnadmin_escape($uerror); ?>
-                    <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-outline-secondary">Zur&uuml;ck zum Formular</a></div>
+                    <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                 </div>
                 <?php
             } else {
                 ?>
                 <div class="alert alert-success" role="alert">
                     <?php echo L_USR_USRADDED; ?>
-                    <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-success">Weiteren Benutzer anlegen</a></div>
+                    <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-success"><?php echo L_USR_ADDMORE; ?></a></div>
                 </div>
                 <?php
             }
