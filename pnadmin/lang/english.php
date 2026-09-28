@@ -385,6 +385,7 @@ define('L_NEWS_OCTOBER', 'October');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'December');
 define('L_NEWS_NOCOMMENTTEXT', 'One or more comments are missing the text!');
+define('L_NEWS_INVALIDLINK', 'At least one related link is invalid: every link needs a title and an address starting with http:// or https:// or a relative path.');
 define('L_NEWS_COMMENTS', 'Comments');
 define('L_NEWS_INVALIDDATE', 'The publication date is invalid (e.g. 31 February). Please choose a valid date.');
 define('L_NEWS_BBCODE', 'BB code');

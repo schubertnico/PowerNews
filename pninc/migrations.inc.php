@@ -31,6 +31,7 @@ function pn_migrations(): array
         '3.12-unslash-content' => 'pn_migration_unslash_content',
         '3.12-purge-legacy-admin-sessions' => 'pn_migration_purge_legacy_sessions',
         '3.12-password-resets' => 'pn_migration_password_resets',
+        '3.12-relatedlinks-json' => 'pn_migration_relatedlinks_json',
     ];
 }
 
@@ -175,4 +176,36 @@ function pn_migration_password_resets(mysqli $db, array $pn_config): string
     pn_password_resets_prepare($db);
 
     return 'Tabelle pn_password_resets angelegt.';
+}
+
+/**
+ * B28/B37: Weiterführende Links im Zeilenformat bis 3.11 („Titel!@!@!URL!@!@!Ziel“) werden
+ * ins JSON-Format überführt. Links mit fremdem Schema (javascript: …) fallen dabei weg.
+ *
+ * @param array<string, mixed> $pn_config
+ */
+function pn_migration_relatedlinks_json(mysqli $db, array $pn_config): string
+{
+    $table = (string) ($pn_config['newstable'] ?? 'pn_news');
+    $result = mysqli_query($db, 'SELECT id, relatedlinks FROM `' . $table . "` WHERE relatedlinks <> '' AND relatedlinks NOT LIKE '[%'");
+    $changed = 0;
+
+    if (!$result instanceof mysqli_result) {
+        return 'Keine weiterführenden Links umzustellen.';
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $links = array_values(array_filter(
+            pn_relatedlinks_decode((string) $row['relatedlinks']),
+            static fn (array $link): bool => pn_relatedlink_url_allowed($link['url'], true),
+        ));
+        $encoded = pn_relatedlinks_encode($links);
+        $id = (int) $row['id'];
+        $stmt = mysqli_prepare($db, 'UPDATE `' . $table . '` SET relatedlinks = ? WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'si', $encoded, $id);
+        mysqli_stmt_execute($stmt);
+        ++$changed;
+    }
+
+    return sprintf('%d News mit weiterführenden Links ins JSON-Format überführt.', $changed);
 }

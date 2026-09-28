@@ -118,14 +118,14 @@ if ($pnadmin['canwritenews'] == 'YES') {
                           for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
                               ?>
                               <tr>
-                                  <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" aria-label="Related Link Title"></td>
-                                  <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" aria-label="Related Link URL"></td>
+                                  <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" aria-label="<?php echo L_NEWS_RL_TITLE; ?>"></td>
+                                  <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" aria-label="<?php echo L_NEWS_RL_URL; ?>"></td>
                                   <td>
-                                      <select class="form-select form-select-sm" name="rl_target[]" aria-label="Related Link Target">
+                                      <select class="form-select form-select-sm" name="rl_target[]" aria-label="<?php echo L_NEWS_RL_TARGET; ?>">
 <?php
                                           $counter = count($pn_config['rltargets']);
                                           for ($i2 = 0; $i2 < $counter; ++$i2) {
-                                              ?><option value="<?php echo $pn_config['rltargets'][$i2]; ?>"><?php echo $pn_config['rltargets'][$i2]; ?></option><?php
+                                              ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>"><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
                                           }
 ?>
                                       </select>

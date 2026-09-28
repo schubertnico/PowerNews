@@ -496,3 +496,116 @@ function pn_php_session_start(): void
     ]);
     session_start();
 }
+
+/**
+ * Prüft die Adresse eines weiterführenden Links (B37). Erlaubt sind http(s)-Adressen und,
+ * wenn $allowRelative gesetzt ist, relative Pfade wie „/impressum“ oder „news.php?newsid=2“.
+ * Andere Schemata (javascript:, data:, …), Leer-/Steuerzeichen und Backslashes nie.
+ */
+function pn_relatedlink_url_allowed(string $url, bool $allowRelative): bool
+{
+    if ($url === '' || preg_match('/[\s\x00-\x1F\x7F\\\\]/', $url) === 1) {
+        return false;
+    }
+
+    if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $url) === 1) {
+        return preg_match('#^https?://#i', $url) === 1 && filter_var($url, FILTER_VALIDATE_URL) !== false;
+    }
+
+    if (str_starts_with($url, '//')) {
+        return filter_var('https:' . $url, FILTER_VALIDATE_URL) !== false;
+    }
+
+    return $allowRelative;
+}
+
+/**
+ * Liest gespeicherte weiterführende Links (B28). Einheitliches Format ist JSON
+ * ([{"title":…,"url":…,"target":…}]); das zeilenweise Format bis 3.11
+ * („Titel!@!@!URL!@!@!Ziel“) wird weiterhin erkannt.
+ *
+ * @return list<array{title: string, url: string, target: string}>
+ */
+function pn_relatedlinks_decode(string $stored): array
+{
+    $stored = trim($stored);
+    $links = [];
+
+    if ($stored === '') {
+        return [];
+    }
+
+    if (str_starts_with($stored, '[')) {
+        $decoded = json_decode($stored, true);
+
+        foreach (is_array($decoded) ? $decoded : [] as $item) {
+            if (is_array($item) && is_string($item['title'] ?? null) && is_string($item['url'] ?? null)) {
+                $links[] = ['title' => $item['title'], 'url' => $item['url'], 'target' => is_string($item['target'] ?? null) ? $item['target'] : ''];
+            }
+        }
+
+        return $links;
+    }
+
+    foreach (explode("\n", str_replace("\r", '', $stored)) as $line) {
+        $parts = explode('!@!@!', $line);
+
+        if (count($parts) >= 2 && trim($parts[0]) !== '' && trim($parts[1]) !== '') {
+            $links[] = ['title' => trim($parts[0]), 'url' => trim($parts[1]), 'target' => trim($parts[2] ?? '')];
+        }
+    }
+
+    return $links;
+}
+
+/**
+ * Speichert weiterführende Links als JSON (leere Liste: Leerstring).
+ *
+ * @param list<array{title: string, url: string, target: string}> $links
+ */
+function pn_relatedlinks_encode(array $links): string
+{
+    if ($links === []) {
+        return '';
+    }
+
+    return (string) json_encode($links, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
+/**
+ * Baut die Linkliste aus den Formularfeldern. Zeilen ohne Titel und URL werden übersprungen,
+ * das Ziel muss in der Liste $pn_config['rltargets'] stehen (sonst gilt der erste Eintrag).
+ *
+ * @param array<mixed> $titles
+ * @param array<mixed> $urls
+ * @param array<mixed> $targets
+ * @param array<mixed> $allowedTargets
+ *
+ * @return array{0: list<array{title: string, url: string, target: string}>, 1: bool} Links und „ungültige URL gefunden“
+ */
+function pn_relatedlinks_from_input(array $titles, array $urls, array $targets, array $allowedTargets, bool $allowRelative): array
+{
+    $allowed = array_values(array_filter(array_map('strval', $allowedTargets), static fn (string $target): bool => $target !== ''));
+    $fallback = $allowed[0] ?? '_blank';
+    $links = [];
+    $invalid = false;
+
+    foreach (array_values($titles) as $index => $title) {
+        $title = mb_substr(trim(is_scalar($title) ? (string) $title : ''), 0, 100);
+        $url = trim(is_scalar($urls[$index] ?? null) ? (string) $urls[$index] : '');
+
+        if ($title === '' && $url === '') {
+            continue;
+        }
+
+        if ($title === '' || mb_strlen($url) > 250 || !pn_relatedlink_url_allowed($url, $allowRelative)) {
+            $invalid = true;
+            continue;
+        }
+
+        $target = is_scalar($targets[$index] ?? null) ? (string) $targets[$index] : '';
+        $links[] = ['title' => $title, 'url' => $url, 'target' => in_array($target, $allowed, true) ? $target : $fallback];
+    }
+
+    return [$links, $invalid];
+}

@@ -1858,17 +1858,15 @@ class news
     {
         global $pn_config, $pnuser, $pn_handler;
         $error = '';
-        $relatedlinks = '';
+        // Weiterführende Links: ein Format (JSON) für Admin und Frontend (B28), nur
+        // http(s)-Adressen oder relative Pfade (B37).
+        [$links, $invalidLinks] = pn_relatedlinks_from_input($rl_title, $rl_url, $rl_target, (array) ($pn_config['rltargets'] ?? []), true);
 
-        if ($rl_title !== []) {
-            $counter = count($rl_title);
-
-            for ($i = 0; $i < $counter; ++$i) {
-                if (trim((string) $rl_title[$i]) && trim((string) $rl_url[$i])) {
-                    $relatedlinks .= $rl_title[$i] . '!@!@!' . $rl_url[$i] . '!@!@!' . ($rl_target[$i] ?? '') . "\n";
-                }
-            }
+        if ($invalidLinks) {
+            return L_NEWS_INVALIDLINK;
         }
+
+        $relatedlinks = pn_relatedlinks_encode($links);
 
         $addtime = $time === [] ? time() : self::parsetime($time);
 
@@ -2169,14 +2167,13 @@ class news
         $relatedlinks = (string) $current['relatedlinks'];
 
         if ($rl_title !== [] || $rl_url !== []) {
-            $relatedlinks = '';
-            $counter = count($rl_title);
+            [$links, $invalidLinks] = pn_relatedlinks_from_input($rl_title, $rl_url, $rl_target, (array) ($pn_config['rltargets'] ?? []), true);
 
-            for ($i = 0; $i < $counter; ++$i) {
-                if (trim((string) $rl_title[$i]) && trim((string) ($rl_url[$i] ?? ''))) {
-                    $relatedlinks .= $rl_title[$i] . '!@!@!' . $rl_url[$i] . '!@!@!' . ($rl_target[$i] ?? '') . "\n";
-                }
+            if ($invalidLinks) {
+                return L_NEWS_INVALIDLINK;
             }
+
+            $relatedlinks = pn_relatedlinks_encode($links);
         }
 
         $newtime = self::parsetime($time);

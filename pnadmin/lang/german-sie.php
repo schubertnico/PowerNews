@@ -385,6 +385,7 @@ define('L_NEWS_OCTOBER', 'Oktober');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'Dezember');
 define('L_NEWS_NOCOMMENTTEXT', 'Bei einem oder mehreren Kommentaren fehlt der Text!');
+define('L_NEWS_INVALIDLINK', 'Mindestens ein weiterführender Link ist ungültig: Jeder Link braucht einen Titel und eine Adresse mit http:// oder https:// bzw. einen relativen Pfad.');
 define('L_NEWS_COMMENTS', 'Kommentare');
 define('L_NEWS_INVALIDDATE', 'Der Erscheinungstermin ist ungültig (z. B. 31. Februar). Bitte wählen Sie ein gültiges Datum.');
 define('L_NEWS_BBCODE', 'BB-Code');

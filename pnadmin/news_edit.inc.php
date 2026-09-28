@@ -180,22 +180,20 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                               </thead>
                               <tbody>
 <?php
-                              /* Get related links */
-                              $links = explode("\n", (string) $data['relatedlinks']);
-                              $counter = count($links);
+                              /* Gespeicherte Links (JSON oder Altformat) */
                               $link = [];
-                              for ($i = 0; $i < $counter; ++$i) {
-                                  $link[$i] = explode('!@!@!', $links[$i]);
+                              foreach (pn_relatedlinks_decode((string) $data['relatedlinks']) as $stored) {
+                                  $link[] = [$stored['title'], $stored['url'], $stored['target']];
                               }
 
                               /* List forms for related links */
                               for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
                                   ?>
                                   <tr>
-                                      <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" value="<?php echo pnadmin_escape($link[$i][0] ?? ''); ?>" aria-label="Related Link Title"></td>
-                                      <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" value="<?php echo pnadmin_escape($link[$i][1] ?? ''); ?>" aria-label="Related Link URL"></td>
+                                      <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" value="<?php echo pnadmin_escape($link[$i][0] ?? ''); ?>" aria-label="<?php echo L_NEWS_RL_TITLE; ?>"></td>
+                                      <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" value="<?php echo pnadmin_escape($link[$i][1] ?? ''); ?>" aria-label="<?php echo L_NEWS_RL_URL; ?>"></td>
                                       <td>
-                                          <select class="form-select form-select-sm" name="rl_target[]" aria-label="Related Link Target">
+                                          <select class="form-select form-select-sm" name="rl_target[]" aria-label="<?php echo L_NEWS_RL_TARGET; ?>">
 <?php
                                               $tcounter = count($pn_config['rltargets']);
                                               for ($i2 = 0; $i2 < $tcounter; ++$i2) {

@@ -86,6 +86,7 @@ define('L_NEWS_MORE', 'mehr');
 define('L_NEWS_RL_TITLE', 'Titel');
 define('L_NEWS_RL_URL', 'URL');
 define('L_NEWS_RL_TARGET', 'Ziel');
+define('L_NEWS_RELATEDLINKS', 'Weiterführende Links');
 define('L_NEWS_COMMENTTOOLONG', 'Der Kommentar ist zu lang (höchstens %d Zeichen).');
 define('L_NEWS_NEWSNOTFOUND', 'Die News wurde nicht gefunden.');
 

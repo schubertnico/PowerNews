@@ -616,20 +616,16 @@ class pn_news
                 $moretext = pn_validate_string($_POST['pndata']['moretext'] ?? '', 65000);
                 $catid = (int) ($_POST['pndata']['catid'] ?? 0);
 
-                $links = [];
-                if (isset($_POST['pndata']['rl_title']) && is_array($_POST['pndata']['rl_title'])) {
-                    $counter = count($_POST['pndata']['rl_title']);
-
-                    for ($i = 0; $i < $counter; ++$i) {
-                        $t = trim((string) ($_POST['pndata']['rl_title'][$i] ?? ''));
-                        $u = trim((string) ($_POST['pndata']['rl_url'][$i] ?? ''));
-                        $target = (($_POST['pndata']['rl_target'][$i] ?? '_self') === '_blank') ? '_blank' : '_self';
-                        if ($t !== '' && $u !== '' && preg_match('#^https?://#i', $u) && filter_var($u, FILTER_VALIDATE_URL)) {
-                            $links[] = ['title' => mb_substr($t, 0, 100), 'url' => mb_substr($u, 0, 250), 'target' => $target];
-                        }
-                    }
-                }
-                $relatedlinks = json_encode($links, JSON_UNESCAPED_UNICODE);
+                // Gleiches Format wie im Admin (B28); Besucher dürfen nur http(s)-Adressen angeben,
+                // das Ziel stammt aus $pn_config['rltargets'].
+                [$links] = pn_relatedlinks_from_input(
+                    is_array($_POST['pndata']['rl_title'] ?? null) ? $_POST['pndata']['rl_title'] : [],
+                    is_array($_POST['pndata']['rl_url'] ?? null) ? $_POST['pndata']['rl_url'] : [],
+                    is_array($_POST['pndata']['rl_target'] ?? null) ? $_POST['pndata']['rl_target'] : [],
+                    (array) ($pn_config['rltargets'] ?? []),
+                    false,
+                );
+                $relatedlinks = pn_relatedlinks_encode($links);
             }
 
             // Check who can send news
@@ -1441,15 +1437,11 @@ class pn_template
             // damit der Platzhalter-Text nicht im Output sichtbar bleibt, wenn die
             // Funktion in der Konfiguration deaktiviert ist oder keine Links gepflegt wurden.
             $rlinks = '';
-            if ($pnconfig['relatedlinks'] == 'YES' && trim((string) $relatedlinks) !== '') {
-                $links = explode("\n", (string) $relatedlinks);
-                $linksCount = count($links) - 1;
-
-                for ($i = 0; $i < $linksCount; ++$i) {
-                    $link = explode('!@!@!', $links[$i]);
-
-                    if (isset($link[0], $link[1], $link[2])) {
-                        $rlinks .= $this->relatedlinks($link[0], $link[1], $link[2]);
+            if ($pnconfig['relatedlinks'] == 'YES') {
+                foreach (pn_relatedlinks_decode($relatedlinks) as $link) {
+                    // Auch Altdaten mit fremdem Schema (javascript: …) nie als Link ausgeben (B37).
+                    if (pn_relatedlink_url_allowed($link['url'], true)) {
+                        $rlinks .= (string) $this->relatedlinks($link['title'], $link['url'], $link['target'] !== '' ? $link['target'] : '_blank');
                     }
                 }
             }
@@ -1894,14 +1886,15 @@ class pn_template
                 for ($i = 0; $i < $counter; ++$i) {
                     $targets .= '<option value="' . pn_escape($pn_config['rltargets'][$i]) . '">' . pn_escape($pn_config['rltargets'][$i]) . '</option>';
                 }
-                $relatedlinks = '<table border="0" cellpadding="3" cellspacing="0" width="100%"><tr><td><b>' . L_NEWS_RL_TITLE . '</b></td><td><b>' . L_NEWS_RL_URL . '</b></td><td><b>' . L_NEWS_RL_TARGET . '</b></td></tr>';
+                $relatedlinks = '<div class="mb-3"><span class="form-label fw-bold d-block">' . L_NEWS_RELATEDLINKS . '</span>'
+                    . '<div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>' . L_NEWS_RL_TITLE . '</th><th>' . L_NEWS_RL_URL . '</th><th>' . L_NEWS_RL_TARGET . '</th></tr></thead><tbody>';
 
                 for ($i = 0; $i < (int) $pnconfig['relatedlinks_num']; ++$i) {
-                    $relatedlinks .= '<tr><td><input name="pndata[rl_title][]" size="25" maxlength="50"></td><td><input name="pndata[rl_url][]" size="25" maxlength="250"></td><td><select name="pndata[rl_target][]" size="1">';
-                    $relatedlinks .= $targets;
-                    $relatedlinks .= '</select></td></tr>';
+                    $relatedlinks .= '<tr><td><input class="form-control form-control-sm" name="pndata[rl_title][]" maxlength="50" aria-label="' . L_NEWS_RL_TITLE . '"></td>'
+                        . '<td><input class="form-control form-control-sm" type="url" name="pndata[rl_url][]" maxlength="250" placeholder="https://" aria-label="' . L_NEWS_RL_URL . '"></td>'
+                        . '<td><select class="form-select form-select-sm" name="pndata[rl_target][]" aria-label="' . L_NEWS_RL_TARGET . '">' . $targets . '</select></td></tr>';
                 }
-                $relatedlinks .= '</table>';
+                $relatedlinks .= '</tbody></table></div></div>';
             }
             echo pn_template_fill((string) $sendnewsform, [
                 'USER' => $user,
