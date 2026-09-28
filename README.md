@@ -1,12 +1,18 @@
-# PowerNews v3.11
+# PowerNews 3.12
 
 [![PHP](https://img.shields.io/badge/PHP-8.4-blue)](https://www.php.net/)
-[![tests](https://img.shields.io/badge/tests-734%20passing-brightgreen)](#tests)
+[![tests](https://img.shields.io/badge/tests-1145%20passing-brightgreen)](#tests)
 [![coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)](#tests)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.3-7952B3)](https://getbootstrap.com/)
 [![license](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
 Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung. Frontend und Adminbereich sind komplett auf **Bootstrap 5.3** umgestellt – responsiv, barrierearm, ohne CDN.
+
+**Neu in 3.12:** Web-Installer, E-Mail-Versand wahlweise über einen SMTP-Server (STARTTLS/SSL, Anmeldung), „Passwort vergessen“ mit Einmal-Link, zahlreiche Sicherheits- und Fehlerkorrekturen – alle Änderungen im [CHANGELOG](CHANGELOG.md).
+
+## Video-Anleitungen
+
+Acht Video-Anleitungen zu PowerNews 3.12 – Installation, Grundeinstellungen, Kategorien, News schreiben, Redakteure und Rechte, Leser/Kommentare/Einsendungen, Einbinden, Templates: <https://www.powerscripts.org/projects-1.html>
 
 ---
 
@@ -47,7 +53,7 @@ Beim ersten Start spielt der Datenbank-Container `powernews.sql` und die Entwick
 - PHP 8.4 (oder höher) mit den Erweiterungen `mysqli` und `mbstring`
 - MariaDB 10.3+ / MySQL 8.0+
 - Apache 2.4 mit `mod_rewrite` + `mod_headers`
-- Für den Mailversand: `msmtp` oder ein SMTP-Relay (im Docker-Setup automatisch via Mailpit)
+- Für den Mailversand: die PHP-Funktion `mail()` des Servers (Standard) oder ein SMTP-Server mit Anmeldung, STARTTLS oder SSL/TLS (dafür PHP-Erweiterung `openssl`); im Docker-Setup landen alle Mails in Mailpit
 
 ---
 
@@ -55,7 +61,7 @@ Beim ersten Start spielt der Datenbank-Container `powernews.sql` und die Entwick
 
 1. Inhalt des Release-Archivs hochladen (auch die `.htaccess`-Dateien), `logs/` beschreibbar machen.
 2. Eine leere MariaDB-/MySQL-Datenbank anlegen.
-3. `https://<ihre-domain>/install.php` aufrufen und die fünf Schritte durchlaufen: Systemprüfung, Datenbank (mit Verbindungstest), Website (URL, Absender, Sprache), Administrator (Nickname, E-Mail, Passwort), Abschluss.
+3. `https://<ihre-domain>/install.php` aufrufen und die fünf Schritte durchlaufen: Systemprüfung, Datenbank (mit Verbindungstest), Website (URL, Absender, Sprache, optional E-Mail-Versand per SMTP mit „Test-Mail senden“), Administrator (Nickname, E-Mail, Passwort), Abschluss.
 4. `install.php` löschen und im Adminbereich `pnadmin/` mit Nickname und Passwort anmelden.
 
 Die Zugangsdaten landen in `pninc/config.local.php` (bleibt bei Updates erhalten); danach ist der Installer gesperrt. Ausführlich – auch Shared Hosting, Kommandozeile, nginx und Update – in [INSTALLATION.md](INSTALLATION.md).
@@ -76,6 +82,21 @@ Rangfolge: `pninc/config.local.php` (legt der Installer an) > Umgebungsvariablen
 | `PN_DB_PASS` | Datenbank-Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank-Name | `powernews` |
 | `PN_TRUSTED_PROXIES` | Vertrauenswürdige Reverse-Proxys (IPs oder CIDR, kommagetrennt). Nur von dort wird `X-Forwarded-For` ausgewertet; alternativ `$pn_config['trustedproxies']` | (leer) |
+
+### E-Mail-Versand
+
+Ab Werk verschickt PowerNews mit der PHP-Funktion `mail()` des Servers. Für den Versand über einen SMTP-Server gibt es den Abschnitt „E-Mail-Versand“ im Installer, den Abschnitt `mail` in `pninc/config.local.php` oder diese Umgebungsvariablen (Rangfolge wie oben):
+
+| Variable | Beschreibung | Standard |
+|----------|-------------|----------|
+| `PN_MAIL_TRANSPORT` | `mail` (PHP-Funktion `mail()`) oder `smtp` | `mail` |
+| `PN_MAIL_HOST` | SMTP-Server | `localhost` |
+| `PN_MAIL_PORT` | Port; `0` = Standard der Verschlüsselung (25, 587, 465) | `0` |
+| `PN_MAIL_ENCRYPTION` | `none`, `starttls` oder `ssl` | `none` |
+| `PN_MAIL_USER` | Benutzername des Postfachs (leer = ohne Anmeldung) | (leer) |
+| `PN_MAIL_PASS` | Passwort des Postfachs | (leer) |
+
+Das Zertifikat des SMTP-Servers wird immer geprüft. Absender ist die E-Mail-Adresse aus der Konfiguration (auch als Reply-To); Fehler landen mit Grund, aber ohne Passwort in `logs/php-error.log`.
 
 ### Docker-Ports
 
@@ -107,7 +128,7 @@ Beim Fresh-Install sind folgende Defaults gesetzt:
 - **Kommentare**: mit Spamschutz pro IP (`REMOTE_ADDR`; `X-Forwarded-For` nur hinter konfigurierten Proxys) und Längenbegrenzung
 - **Templates**: anpassbare HTML-Templates pro Bereich, CSRF-`{CSRF}`- und `{CSRF}`-Platzhalter automatisch ersetzt
 - **Archiv**: durchsuchbares News-Archiv
-- **Mail**: Registrierungs- und Passwort-Reset-Mails via `msmtp` → Mailpit (Docker) oder beliebigem SMTP-Relay
+- **Mail**: Registrierungs- und Passwort-Reset-Mails per PHP `mail()` oder SMTP-Server (STARTTLS/SSL, AUTH PLAIN/LOGIN); im Docker-Setup via `msmtp` → Mailpit
 - **Modernes UI**: Bootstrap 5.3.3 (lokal gehostet, ohne CDN) für Frontend & Adminbereich – responsiv, barrierearm, mit Cards/Tables/Alerts/Badges
 - **Adminhilfe**: Eingebauter Hilfe-Bereich (`?page=other&subpage=help`) mit Inhaltsverzeichnis, BB-Code-/Smilies-Referenz und Modul-Anleitungen
 - **Datumsformat-Konverter**: Akzeptiert sowohl PHP-`date()`-Tokens (`d.m.Y`/`H:i`) als auch strftime-Tokens (`%d.%m.%Y`/`%H:%M`); ältere Konfigurationen funktionieren ohne manuelle Migration weiter
@@ -117,7 +138,7 @@ Beim Fresh-Install sind folgende Defaults gesetzt:
 ## Stand 2026-05-10 – Bootstrap-5-Refactor + Folgekorrekturen
 
 Mit der Iteration vom 10.05.2026 sind Frontend und Adminbereich vollständig auf
-Bootstrap 5.3.3 umgestellt. Aktuelle Version: **3.11**. Highlights:
+Bootstrap 5.3.3 umgestellt (damals Version 3.10/3.11). Highlights:
 
 **UI & Layout:**
 - **Self-hosted Bootstrap** unter `assets/bootstrap/` (kein CDN, CSP unverändert restriktiv).
@@ -164,7 +185,7 @@ Nach Audit und Fix-Sweep vom April 2026 sind folgende Härtungen eingebaut. Deta
 - Beim Logout wird der Token serverseitig gelöscht; gestohlene Cookies sind damit sofort ungültig.
 - Login mit `status = 'Deactivated'` wird abgewiesen.
 - Konstante Antwortzeit bei Login (Dummy-`password_verify` für unbekannte Nicknames) gegen Timing-Enumeration.
-- IP- und Nickname-basiertes Rate-Limit (10 Fehlversuche / 15 Minuten) in `pn_login_attempts`.
+- IP-basiertes Rate-Limit (10 Fehlversuche / 15 Minuten) in `pn_login_attempts` für Frontend- und Admin-Login.
 
 ### CSRF
 
@@ -208,7 +229,7 @@ Nach Audit und Fix-Sweep vom April 2026 sind folgende Härtungen eingebaut. Deta
 
 - Prepared Statements durchgängig.
 - Bcrypt-Passwort-Hashes (automatischer Upgrade bestehender Base64-Passwörter beim ersten Login).
-- Neue Tabellen: `pn_sessions`, `pn_login_attempts`.
+- Neue Tabellen: `pn_sessions`, `pn_login_attempts`, `pn_password_resets` (Einmal-Links), `pn_migrations` (ausgeführte Update-Migrationen).
 - Seed-Kategorie „Allgemein" wird beim Install angelegt, sodass News-Einsendung direkt funktioniert.
 
 ---
@@ -251,9 +272,9 @@ Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.
 
 ## Update
 
-Update von 3.11 auf 3.12: Datensicherung, Zugangsdaten nach `pninc/config.local.php` übernehmen, Dateien hochladen (ohne `install.php`), als Admin `update.php` aufrufen – Schritt für Schritt in [INSTALLATION.md](INSTALLATION.md#update-von-311-auf-312). Bestehende Benutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt.
+Update von 3.11 auf 3.12: Datensicherung, Zugangsdaten nach `pninc/config.local.php` übernehmen, Dateien hochladen (ohne `install.php`), als Admin `update.php` aufrufen – es legt fehlende Tabellen an (u. a. `pn_password_resets`) und führt die Migrationen aus. Schritt für Schritt in [INSTALLATION.md](INSTALLATION.md#update-von-311-auf-312). Bestehende Benutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt.
 
-**Default-Template auf Bootstrap 5 heben** (nur bei Installationen von vor Mai 2026): Beim Update von einer Vor-2026-05-Version müssen die Felder
+**Default-Template auf Bootstrap 5 heben** (nur bei Installationen von vor Mai 2026; ein Update von 3.11 erledigt `update.php`): Beim Update von einer Vor-2026-05-Version müssen die Felder
    `news`, `headline`, `comment`, `commentform`, `loginform`, `registerform`, `profileform`,
    `senddataform`, `archive`, `sendnewsform`, `usermenu`, `usermenu2`, `relatedlinks`,
    `logout` und `message` der Zeile `id=1` in `pn_templates` auf das neue Bootstrap-5-
@@ -268,6 +289,10 @@ Details siehe [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootst
 
 - **Installation, Konfiguration und Update:** [`INSTALLATION.md`](INSTALLATION.md)
 - **Änderungen je Version:** [`CHANGELOG.md`](CHANGELOG.md)
+- **Video-Anleitungen:** <https://www.powerscripts.org/projects-1.html>
+
+Die folgenden Dokumente unter `docs/` liegen nur im Git-Repository, nicht im Release-Archiv:
+
 - **Bootstrap-5-Migration & UI-Hardening (2026-05-10):** [`docs/2026-05-10-Bootstrap5-Migration.md`](docs/2026-05-10-Bootstrap5-Migration.md)
 - **Folgekorrekturen (Pt 2, 2026-05-10):** [`docs/2026-05-10-Pt2-Followup.md`](docs/2026-05-10-Pt2-Followup.md) – Login-Status sichtbar, echte Breadcrumb-Navigation, Default-Template editierbar, Version 3.10, `{RELATEDLINKS}`-Bug, doppeltes Copyright entfernt
 - **i18n-Konsolidierung (Pt 3, 2026-05-10):** [`docs/2026-05-10-Pt3-I18n.md`](docs/2026-05-10-Pt3-I18n.md) – 77 deutsche Strings in `pnadmin/lang/english.php` übersetzt, doppelte Konstanten entfernt, alle drei Sprachdateien deckungsgleich (Version 3.11)

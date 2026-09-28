@@ -1,8 +1,12 @@
-# PowerNews – Installation und Update
+# PowerNews 3.12 – Installation und Update
 
 Diese Anleitung beschreibt die Installation mit dem Web-Installer (auch auf
 Shared Hosting ohne Shell), die Installation per Kommandozeile, die
-Konfiguration und das Update von 3.11 auf 3.12.
+Konfiguration samt E-Mail-Versand und das Update von 3.11 auf 3.12.
+
+Video-Anleitungen (Installation, Grundeinstellungen, Kategorien, News schreiben,
+Redakteure und Rechte, Leser/Kommentare/Einsendungen, Einbinden, Templates):
+<https://www.powerscripts.org/projects-1.html>
 
 ## Inhalt
 
@@ -27,7 +31,9 @@ Konfiguration und das Update von 3.11 auf 3.12.
   INSERT, UPDATE, DELETE, INDEX und ALTER
 - Schreibrechte für `logs/`; damit der Installer `pninc/config.local.php`
   selbst anlegen kann, auch für `pninc/` (sonst laden Sie die Datei von Hand hoch)
-- für den Mailversand die PHP-Funktion `mail()` des Hosters
+- für den Mailversand die PHP-Funktion `mail()` des Hosters oder ein
+  SMTP-Server (z. B. das E-Mail-Postfach beim Hoster); für SMTP mit
+  Verschlüsselung die PHP-Erweiterung `openssl`
 - empfohlen: HTTPS, damit die Zugangsdaten verschlüsselt übertragen werden
 
 ---
@@ -36,7 +42,8 @@ Konfiguration und das Update von 3.11 auf 3.12.
 
 Der Web-Installer legt die Tabellen aus `powernews.sql` an, erstellt Ihr
 Administrator-Konto, trägt Seiten-URL und Absenderadresse ein und speichert die
-Zugangsdaten in `pninc/config.local.php`. Danach sperrt er sich selbst.
+Zugangsdaten für Datenbank und E-Mail-Versand in `pninc/config.local.php`.
+Danach sperrt er sich selbst.
 
 ### Schritt für Schritt (Shared Hosting)
 
@@ -57,7 +64,7 @@ Zugangsdaten in `pninc/config.local.php`. Danach sperrt er sich selbst.
    |---------|--------|
    | 1 Systemprüfung | PHP-Version, `mysqli`, `mbstring`, Lesbarkeit von `powernews.sql`, Schreibrechte für `logs/` und `pninc/`, Hinweis auf HTTPS. Rote Punkte müssen behoben werden, gelbe sind Hinweise. |
    | 2 Datenbank | Server (meist `localhost`, bei manchen Hostern ein eigener Name wie `sql.example.org`), Port (`3306`), Name der Datenbank, Benutzer, Passwort. Die Verbindung wird sofort geprüft, ebenso die Version: MySQL ab 8.0, MariaDB ab 10.3. Fehler erscheinen am betroffenen Feld, ohne Zugangsdaten zu wiederholen. Enthält die Datenbank schon `pn_`-Tabellen, bricht der Installer ab, statt etwas zu überschreiben. |
-   | 3 Website | Adresse der Website (aus der aktuellen Anfrage vorbelegt – bitte prüfen, sie steht in den Links der E-Mails), Absenderadresse für E-Mails (am besten ein Postfach Ihrer eigenen Domain) und Sprache (Deutsch Du-Form, Deutsch Sie-Form, English). |
+   | 3 Website | Adresse der Website (aus der aktuellen Anfrage vorbelegt – bitte prüfen, sie steht in den Links der E-Mails), Absenderadresse für E-Mails (am besten ein Postfach Ihrer eigenen Domain) und Sprache (Deutsch Du-Form, Deutsch Sie-Form, English). Optional der Abschnitt „E-Mail-Versand“ mit „Test-Mail senden“, siehe unten. |
    | 4 Administrator | Nickname (3–30 Zeichen: Buchstaben einschließlich Umlauten, Ziffern sowie `. _ -`), E-Mail-Adresse, Passwort (8 bis 72 Zeichen) mit Wiederholung. |
    | 5 Abschluss | Zusammenfassung mit „Ändern“-Links. „Jetzt installieren“ legt Tabellen und Administrator an, schreibt `pninc/config.local.php` und die Sperrdatei. |
 
@@ -67,6 +74,33 @@ Zugangsdaten in `pninc/config.local.php`. Danach sperrt er sich selbst.
 7. **Anmelden** im Adminbereich `https://ihre-domain.de/news/pnadmin/` mit
    **Nickname und Passwort**. Unter „Konfiguration“ stellen Sie Kommentare,
    News-Einsendungen, Datumsformat usw. ein.
+
+### E-Mail-Versand einrichten (Schritt 3)
+
+PowerNews verschickt E-Mails bei der Registrierung, für „Passwort vergessen“ und
+wenn Sie im Adminbereich Benutzer anlegen. Im Abschnitt „E-Mail-Versand“ wählen
+Sie unter „Versand über“:
+
+- **PHP-mail des Servers** (Vorgabe): Der Server verschickt die Mails mit der
+  PHP-Funktion `mail()`. Das klappt bei den meisten Hostern ohne weitere Angaben.
+- **SMTP-Server**: PowerNews meldet sich selbst beim Postausgangsserver an. Die
+  Angaben finden Sie im Kundenmenü Ihres Hosters beim E-Mail-Postfach:
+
+  | Feld | Inhalt |
+  |------|--------|
+  | SMTP-Server | Postausgangsserver, z. B. `smtp.ihr-hoster.de` – bei Verschlüsselung der Name aus dem Zertifikat |
+  | Port | leer lassen für den üblichen Port: 587 bei STARTTLS, 465 bei SSL/TLS, 25 ohne Verschlüsselung (wird beim Wechsel der Verschlüsselung vorgeschlagen) |
+  | Verschlüsselung | STARTTLS (Vorgabe), SSL/TLS oder keine – „keine“ nur für einen Mailserver auf demselben Rechner oder im internen Netz |
+  | Benutzername | meist die vollständige E-Mail-Adresse des Postfachs; leer, wenn der Server keine Anmeldung verlangt |
+  | Passwort | Passwort des Postfachs; es wird nicht wieder angezeigt |
+
+„Test-Mail senden“ speichert die Angaben und schickt eine Nachricht an die
+Absenderadresse (bzw. an den Administrator, wenn Schritt 4 schon ausgefüllt ist).
+Das Ergebnis erscheint direkt über dem Abschnitt – bei Fehlern mit dem Grund,
+z. B. „Anmeldung (AUTH PLAIN): Server antwortet 535 … – Benutzername und Passwort
+prüfen“. Angenommen heißt: Der Server hat die Mail übernommen; ob sie ankommt,
+zeigt das Postfach (auch den Spam-Ordner prüfen). Viele Hoster verlangen, dass
+die Absenderadresse zum SMTP-Postfach passt.
 
 ### Wenn `pninc/` nicht beschreibbar ist
 
@@ -82,9 +116,11 @@ Sperrdatei legt der Installer in diesem Fall in `logs/` an.
   der die Adresse kennt. Deshalb: hochladen, installieren, `install.php` löschen –
   am besten in einem Zug.
 - Nach Möglichkeit über HTTPS installieren.
-- Zugangsdaten stehen nur in `pninc/config.local.php`. Der Installer schreibt sie
-  weder in Protokolle noch in Fehlermeldungen; das Administrator-Passwort liegt
-  auch in der Sitzung nur als Hash vor.
+- Zugangsdaten (Datenbank und SMTP-Postfach) stehen nur in
+  `pninc/config.local.php`. Der Installer schreibt sie weder in Protokolle noch
+  in Fehlermeldungen; das Administrator-Passwort liegt auch in der Sitzung nur
+  als Hash vor, Datenbank- und SMTP-Passwort werden nach der Installation aus
+  der Sitzung entfernt.
 - Der Installer führt aus `powernews.sql` ausschließlich `CREATE TABLE` und
   `INSERT INTO` für `pn_`-Tabellen aus. Er verwirft niemals Tabellen – nur wenn
   die Installation mittendrin scheitert, entfernt er die Tabellen, die er in
@@ -117,14 +153,14 @@ und die Sperrdatei löschen, eine leere Datenbank verwenden (oder die
 
 ### Rangfolge der Zugangsdaten
 
-`pninc/config.inc.php` ermittelt Datenbankzugang und Sprache in dieser
-Reihenfolge (höchste zuerst):
+`pninc/config.inc.php` ermittelt Datenbankzugang, Sprache und E-Mail-Versand in
+dieser Reihenfolge (höchste zuerst, jeder Wert einzeln):
 
 1. `pninc/config.local.php` – legt der Web-Installer an
 2. Umgebungsvariablen `PN_DB_HOST`, `PN_DB_PORT`, `PN_DB_USER`, `PN_DB_PASS`,
-   `PN_DB_NAME` (Docker, `SetEnv`, PHP-FPM)
+   `PN_DB_NAME` und `PN_MAIL_*` (Docker, `SetEnv`, PHP-FPM)
 3. Vorgaben: `localhost`, Port `3306`, Benutzer `root` ohne Passwort, Datenbank
-   `powernews`, Sprache `german-du`
+   `powernews`, Sprache `german-du`, Versand mit `mail()`
 
 Tragen Sie Zugangsdaten nicht in `config.inc.php` ein – die Datei wird bei jedem
 Update überschrieben. `config.local.php` bleibt dagegen erhalten.
@@ -146,12 +182,29 @@ return [
     ],
     // german-du, german-sie oder english
     'language' => 'german-du',
+    'mail' => [
+        // mail (PHP-Funktion mail() des Servers) oder smtp
+        'transport' => 'smtp',
+        'host' => 'smtp.example.org',
+        // 0 = Standard der Verschlüsselung (none 25, starttls 587, ssl 465)
+        'port' => 587,
+        // none, starttls oder ssl
+        'encryption' => 'starttls',
+        'user' => 'news@example.org',
+        'password' => 'Passwort-des-Postfachs',
+    ],
 ];
 ```
 
 Die Datei gibt nur ein Array zurück. Fehlende Schlüssel übernehmen den Wert aus
-den Umgebungsvariablen bzw. Vorgaben. Rechte `640` setzen; die Datei ist per
+den Umgebungsvariablen bzw. Vorgaben – ohne Abschnitt `mail` bleibt es beim
+Versand mit `mail()`. Rechte `640` setzen; die Datei ist per
 `pninc/.htaccess` gesperrt.
+
+Ein Tippfehler bei `transport` oder `encryption` führt nicht zu einem
+stillschweigend anderen Versand: Die Mail wird dann nicht verschickt, und im
+Fehlerprotokoll `logs/php-error.log` steht der Grund, z. B. „Unbekannte
+Verschlüsselung „tls“ – erlaubt sind none, starttls und ssl.“
 
 ### Umgebungsvariablen
 
@@ -162,6 +215,12 @@ den Umgebungsvariablen bzw. Vorgaben. Rechte `640` setzen; die Datei ist per
 | `PN_DB_USER` | Benutzer | `root` |
 | `PN_DB_PASS` | Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank | `powernews` |
+| `PN_MAIL_TRANSPORT` | Versandart: `mail` oder `smtp` | `mail` |
+| `PN_MAIL_HOST` | SMTP-Server | `localhost` |
+| `PN_MAIL_PORT` | SMTP-Port (`0` = Standard der Verschlüsselung) | `0` |
+| `PN_MAIL_ENCRYPTION` | `none`, `starttls` oder `ssl` | `none` |
+| `PN_MAIL_USER` | Benutzername des Postfachs | (leer = ohne Anmeldung) |
+| `PN_MAIL_PASS` | Passwort des Postfachs | (leer) |
 
 ---
 
@@ -186,6 +245,9 @@ VALUES (LAST_INSERT_ID(), 'YES', 'YES', 'YES', 'YES', 'YES', 'YES', 'YES', 'YES'
 UPDATE pn_config SET url = 'https://www.example.org/news', email = 'noreply@example.org';
 ```
 
+`powernews.sql` trägt alle Migrationen in `pn_migrations` als erledigt ein – eine
+so eingerichtete Datenbank ist bereits auf dem Stand 3.12.
+
 4. `pninc/config.local.php` anlegen (siehe [Konfiguration](#konfiguration)).
 5. `install.php` löschen.
 
@@ -206,16 +268,27 @@ UPDATE pn_config SET url = 'https://www.example.org/news', email = 'noreply@exam
 4. **Im Adminbereich anmelden** (Recht „Konfiguration schreiben“) und
    `https://ihre-domain.de/news/update.php` aufrufen. Die Seite zeigt, welche
    Schritte nötig sind, und führt sie mit „Update ausführen“ aus:
-   - fehlende Tabellen aus `powernews.sql` anlegen (z. B. `pn_login_attempts`),
+   - fehlende Tabellen aus `powernews.sql` anlegen (z. B. `pn_password_resets`
+     für „Passwort vergessen“, `pn_migrations`, bei älteren Installationen auch
+     `pn_login_attempts`),
    - die mit 3.11 ausgelieferten Testvorlagen „ftghgf“, „dsfs“ und „dfgdfg“
      entfernen – nicht, wenn eine davon als Standard-Template eingestellt ist,
    - verwaiste Einträge in `pn_permissions` löschen,
+   - die Daten auf den Stand 3.12 bringen (Migrationen aus
+     `pninc/migrations.inc.php`, vermerkt in `pn_migrations`): überzählige
+     Backslashes aus 3.11 entfernen, die fast ein Jahr gültigen Admin-Sitzungen
+     aus 3.11 beenden, weiterführende Links ins JSON-Format umstellen und
+     unveränderte Felder des Default-Templates auf 3.12 bringen – angepasste
+     Felder bleiben, wie sie sind,
    - den Web-Installer per Sperrdatei sperren.
 
    Jeder Schritt prüft selbst, ob er nötig ist; ein zweiter Aufruf ändert nichts.
 5. **Konfiguration prüfen:** Im Adminbereich unter „Konfiguration“ URL und
    E-Mail-Adresse kontrollieren. 3.11 lieferte `http://www.powerscripts.org`
    und `daemon@powerscripts.org` als Vorgabe aus.
+6. **E-Mail-Versand (optional):** Bestehende Installationen senden weiter mit
+   `mail()`. Für den Versand über einen SMTP-Server den Abschnitt `mail` in
+   `pninc/config.local.php` ergänzen (siehe [Konfiguration](#konfiguration)).
 
 **Installationen von vor April 2026** (ohne Tabelle `pn_sessions`): Die Anmeldung
 im Adminbereich braucht diese Tabelle. Spielen Sie die beiden Anweisungen
@@ -230,7 +303,8 @@ im Adminbereich braucht diese Tabelle. Spielen Sie die beiden Anweisungen
 
 **Apache:** Die mitgelieferten `.htaccess`-Dateien sperren `pninc/` (samt
 `config.local.php`, `install.lock` und `pninc/installer/`), `logs/`,
-`pnadmin/lang/`, `*.sql`, `*.md` und `*.inc.php`. Sie wirken auch, wenn PowerNews
+`pnadmin/lang/`, `*.sql`, `*.md` und `*.inc.php`. In `pngfx/categories/`
+(Kategoriebilder) liefert Apache nur Bilder aus und führt keine Skripte aus. Sie wirken auch, wenn PowerNews
 in einem Unterverzeichnis liegt. Voraussetzung: `AllowOverride All` (bei Hostern
 üblich).
 
@@ -241,6 +315,8 @@ in einem Unterverzeichnis liegt. Voraussetzung: `AllowOverride All` (bei Hostern
 location ~ ^/(pninc|logs|pnadmin/lang)/ { deny all; }
 location ~ \.(sql|md|lock|log)$         { deny all; }
 location ~ \.inc\.php$                  { deny all; }
+# Kategoriebilder: nur Bilder, nie PHP (vor dem location-Block für PHP eintragen)
+location ~ ^/pngfx/categories/.*\.(php|phtml|phar)$ { deny all; }
 ```
 
 ---

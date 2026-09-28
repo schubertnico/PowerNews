@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerNews – Dokumentation</title>
+    <title>PowerNews 3.12 – Dokumentation</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -131,8 +131,16 @@
 <body>
 <div class="container">
 
-    <h1>PowerNews</h1>
+    <h1>PowerNews 3.12</h1>
     <p>Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung.</p>
+
+    <div class="highlight">
+        <strong>Neu in 3.12:</strong> Web-Installer, E-Mail-Versand wahlweise über einen SMTP-Server (STARTTLS/SSL, Anmeldung), „Passwort vergessen“ mit Einmal-Link sowie zahlreiche Sicherheits- und Fehlerkorrekturen. Alle Änderungen stehen in <code>CHANGELOG.md</code> im Programmpaket.
+    </div>
+
+    <h2>Video-Anleitungen</h2>
+    <p>Acht Video-Anleitungen zu PowerNews 3.12 – Installation, Grundeinstellungen, Kategorien, News schreiben, Redakteure und Rechte, Leser/Kommentare/Einsendungen, Einbinden, Templates:
+        <a href="https://www.powerscripts.org/projects-1.html">https://www.powerscripts.org/projects-1.html</a></p>
 
     <h2>Schnellstart (Docker, in 60 Sekunden)</h2>
 
@@ -173,7 +181,7 @@ docker compose up -d --build
         <li>PHP 8.4 (oder höher) mit den Erweiterungen <code>mysqli</code> und <code>mbstring</code></li>
         <li>MariaDB 10.3+ / MySQL 8.0+</li>
         <li>Apache 2.4 mit <code>mod_rewrite</code> + <code>mod_headers</code></li>
-        <li>Für Mailversand: <code>msmtp</code> oder ein SMTP-Relay (im Docker-Setup automatisch via Mailpit)</li>
+        <li>Für den Mailversand: die PHP-Funktion <code>mail()</code> des Servers (Standard) oder ein SMTP-Server mit Anmeldung, STARTTLS oder SSL/TLS (dafür PHP-Erweiterung <code>openssl</code>); im Docker-Setup landen alle Mails in Mailpit</li>
     </ul>
 
     <h2>Installation mit dem Web-Installer</h2>
@@ -184,7 +192,7 @@ docker compose up -d --build
             <ol>
                 <li><strong>Systemprüfung:</strong> PHP-Version, Erweiterungen, Schreibrechte.</li>
                 <li><strong>Datenbank:</strong> Zugangsdaten mit Verbindungstest; MySQL ab 8.0 oder MariaDB ab 10.3. Vorhandene PowerNews-Tabellen werden nie überschrieben.</li>
-                <li><strong>Website:</strong> Adresse (aus dem Aufruf vorbelegt), Absenderadresse für E-Mails, Sprache.</li>
+                <li><strong>Website:</strong> Adresse (aus dem Aufruf vorbelegt), Absenderadresse für E-Mails, Sprache; optional E-Mail-Versand über einen SMTP-Server mit „Test-Mail senden“.</li>
                 <li><strong>Administrator:</strong> Nickname, E-Mail-Adresse, Passwort mit Wiederholung.</li>
                 <li><strong>Abschluss:</strong> Zusammenfassung prüfen, „Jetzt installieren“.</li>
             </ol>
@@ -211,6 +219,23 @@ docker compose up -d --build
             <tr><td><code>PN_DB_NAME</code></td><td>Datenbank-Name</td><td>powernews</td></tr>
         </tbody>
     </table>
+
+    <h3>E-Mail-Versand</h3>
+    <p>Ab Werk verschickt PowerNews mit der PHP-Funktion <code>mail()</code> des Servers. Für einen SMTP-Server gibt es den Abschnitt „E-Mail-Versand“ im Installer, den Abschnitt <code>mail</code> in <code>pninc/config.local.php</code> oder diese Umgebungsvariablen (Rangfolge wie oben). Die Angaben finden Sie im Kundenmenü Ihres Hosters beim E-Mail-Postfach.</p>
+    <table>
+        <thead>
+            <tr><th>Variable</th><th>Beschreibung</th><th>Standard</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>PN_MAIL_TRANSPORT</code></td><td><code>mail</code> (PHP-Funktion <code>mail()</code>) oder <code>smtp</code></td><td>mail</td></tr>
+            <tr><td><code>PN_MAIL_HOST</code></td><td>SMTP-Server</td><td>localhost</td></tr>
+            <tr><td><code>PN_MAIL_PORT</code></td><td>Port; <code>0</code> = Standard der Verschlüsselung (25, 587, 465)</td><td>0</td></tr>
+            <tr><td><code>PN_MAIL_ENCRYPTION</code></td><td><code>none</code>, <code>starttls</code> oder <code>ssl</code></td><td>none</td></tr>
+            <tr><td><code>PN_MAIL_USER</code></td><td>Benutzername des Postfachs (leer = ohne Anmeldung)</td><td>(leer)</td></tr>
+            <tr><td><code>PN_MAIL_PASS</code></td><td>Passwort des Postfachs</td><td>(leer)</td></tr>
+        </tbody>
+    </table>
+    <p>Das Zertifikat des SMTP-Servers wird immer geprüft. Absender ist die E-Mail-Adresse aus der Konfiguration (auch als Reply-To); Fehler landen mit Grund, aber ohne Passwort in <code>logs/php-error.log</code>.</p>
 
     <h3>Docker-Ports</h3>
     <table>
@@ -246,13 +271,13 @@ docker compose up -d --build
         <li><strong>Kommentare</strong>: Spamschutz pro IP (<code>REMOTE_ADDR</code>; <code>X-Forwarded-For</code> nur hinter konfigurierten Proxys), Längenbegrenzung</li>
         <li><strong>Templates</strong>: anpassbare HTML-Templates, CSRF-<code>{CSRF}</code>-Platzhalter automatisch ersetzt</li>
         <li><strong>Archiv</strong>: durchsuchbares News-Archiv</li>
-        <li><strong>Mail</strong>: via <code>msmtp</code> → Mailpit (Docker) oder beliebigem SMTP-Relay</li>
+        <li><strong>Mail</strong>: per PHP <code>mail()</code> oder SMTP-Server (STARTTLS/SSL, AUTH PLAIN/LOGIN); im Docker-Setup via <code>msmtp</code> → Mailpit</li>
     </ul>
 
-    <h2>Sicherheitsstand (2026-04-24)</h2>
+    <h2>Sicherheitsstand (Version 3.12)</h2>
 
     <div class="ok">
-        Nach Audit und Fix-Sweep vom April 2026 sind folgende Härtungen eingebaut. Details siehe <code>docs/2026-04-23-Userbereichs-bugs.md</code>.
+        Nach den Audits vom April und September 2026 sind folgende Härtungen eingebaut.
     </div>
 
     <h3>Authentifizierung &amp; Sessions</h3>
@@ -261,7 +286,8 @@ docker compose up -d --build
         <li>Logout löscht den Token serverseitig – gestohlene Cookies werden sofort ungültig.</li>
         <li>Login bei <code>status = 'Deactivated'</code> abgewiesen.</li>
         <li>Konstante Antwortzeit bei Login (Dummy-<code>password_verify</code>) gegen Timing-Enumeration.</li>
-        <li>IP- und Nickname-basiertes Rate-Limit (10 Fehlversuche / 15 min) in <code>pn_login_attempts</code>.</li>
+        <li>IP-basiertes Rate-Limit (10 Fehlversuche / 15 min) in <code>pn_login_attempts</code> für Frontend- und Admin-Login.</li>
+        <li>„Passwort vergessen“ mit Einmal-Link (60 Minuten, nur der Token-Hash wird gespeichert) statt Sofort-Reset.</li>
     </ul>
 
     <h3>CSRF</h3>
@@ -311,7 +337,7 @@ docker compose up -d --build
     <ul>
         <li>Prepared Statements durchgängig.</li>
         <li>Bcrypt-Passwort-Hashes (Auto-Upgrade von Legacy-Base64 beim ersten Login).</li>
-        <li>Neue Tabellen: <code>pn_sessions</code>, <code>pn_login_attempts</code>.</li>
+        <li>Neue Tabellen: <code>pn_sessions</code>, <code>pn_login_attempts</code>, <code>pn_password_resets</code>, <code>pn_migrations</code>.</li>
         <li>Seed-Kategorie „Allgemein" wird beim Install angelegt, sodass News-Einsendung direkt funktioniert.</li>
     </ul>
 
@@ -339,21 +365,22 @@ composer run rector        # Anwenden</code></pre>
         <li>Datensicherung von Datenbank und Dateien anlegen.</li>
         <li>Stehen die Zugangsdaten bisher in <code>pninc/config.inc.php</code>, vor dem Hochladen <code>pninc/config.local.php</code> mit denselben Werten anlegen (Vorlage in <code>INSTALLATION.md</code>). Umgebungsvariablen gelten unverändert weiter.</li>
         <li>Neue Dateien hochladen – <code>install.php</code> weglassen. <code>convert.php</code> und <code>pn_update.sql</code> vom Server löschen (entfallen in 3.12).</li>
-        <li>Im Adminbereich anmelden und <code>update.php</code> aufrufen: Die Seite zeigt, welche Schritte nötig sind (fehlende Tabellen, Testvorlagen aus 3.11, verwaiste Rechte-Einträge, Sperre des Installers), und führt sie mit „Update ausführen“ aus. Ein zweiter Aufruf ändert nichts.</li>
+        <li>Im Adminbereich anmelden und <code>update.php</code> aufrufen: Die Seite zeigt, welche Schritte nötig sind (fehlende Tabellen wie <code>pn_password_resets</code>, Testvorlagen aus 3.11, verwaiste Rechte-Einträge, Migrationen der Daten auf 3.12, Sperre des Installers), und führt sie mit „Update ausführen“ aus. Ein zweiter Aufruf ändert nichts.</li>
         <li>Unter „Konfiguration“ URL und E-Mail-Adresse prüfen – 3.11 lieferte Vorgaben auf powerscripts.org aus.</li>
+        <li>Optional: Versand über einen SMTP-Server im Abschnitt <code>mail</code> von <code>pninc/config.local.php</code> einstellen (siehe „E-Mail-Versand“ oben).</li>
     </ol>
     <p>Bestehende Nutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt. Alle Änderungen: <code>CHANGELOG.md</code> im Programmpaket.</p>
 
     <h2>Dokumentation</h2>
     <ul>
-        <li>Audit-Report: <code>docs/2026-04-23-Userbereichs-bugs.md</code></li>
-        <li>Improvements: <code>docs/2026-04-23-Userbereichs-improvements.md</code> (Alias <code>…-verbesserungen.md</code>)</li>
-        <li>Testabdeckung: <code>docs/2026-04-23-Userbereichs-test-coverage.md</code> (Alias <code>…-testabdeckung.md</code>)</li>
-        <li>Implementierungsplan: <code>docs/superpowers/plans/2026-04-23-userbereich-bugfixes.md</code></li>
+        <li>Installation, Konfiguration und Update: <code>INSTALLATION.md</code> im Programmpaket</li>
+        <li>Änderungen je Version: <code>CHANGELOG.md</code> im Programmpaket</li>
+        <li>Adminhilfe: im Adminbereich unter „Sonstiges“ → „Hilfe“</li>
+        <li>Video-Anleitungen: <a href="https://www.powerscripts.org/projects-1.html">https://www.powerscripts.org/projects-1.html</a></li>
     </ul>
 
     <h2>Lizenz</h2>
-    <p>MIT License – siehe <a href="LICENSE">LICENSE</a>.<br>
+    <p>MIT License – siehe Datei <code>LICENSE</code> im Programmpaket oder <a href="https://github.com/schubertnico/PowerNews/blob/main/LICENSE">auf GitHub</a>.<br>
     Copyright © 2001–2026 PowerScripts / SchubertMedia.</p>
 
     <h2>Projekt &amp; Links</h2>
@@ -377,7 +404,7 @@ composer run rector        # Anwenden</code></pre>
     </div>
 
     <footer>
-        PowerNews · © 2001–2026 PowerScripts / SchubertMedia · MIT License
+        PowerNews 3.12 · © 2001–2026 PowerScripts / SchubertMedia · MIT License
     </footer>
 
 </div>
