@@ -72,6 +72,53 @@ function pn_convert_date_format(string $format): string
 }
 
 /**
+ * Formatiert einen Zeitpunkt mit einem Datums- oder Zeitformat der Konfiguration
+ * (strftime- oder date()-Schreibweise). Wochentage und Monatsnamen (l, D, F, M bzw. %A, %a,
+ * %B, %b) kommen aus der Sprachdatei, bei german-du und german-sie also auf Deutsch.
+ * Sprachdateien ohne diese Namen behalten die englischen Namen von PHP.
+ */
+function pn_format_date(int $timestamp, string $format): string
+{
+    $datetime = new DateTime();
+    $datetime->setTimestamp($timestamp);
+    $weekday = (int) $datetime->format('w');
+    $month = (int) $datetime->format('n') - 1;
+    $months = array_map(static fn (string $name): string => defined($name) ? (string) constant($name) : '', [
+        'L_TEMPL_JANUARY', 'L_TEMPL_FEBRUARY', 'L_TEMPL_MARCH', 'L_TEMPL_APRIL', 'L_TEMPL_MAY', 'L_TEMPL_JUNE',
+        'L_TEMPL_JULY', 'L_TEMPL_AUGUST', 'L_TEMPL_SEPTEMBER', 'L_TEMPL_OCTOBER', 'L_TEMPL_NOVEMBER', 'L_TEMPL_DECEMBER',
+    ]);
+    $pick = static function (string $constant, int $index): string {
+        $list = defined($constant) ? constant($constant) : null;
+
+        return is_array($list) && is_string($list[$index] ?? null) ? $list[$index] : '';
+    };
+    $names = [
+        'l' => $pick('L_DATE_WEEKDAYS', $weekday),
+        'D' => $pick('L_DATE_WEEKDAYS_SHORT', $weekday),
+        'F' => $months[$month],
+        'M' => $pick('L_DATE_MONTHS_SHORT', $month),
+    ];
+    $phpFormat = pn_convert_date_format($format);
+    $localized = '';
+    $length = strlen($phpFormat);
+
+    for ($i = 0; $i < $length; ++$i) {
+        $char = $phpFormat[$i];
+
+        if ($char === '\\' && $i + 1 < $length) {
+            $localized .= $char . $phpFormat[++$i];
+        } elseif (is_string($names[$char] ?? null) && $names[$char] !== '') {
+            // Name als Literal einsetzen: Buchstaben maskieren, damit format() sie nicht auswertet.
+            $localized .= (string) preg_replace('/([A-Za-z])/', '\\\\$1', $names[$char]);
+        } else {
+            $localized .= $char;
+        }
+    }
+
+    return $datetime->format($localized);
+}
+
+/**
  * Helper function for prepared statement with single integer parameter.
  */
 function pn_query_by_id(mysqli $handler, string $query, int $id): mysqli_result|false
@@ -1457,10 +1504,8 @@ class pn_template
                 $title = $this->smiliereplace($title);
             }
 
-            $datetime = new DateTime();
-            $datetime->setTimestamp($time);
-            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
-            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
+            $date = pn_format_date($time, (string) $pnconfig['dateformat']);
+            $timeStr = pn_format_date($time, (string) $pnconfig['timeformat']);
 
             echo pn_template_fill((string) $headline, [
                 'ID' => $id,
@@ -1510,10 +1555,8 @@ class pn_template
                 $moretext = $this->smiliereplace($moretext);
             }
 
-            $datetime = new DateTime();
-            $datetime->setTimestamp($time);
-            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
-            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
+            $date = pn_format_date($time, (string) $pnconfig['dateformat']);
+            $timeStr = pn_format_date($time, (string) $pnconfig['timeformat']);
 
             $more = '';
 
@@ -1617,10 +1660,8 @@ class pn_template
                 }
             }
 
-            $datetime = new DateTime();
-            $datetime->setTimestamp($time);
-            $date = $datetime->format(pn_convert_date_format((string) $pnconfig['dateformat']));
-            $timeStr = $datetime->format(pn_convert_date_format((string) $pnconfig['timeformat']));
+            $date = pn_format_date($time, (string) $pnconfig['dateformat']);
+            $timeStr = pn_format_date($time, (string) $pnconfig['timeformat']);
 
             echo pn_template_fill((string) $comment, [
                 'ID' => $id,

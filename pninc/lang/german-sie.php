@@ -106,6 +106,9 @@ define('L_TEMPL_SEPTEMBER', 'September');
 define('L_TEMPL_OCTOBER', 'Oktober');
 define('L_TEMPL_NOVEMBER', 'November');
 define('L_TEMPL_DECEMBER', 'Dezember');
+define('L_DATE_WEEKDAYS', ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']);
+define('L_DATE_WEEKDAYS_SHORT', ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']);
+define('L_DATE_MONTHS_SHORT', ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']);
 
 /* Other */
 define('L_ALL_FILLALL', 'Sie müssen alle Felder ausfüllen!');
