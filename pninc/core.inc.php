@@ -700,6 +700,37 @@ function pn_bbcode_url(string $escaped): ?string
 }
 
 /**
+ * Wert für target="…" eines weiterführenden Links. „_main“ (Vorgabe aus der Zeit der Framesets)
+ * steht für das Hauptfenster, heute also dasselbe Fenster – Browser öffneten dafür sonst ein
+ * neues, benanntes Fenster. Ohne Ziel gilt ein neues Fenster.
+ */
+function pn_relatedlink_target(string $target): string
+{
+    return match ($target) {
+        '' => '_blank',
+        '_main' => '_self',
+        default => $target,
+    };
+}
+
+/**
+ * Beschriftung eines Linkziels in Auswahlfeldern („Neues Fenster“ statt „_blank“), aus der
+ * Sprachdatei; unbekannte Namen als „Fenster „name““.
+ */
+function pn_relatedlink_target_label(string $target): string
+{
+    $constant = match (pn_relatedlink_target($target)) {
+        '_blank' => 'L_RL_TARGET_BLANK',
+        '_self' => 'L_RL_TARGET_SELF',
+        '_top' => 'L_RL_TARGET_TOP',
+        '_parent' => 'L_RL_TARGET_PARENT',
+        default => 'L_RL_TARGET_NAMED',
+    };
+
+    return defined($constant) ? sprintf((string) constant($constant), $target) : $target;
+}
+
+/**
  * Liest gespeicherte weiterführende Links (B28). Einheitliches Format ist JSON
  * ([{"title":…,"url":…,"target":…}]); das zeilenweise Format bis 3.11
  * („Titel!@!@!URL!@!@!Ziel“) wird weiterhin erkannt.

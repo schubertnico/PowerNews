@@ -206,7 +206,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                     $tcounter = count($pn_config['rltargets']);
 
         for ($i2 = 0; $i2 < $tcounter; ++$i2) {
-            ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>" <?php echo ($pn_config['rltargets'][$i2] ?? '') == ($link[$i][2] ?? '') ? 'selected' : ''; ?>><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
+            ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>" <?php echo ($pn_config['rltargets'][$i2] ?? '') == ($link[$i][2] ?? '') ? 'selected' : ''; ?>><?php echo pnadmin_escape(pn_relatedlink_target_label((string) $pn_config['rltargets'][$i2])); ?></option><?php
         }
         ?>
                                           </select>

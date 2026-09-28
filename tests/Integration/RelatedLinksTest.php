@@ -54,7 +54,8 @@ class RelatedLinksTest extends DatabaseTestCase
 
         $output = $this->renderNews($stored);
         $this->assertStringContainsString('href="https://verein.example.org/"', $output);
-        $this->assertStringContainsString('target="_main"', $output);
+        // „_main“ (Frameset-Zeit) steht für das Hauptfenster, also dasselbe Fenster.
+        $this->assertStringContainsString('target="_self"', $output);
         $this->assertStringContainsString('Vereinsseite', $output);
     }
 

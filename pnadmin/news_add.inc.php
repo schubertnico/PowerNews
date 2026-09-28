@@ -126,7 +126,7 @@ if ($pnadmin['canwritenews'] == 'YES') {
                                           $counter = count($pn_config['rltargets']);
 
                               for ($i2 = 0; $i2 < $counter; ++$i2) {
-                                  ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>"><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
+                                  ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>"><?php echo pnadmin_escape(pn_relatedlink_target_label((string) $pn_config['rltargets'][$i2])); ?></option><?php
                               }
                               ?>
                                       </select>

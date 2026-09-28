@@ -370,6 +370,11 @@ define('L_NEWS_RELATEDLINKS_DESC', 'Here you can post related links for this new
 define('L_NEWS_RL_TITLE', 'Title');
 define('L_NEWS_RL_URL', 'URL/Path');
 define('L_NEWS_RL_TARGET', 'Target');
+define('L_RL_TARGET_BLANK', 'New window');
+define('L_RL_TARGET_SELF', 'Same window');
+define('L_RL_TARGET_TOP', 'Same window without frames');
+define('L_RL_TARGET_PARENT', 'Parent frame');
+define('L_RL_TARGET_NAMED', 'Window "%s"');
 define('L_NEWS_TIME', 'Publication date');
 define('L_NEWS_TIME_DESC', 'When should the news appear on the homepage?');
 define('L_NEWS_DAY', 'Day');

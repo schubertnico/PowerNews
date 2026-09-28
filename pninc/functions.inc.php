@@ -1577,7 +1577,7 @@ class pn_template
                 foreach (pn_relatedlinks_decode($relatedlinks) as $link) {
                     // Auch Altdaten mit fremdem Schema (javascript: …) nie als Link ausgeben (B37).
                     if (pn_relatedlink_url_allowed($link['url'], true)) {
-                        $rlinks .= (string) $this->relatedlinks($link['title'], $link['url'], $link['target'] !== '' ? $link['target'] : '_blank');
+                        $rlinks .= (string) $this->relatedlinks($link['title'], $link['url'], pn_relatedlink_target($link['target']));
                     }
                 }
             }
@@ -2021,7 +2021,7 @@ class pn_template
                 $counter = count($pn_config['rltargets']);
 
                 for ($i = 0; $i < $counter; ++$i) {
-                    $targets .= '<option value="' . pn_escape($pn_config['rltargets'][$i]) . '">' . pn_escape($pn_config['rltargets'][$i]) . '</option>';
+                    $targets .= '<option value="' . pn_escape($pn_config['rltargets'][$i]) . '">' . pn_escape(pn_relatedlink_target_label((string) $pn_config['rltargets'][$i])) . '</option>';
                 }
                 $relatedlinks = '<div class="mb-3"><span class="form-label fw-bold d-block">' . L_NEWS_RELATEDLINKS . '</span>'
                     . '<div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>' . L_NEWS_RL_TITLE . '</th><th>' . L_NEWS_RL_URL . '</th><th>' . L_NEWS_RL_TARGET . '</th></tr></thead><tbody>';
