@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerNews v3.0 – Dokumentation</title>
+    <title>PowerNews – Dokumentation</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -131,7 +131,7 @@
 <body>
 <div class="container">
 
-    <h1>PowerNews v3.0</h1>
+    <h1>PowerNews</h1>
     <p>Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung.</p>
 
     <h2>Schnellstart (Docker, in 60 Sekunden)</h2>
@@ -230,8 +230,8 @@ docker compose up -d --build
     <ul>
         <li><strong>News-Verwaltung</strong>: Erstellen, Bearbeiten, Aktivieren und Löschen von Einträgen</li>
         <li><strong>Kategorien</strong>: Seed-Kategorie „Allgemein" beim Install</li>
-        <li><strong>Benutzer-Verwaltung</strong>: Registrierung, Profil, Passwort-vergessen mit serverseitigem Token</li>
-        <li><strong>Kommentare</strong>: Rate-Limit pro IP (<code>X-Forwarded-For</code>-aware), Längenbegrenzung</li>
+        <li><strong>Benutzer-Verwaltung</strong>: Registrierung, Profil, „Passwort vergessen“ mit Einmal-Link (60 Minuten, nur der Token-Hash wird gespeichert)</li>
+        <li><strong>Kommentare</strong>: Spamschutz pro IP (<code>REMOTE_ADDR</code>; <code>X-Forwarded-For</code> nur hinter konfigurierten Proxys), Längenbegrenzung</li>
         <li><strong>Templates</strong>: anpassbare HTML-Templates, CSRF-<code>{CSRF}</code>-Platzhalter automatisch ersetzt</li>
         <li><strong>Archiv</strong>: durchsuchbares News-Archiv</li>
         <li><strong>Mail</strong>: via <code>msmtp</code> → Mailpit (Docker) oder beliebigem SMTP-Relay</li>
@@ -365,7 +365,7 @@ composer run rector        # Anwenden</code></pre>
     </div>
 
     <footer>
-        PowerNews v3.0 · © 2001–2026 PowerScripts / SchubertMedia · MIT License
+        PowerNews · © 2001–2026 PowerScripts / SchubertMedia · MIT License
     </footer>
 
 </div>

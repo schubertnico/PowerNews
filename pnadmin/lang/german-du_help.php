@@ -1,22 +1,10 @@
 <?php
 
-/* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2026 PowerScripts                                 */
+/* PowerNews - PHP and MySQL based news script                          */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
-/* This program is free software; you can redistribute it and/or modify */
-/* it under the terms of the GNU General Public License as published by */
-/* the Free Software Foundation; either version 2 of the License, or    */
-/* (at your option) any later version.                                  */
-
-/* This program is distributed in the hope that it will be useful,      */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
-/* GNU General Public License for more details.                         */
-
-/* You should have received a copy of the GNU General Public License    */
-/* along with this program; if not, write to the Free Software          */
-/* Foundation, Inc., 59 Temple Place, Suite 330, Boston,                */
-/* MA  02111-1307  USA                                                  */
+/* MIT License - See LICENSE file for full license text                 */
+/* https://github.com/schubertnico/PowerNews.git                        */
 
 /* German help file written by PowerScripts (Stefan Kraemer) */
 /* Komplett ueberarbeitet auf den aktuellen Funktionsumfang. */
@@ -448,7 +436,7 @@
 
     <div id="help-other-license" class="ms-3 mb-3">
         <h3 class="h6 fw-bold">Lizenz</h3>
-        <p>Den vollständigen GPL-Lizenztext findest Du unter <a href="index.php?page=other&amp;subpage=license">Sonstiges &gt; Lizenz</a>.</p>
+        <p>PowerNews steht unter der MIT-Lizenz. Den vollständigen Lizenztext findest Du unter <a href="index.php?page=other&amp;subpage=license">Sonstiges &gt; Lizenz</a>.</p>
         <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
     </div>
 

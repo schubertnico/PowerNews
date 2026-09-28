@@ -13,6 +13,8 @@ declare(strict_types=1);
  * Wird von beiden functions.inc.php per require_once geladen.
  */
 
+require_once __DIR__ . '/version.inc.php';
+
 /**
  * Ersetzt Platzhalter wie {TITLE} in einem Template.
  *

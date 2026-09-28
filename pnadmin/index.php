@@ -1,22 +1,10 @@
 <?php
 
-/* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2026 PowerScripts                                 */
+/* PowerNews - PHP and MySQL based news script                          */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
-/* This program is free software; you can redistribute it and/or modify */
-/* it under the terms of the GNU General Public License as published by */
-/* the Free Software Foundation; either version 2 of the License, or    */
-/* (at your option) any later version.                                  */
-
-/* This program is distributed in the hope that it will be useful,      */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
-/* GNU General Public License for more details.                         */
-
-/* You should have received a copy of the GNU General Public License    */
-/* along with this program; if not, write to the Free Software          */
-/* Foundation, Inc., 59 Temple Place, Suite 330, Boston,                */
-/* MA  02111-1307  USA                                                  */
+/* MIT License - See LICENSE file for full license text                 */
+/* https://github.com/schubertnico/PowerNews.git                        */
 
 $startoutput = explode(' ', microtime());
 
@@ -34,7 +22,7 @@ if ($pn_config['acpuffer'] == true) {
 }
 
 $psdesignscript = 'PowerNews';
-$psdesignversion = '3.11';
+$psdesignversion = PN_VERSION;
 
 // Determine current page for active navigation state
 $currentPage = $_GET['page'] ?? 'main';
@@ -125,6 +113,11 @@ $isLoggedIn = ($pnloggedin === 'YES');
         body.pn-admin-body .small {
             color: #212529 !important;
         }
+        /* Die Navbar ist dunkel: dort bleibt kleine Schrift hell (B17). */
+        body.pn-admin-body .navbar .navbar-text,
+        body.pn-admin-body .navbar .small {
+            color: #f8f9fa !important;
+        }
         body.pn-admin-body .link-secondary {
             color: #0a58ca !important;
             text-decoration: underline;
@@ -162,7 +155,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="<?php echo L_ALL_MAINNAV; ?>">
         <div class="container-fluid">
             <a class="navbar-brand" href="./">
-                <?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?> &ndash; <?php echo L_ALL_ADMINCENTER; ?>
+                <?php echo pnadmin_escape($psdesignscript . ' ' . $psdesignversion); ?><span class="d-none d-xxl-inline"> &ndash; <?php echo L_ALL_ADMINCENTER; ?></span>
             </a>
 <?php if ($isLoggedIn) { ?>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pnAdminNav" aria-controls="pnAdminNav" aria-expanded="false" aria-label="<?php echo L_ALL_TOGGLENAV; ?>">
@@ -332,7 +325,7 @@ if (!$isLoggedIn) {
     $outputtime = round($endop - $startop, 3);
 ?>
         <?php echo L_ALL_PAGECREATEDIN; ?> <?php echo pnadmin_escape((string) $outputtime); ?> <?php echo L_ALL_SECONDSBY; ?>
-        <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer"><?php echo pnadmin_escape($psdesignscript . ' ' . $pn_config['version']); ?> &copy; 2001-2026 PowerScripts</a>
+        <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer"><?php echo pnadmin_escape($psdesignscript . ' ' . PN_VERSION); ?> &copy; <?php echo PN_COPYRIGHT_YEARS; ?> PowerScripts</a>
     </div>
 </footer>
 </div>

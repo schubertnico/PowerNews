@@ -2,23 +2,11 @@
 
 declare(strict_types=1);
 
-/* PowerNews is a PHP and mySQL based newsscript - www.powerscripts.org */
-/* Copyright (C) 2001-2026 PowerScripts                                 */
+/* PowerNews - PHP and MySQL based news script                          */
+/* Copyright (c) 2001-2026 PowerScripts                                 */
 
-/* This program is free software; you can redistribute it and/or modify */
-/* it under the terms of the GNU General Public License as published by */
-/* the Free Software Foundation; either version 2 of the License, or    */
-/* (at your option) any later version.                                  */
-
-/* This program is distributed in the hope that it will be useful,      */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
-/* GNU General Public License for more details.                         */
-
-/* You should have received a copy of the GNU General Public License    */
-/* along with this program; if not, write to the Free Software          */
-/* Foundation, Inc., 59 Temple Place, Suite 330, Boston,                */
-/* MA  02111-1307  USA                                                  */
+/* MIT License - See LICENSE file for full license text                 */
+/* https://github.com/schubertnico/PowerNews.git                        */
 
 /* This is a standard admin language file - you can edit all admin outputs from here */
 
@@ -395,7 +383,7 @@ define('L_NEWS_WRITEMORE', 'Weitere News schreiben');
 /* Other */
 define('L_OTHER_HELP', 'Hilfe');
 define('L_OTHER_LICENSE', 'Lizenzbedingungen');
-define('L_OTHER_LICENSE_DESC', 'PowerNews wird unter den Regelungen der <b>General Public License</b> vertrieben. Die aktuellste Version der Lizenz kann auf der <a href="http://www.powerscripts.org" target="_blank">PowerScripts Homepage</a> nachgelesen werden.');
+define('L_OTHER_LICENSE_DESC', 'PowerNews steht unter der <b>MIT-Lizenz</b>. Sie dürfen es frei nutzen, verändern und weitergeben, solange der Copyright- und Lizenzhinweis erhalten bleibt. Den vollständigen Text finden Sie unten und in der Datei LICENSE.');
 define('L_OTHER_NOLOCALLICENSE', 'Der Zugriff auf die lokale Kopie der Lizenz ist fehlgeschlagen. Eventuell wurde die Datei gelöscht.');
 
 /* Titles */

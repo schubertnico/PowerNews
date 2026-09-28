@@ -10,7 +10,7 @@ include __DIR__ . '/pninc/head.inc.php';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="powerscripts.org">
-<title>PowerNews 3.0</title>
+<title>PowerNews <?php echo PN_VERSION; ?></title>
 <link href="./assets/bootstrap/bootstrap.min.css" rel="stylesheet">
 <style>
   body {
@@ -73,17 +73,14 @@ include __DIR__ . '/pninc/head.inc.php';
 </style>
 </head>
 <body>
-<!--Hinweis auf die Readme und dass es sich hierbei nur um Beispieldateien handelt!-->
-<div class="container my-3">
-  <div class="alert alert-warning border" role="alert">
-    <strong>Bitte beachten</strong><br>
-    Bitte lesen Sie sich die <a href="readme.html" target="_blank" rel="noopener noreferrer" class="alert-link">ReadMe</a> durch falls Sie Schwierigkeiten haben.<br>
-    Dieses Design ist nur zu Testzwecken eingerichtet, Sie sollten PowerNews also an Ihr eigenes Seitendesign anpassen. Es m&uuml;ssen weder Dateinamen noch HTML Strukturen &uuml;bernommen werden!
-  </div>
-</div>
+<!--
+  Beispiel-Layout: header.inc.php und footer.inc.php zeigen, wie PowerNews in eine Seite
+  eingebunden wird. Dateinamen und HTML-Struktur lassen sich frei an das eigene Design
+  anpassen (siehe README.html).
+-->
 
 <!--Das kleine Menü der Seite-->
-<div class="container">
+<div class="container mt-3">
   <div class="row g-3">
     <aside class="col-12 col-md-3">
       <nav class="card" aria-label="Hauptnavigation">

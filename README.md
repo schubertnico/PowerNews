@@ -71,6 +71,7 @@ Beim ersten Aufruf von `http://localhost:8087/install.php` (**einmalig**) wird e
 | `PN_DB_USER` | Datenbank-Benutzer | `root` |
 | `PN_DB_PASS` | Datenbank-Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank-Name | `powernews` |
+| `PN_TRUSTED_PROXIES` | Vertrauenswürdige Reverse-Proxys (IPs oder CIDR, kommagetrennt). Nur von dort wird `X-Forwarded-For` ausgewertet; alternativ `$pn_config['trustedproxies']` | (leer) |
 
 ### Docker-Ports
 
@@ -98,8 +99,8 @@ Beim Fresh-Install sind folgende Defaults gesetzt:
 
 - **News-Verwaltung**: Erstellen, Bearbeiten, Aktivieren, Löschen von News-Einträgen
 - **Kategorien**: mehrstufige Zuordnung, Seed-Kategorie „Allgemein" beim Install
-- **Benutzer-Verwaltung**: Registrierung, Profil, Passwort-vergessen mit zeitlich begrenztem Reset
-- **Kommentare**: mit Rate-Limiting pro IP (inkl. `X-Forwarded-For`) und Längenbegrenzung
+- **Benutzer-Verwaltung**: Registrierung, Profil, „Passwort vergessen“ mit Einmal-Link (60 Minuten gültig, nur der Token-Hash wird gespeichert)
+- **Kommentare**: mit Spamschutz pro IP (`REMOTE_ADDR`; `X-Forwarded-For` nur hinter konfigurierten Proxys) und Längenbegrenzung
 - **Templates**: anpassbare HTML-Templates pro Bereich, CSRF-`{CSRF}`- und `{CSRF}`-Platzhalter automatisch ersetzt
 - **Archiv**: durchsuchbares News-Archiv
 - **Mail**: Registrierungs- und Passwort-Reset-Mails via `msmtp` → Mailpit (Docker) oder beliebigem SMTP-Relay
