@@ -291,6 +291,32 @@ so eingerichtete Datenbank ist bereits auf dem Stand 3.12.
    `mail()`. Für den Versand über einen SMTP-Server den Abschnitt `mail` in
    `pninc/config.local.php` ergänzen (siehe [Konfiguration](#konfiguration)).
 
+### Templates nach dem Update
+
+`update.php` überschreibt keine angepassten Templates. Ersetzt werden nur Felder
+des Default-Templates (ID 1), die noch genau dem Auslieferungsstand 3.11
+entsprechen; alles, was Sie selbst geändert haben, bleibt, wie es ist. Auch
+ältere Templates funktionieren mit 3.12:
+
+- Registrierungsformulare ohne die Felder `pndata[password]` und
+  `pndata[password2]` ergänzt PowerNews automatisch vor der Absende-Schaltfläche.
+- Mailvorlagen verschicken nie ein Passwort; eine Zeile mit `{PASSWORD}` entfällt.
+  Fehlt der Einladungsmail `{INVITELINK}` bzw. der Mail „Passwort vergessen“
+  `{RESETLINK}` oder enthält die Registrierungsmail noch `{PASSWORD}`, gilt der
+  Standardtext aus der Sprachdatei.
+
+Die neuen, anredefreien Texte des Default-Templates 3.12 (Registrierung mit
+Passwortfeldern, Logout-Bestätigung, Hilfetext „Passwort vergessen“, Mails mit
+`{SITE}`, `{LOGINLINK}`, `{INVITELINK}`) übernehmen Sie so:
+
+1. Im Adminbereich unter „Templates“ das verwendete Template öffnen.
+2. Den Inhalt des gewünschten Felds aus `pninc/default_template.inc.php`
+   (Funktion `pn_default_template()`, Schlüssel wie `registerform`, `logout`,
+   `addemail`) in das gleichnamige Feld kopieren und speichern.
+3. Alternativ ein neues Template anlegen („Template hinzufügen“ kopiert das
+   Default-Template) und es in der Konfiguration aktivieren – das setzt voraus,
+   dass das Default-Template selbst unverändert ist.
+
 **Installationen von vor April 2026** (ohne Tabelle `pn_sessions`): Die Anmeldung
 im Adminbereich braucht diese Tabelle. Spielen Sie die beiden Anweisungen
 `CREATE TABLE pn_sessions` und `CREATE TABLE pn_login_attempts` aus

@@ -9,6 +9,29 @@ Grundeinstellungen, Kategorien, News schreiben, Redakteure und Rechte,
 Leser/Kommentare/Einsendungen, Einbinden und Templates – zu finden auf der
 Projektseite <https://www.powerscripts.org/projects-1.html>.
 
+### Konten und E-Mails: keine Passwörter im Klartext
+
+- **Registrierung mit eigenem Passwort:** Besucher wählen ihr Passwort bei der
+  Registrierung selbst (zweimal, mindestens 8 Zeichen, höchstens 72 Byte wie im
+  Installer) und können sich sofort anmelden. Die Bestätigungsmail begrüßt und
+  nennt den Anmeldelink, enthält aber kein Passwort. Eigene
+  Registrierungsformulare ohne Passwortfelder ergänzt PowerNews automatisch.
+- **Einladung statt Zufallspasswort:** „Benutzer hinzufügen“ im Admin legt das
+  Konto ohne nutzbares Passwort an und verschickt eine Einladung mit Einmal-Link
+  (48 Stunden gültig, `PN_INVITE_LIFETIME`), über den der Benutzer sein
+  Passwort selbst festlegt. Ohne Mail zeigt die Erfolgsmeldung den Link einmal
+  an. „Neues Passwort“ beim Bearbeiten schickt ebenfalls nur noch einen Link;
+  die Seite „Passwort festlegen“ unterscheidet Einladung und Zurücksetzen.
+- Konten ohne Passwort und leere Passwortfelder lassen sich nie anmelden.
+- **Eigene Betreffzeilen** je Mailart aus der Sprachdatei, mit dem Namen der
+  Website: „Willkommen bei …“, „Ihr Zugang zu …“, „Neues Passwort für …“,
+  „Ihre Kontodaten bei … wurden geändert“ (Du-Form und Englisch entsprechend)
+  statt überall „PowerNews-Benachrichtigung“.
+- **Datenschutz:** Das Häkchen „E-Mail-Adresse im Profil anzeigen“ heißt jetzt
+  „Namen mit E-Mail-Adresse verlinken (öffentlich sichtbar)“ – ein öffentliches
+  Profil gibt es nicht, der Autorname unter News und Kommentaren wird zum
+  Mail-Link. Neue Konten verlinken ihre Adresse nicht (Vorgabe „nein“).
+
 ### E-Mail-Versand
 
 - **Neu: Versand über einen SMTP-Server** – unverschlüsselt, per STARTTLS
@@ -43,6 +66,11 @@ Projektseite <https://www.powerscripts.org/projects-1.html>.
   Rechteliste; nur http(s)-Links
 - `pngfx/categories/.htaccess`: Im Verzeichnis der Kategoriebilder werden nur
   Bilder ausgeliefert und keine Skripte ausgeführt.
+- BB-Code `[url]` erzeugt nur noch http(s)-Links (`[url]https://…[/url]`
+  wurde zuvor zu `http://https://…`); ohne Schema gilt https://, dazu
+  `[url=Adresse]Text[/url]`. `javascript:`, `data:` & Co. bleiben Text.
+- Übersichtsseiten der Admin-Bereiche prüfen das Leserecht; Navigation,
+  Schnellzugriff und Unterseiten-Knöpfe zeigen nur, was das Konto darf.
 
 ### Fehlerbehebungen
 
@@ -52,11 +80,34 @@ Projektseite <https://www.powerscripts.org/projects-1.html>.
   Frontend-Login
 - Apostrophe, $10 und \1 bleiben erhalten; eingesendete Links erscheinen;
   Konfiguration behält BB-Code/Smilies
+- Eine News in einer deaktivierten Kategorie wandert beim Bearbeiten nicht
+  mehr still in eine andere Kategorie; die Kategorie bleibt vorgewählt und ist
+  als „(deaktiviert)“ gekennzeichnet.
+- Kommentare stehen in Admin und Frontend chronologisch aufsteigend;
+  „Kommentare editieren“ speichert nur geänderte Kommentare.
+- Archiv: Nach einer Suche bleibt der gewählte Monat ausgewählt.
+- Datums- und Zeitformat: 50 Zeichen wie die Datenbankspalte, keine stille
+  Kürzung auf 20 Zeichen mehr.
+
+### Administration
+
+- Die Startseite zeigt „Zu prüfen: N Einsendungen“ mit Link auf die
+  gefilterte News-Liste und die neuen Kommentare der letzten 7 Tage.
+- News-Liste mit Filter nach Status (Alle, Ungeprüft, Aktiviert, Deaktiviert).
 
 ### Sprache & Oberfläche
 
 - Echte Umlaute, Tippfehler behoben, deutsche Monatsnamen; Meldungen mit Farbe
   und Knopf „Weiter“
+- Wochentage und Monatsnamen im Frontend in der Sprache der Installation
+  (Datumsformat mit l, D, F, M bzw. %A, %a, %B, %b).
+- Default-Template ohne Anrede: Die Texte passen zu Du, Sie und jeder Sprache
+  (z. B. „Wirklich ausloggen, {NICKNAME}?“). Texte außerhalb des Templates
+  kommen weiter aus den Sprachdateien german-du, german-sie und english.
+- „Schlagzeilen“ statt „Headlines“ in Admin und Frontend; Ziele weiterführender
+  Links als „Neues Fenster“/„Gleiches Fenster“ statt `_blank`/`_main`.
+- Admin-Hilfe in german-sie und english neu auf dem Stand 3.12 (bisher die
+  deutsche Hilfe von 2002).
 - Version aus einer Konstante, MIT-Lizenz, lesbare Navbar, ohne Testhinweis,
   UTF-8-Mails
 - Default-Template 3.12: Kategoriebild `{CATPIC}`, „Weiterführende Links“,
@@ -98,7 +149,9 @@ Projektseite <https://www.powerscripts.org/projects-1.html>.
   `update.php`, vermerkt in `pn_migrations`): überzählige Backslashes
   entfernen, alte Admin-Sitzungen beenden, Tabelle für „Passwort vergessen“,
   weiterführende Links ins JSON-Format, unveränderte Felder des
-  Default-Templates auf 3.12. Eigene Template-Anpassungen bleiben erhalten.
+  Default-Templates auf 3.12. Eigene Template-Anpassungen bleiben erhalten;
+  wie sich die neuen Texte übernehmen lassen, steht in
+  [INSTALLATION.md](INSTALLATION.md#templates-nach-dem-update).
 - Docker-Stack: `.docker/dev-seed.sql` legt einen Entwicklungs-Admin an
   (`admin` / `powernews-dev`); nicht im Release.
 - Release-Archiv per `.gitattributes` ohne Tests, interne Dokumentation,
