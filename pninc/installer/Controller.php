@@ -23,6 +23,7 @@ use PowerNews\LocalConfig;
  *  - Ist PowerNews bereits eingerichtet, gibt es nur die Sperrseite (HTTP 403).
  *
  * @phpstan-import-type DbConfig from LocalConfig
+ * @phpstan-import-type MailConfig from LocalConfig
  * @phpstan-import-type DoneInfo from Wizard
  *
  * @phpstan-type Result array{errors: array<string, string>, message: string, tables: list<string>}
@@ -31,6 +32,15 @@ final class Controller
 {
     public const string ENTRY = 'install.php';
 
+    /**
+     * Felder von Schritt 3, die nach einem Fehler wieder angezeigt werden
+     * (ohne das SMTP-Passwort – das wird nie ausgegeben).
+     */
+    private const array WEBSITE_FIELDS = [
+        'site_url', 'site_email', 'site_language',
+        'mail_transport', 'smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_user',
+    ];
+
     /** @var list<string> Protokolleinträge ohne Zugangsdaten */
     private array $events = [];
 
@@ -38,6 +48,7 @@ final class Controller
      * @param DbConfig $effectiveDb wirksamer Datenbank-Zugang (config.local.php, Umgebung oder Vorgaben)
      * @param \Closure(): ?bool $probe prüft die konfigurierte Datenbank für die Sperre
      * @param \Closure(DbConfig): \mysqli $connect baut eine Datenbankverbindung auf
+     * @param \Closure(MailConfig, string, string): array{ok: bool, message: string} $sendTestMail Test-Mail (im Betrieb SmtpCheck::run)
      */
     public function __construct(
         private readonly string $rootDir,
@@ -48,6 +59,7 @@ final class Controller
         private readonly array $effectiveDb,
         private readonly \Closure $probe,
         private readonly \Closure $connect,
+        private readonly \Closure $sendTestMail,
     ) {
     }
 
@@ -138,6 +150,7 @@ final class Controller
             'requirements' => $this->handleRequirements($server),
             'database' => $this->handleDatabase($post),
             'website' => $this->handleWebsite($post),
+            Wizard::ACTION_MAIL_TEST => $this->handleMailTest($post),
             'admin' => $this->handleAdmin($post),
             default => $this->handleFinish(),
         };
@@ -220,9 +233,9 @@ final class Controller
      *
      * @return Response|Result
      */
-    private function handleWebsite(array $post): Response|array
+    private function handleWebsite(#[\SensitiveParameter] array $post): Response|array
     {
-        $input = FormValidator::website($post);
+        $input = FormValidator::website($post, $this->wizard->website()['mail'] ?? null);
 
         if ($input['errors'] !== []) {
             return self::failure('Bitte prüfen Sie die markierten Felder.', $input['errors']);
@@ -231,6 +244,45 @@ final class Controller
         $this->wizard->storeWebsite($input['values']);
 
         return Response::redirect(self::stepUrl(Wizard::STEP_ADMIN));
+    }
+
+    /**
+     * „Test-Mail senden“: speichert die geprüften Angaben aus Schritt 3 und schickt
+     * eine Test-Mail – an den Administrator, falls Schritt 4 schon ausgefüllt ist,
+     * sonst an die Absenderadresse. Das Ergebnis erscheint nach der Weiterleitung
+     * wieder in Schritt 3 (#smtp-test-result).
+     *
+     * @param array<array-key, mixed> $post
+     *
+     * @return Response|Result
+     */
+    private function handleMailTest(#[\SensitiveParameter] array $post): Response|array
+    {
+        $input = FormValidator::website($post, $this->wizard->website()['mail'] ?? null);
+
+        if ($input['errors'] !== []) {
+            return self::failure('Bitte prüfen Sie die markierten Felder.', $input['errors']);
+        }
+
+        if (!$this->wizard->countMailTest()) {
+            return self::failure(
+                'In dieser Sitzung wurden bereits ' . Wizard::MAX_MAIL_TESTS . ' Test-Mails verschickt. '
+                . 'Bitte prüfen Sie die Angaben ohne weiteren Test oder fahren Sie fort.',
+            );
+        }
+
+        $website = $input['values'];
+        $this->wizard->storeWebsite($website);
+
+        $mail = $website['mail'];
+        $recipient = $this->wizard->admin()['email'] ?? $website['email'];
+        $outcome = ($this->sendTestMail)($mail, $recipient, $website['email']);
+
+        // Nur Versandart und Ergebnis ins Protokoll – den Grund schreibt der Mailer selbst dorthin.
+        $this->events[] = 'Test-Mail per ' . $mail['transport'] . ' ' . ($outcome['ok'] ? 'angenommen' : 'fehlgeschlagen') . '.';
+        $this->wizard->setMailTestResult($outcome['ok'] ? 'success' : 'danger', $outcome['message']);
+
+        return Response::redirect(self::stepUrl(Wizard::STEP_WEBSITE) . '#smtp-test-result');
     }
 
     /**
@@ -330,8 +382,11 @@ final class Controller
                 'tables' => $result['tables'],
             ], 200),
             Wizard::STEP_WEBSITE => Response::page('website', $title, $step, $common + [
-                'old' => $isPost ? self::postValues($post, ['site_url', 'site_email', 'site_language']) : $this->oldWebsite($server),
+                'old' => $isPost ? self::postValues($post, self::WEBSITE_FIELDS) : $this->oldWebsite($server),
                 'notice' => $isPost ? null : $this->wizard->takeNotice(),
+                'mailTest' => $isPost ? null : $this->wizard->takeMailTestResult(),
+                'passwordStored' => ($this->wizard->website()['mail']['password'] ?? '') !== '',
+                'testRecipient' => $this->wizard->admin()['email'] ?? '',
             ], 200),
             Wizard::STEP_ADMIN => Response::page('admin', $title, $step, $common + [
                 'old' => $isPost ? self::postValues($post, ['admin_nickname', 'admin_email']) : $this->oldAdmin(),
@@ -398,12 +453,14 @@ final class Controller
         $website = $this->wizard->website();
 
         if ($website !== null) {
-            return ['site_url' => $website['url'], 'site_email' => $website['email'], 'site_language' => $website['language']];
+            return ['site_url' => $website['url'], 'site_email' => $website['email'], 'site_language' => $website['language']]
+                + FormValidator::mailFormValues($website['mail']);
         }
 
         $url = Wizard::suggestSiteUrl($server);
 
-        return ['site_url' => $url, 'site_email' => Wizard::suggestSender($url), 'site_language' => LocalConfig::DEFAULT_LANGUAGE];
+        return ['site_url' => $url, 'site_email' => Wizard::suggestSender($url), 'site_language' => LocalConfig::DEFAULT_LANGUAGE]
+            + FormValidator::mailFormValues(LocalConfig::DEFAULT_MAIL);
     }
 
     /**

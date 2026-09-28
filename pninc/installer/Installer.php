@@ -47,6 +47,7 @@ final class Installer
             $db,
             static fn (): ?bool => self::probe($db),
             DatabaseSetup::connect(...),
+            SmtpCheck::run(...),
         );
 
         try {

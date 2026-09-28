@@ -11,7 +11,8 @@ declare(strict_types=1);
 /*
  * Seitenlayout von Installer und Update. Liefert eine Funktion; direkt
  * aufgerufen gibt die Datei nichts aus. Kein Inline-JavaScript (die CSP aus
- * der .htaccess erlaubt nur Skripte vom eigenen Server).
+ * der .htaccess erlaubt nur Skripte vom eigenen Server) – assets/installer.js
+ * ist eine eigene Datei. Version und Jahre stammen aus pninc/version.inc.php.
  */
 
 use PowerNews\Installer\Html;
@@ -34,6 +35,7 @@ return static function (string $title, string $badge, int $step, int $completed,
 <meta name="robots" content="noindex, nofollow">
 <title><?php echo Html::escape($title); ?> · PowerNews-<?php echo Html::escape($badge); ?></title>
 <link rel="stylesheet" href="assets/bootstrap/bootstrap.min.css">
+<script src="assets/installer.js" defer></script>
 </head>
 <body class="bg-body-tertiary d-flex flex-column min-vh-100">
 <nav class="navbar navbar-dark bg-dark" aria-label="<?php echo Html::escape($badge); ?>">
@@ -85,7 +87,7 @@ return static function (string $title, string $badge, int $step, int $completed,
 
 <footer class="bg-dark text-light py-3 mt-auto">
   <div class="container-lg text-center">
-    <small>PowerNews &copy; 2001–2026 <a class="link-light" href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer">PowerScripts</a></small>
+    <small>PowerNews <?php echo Html::escape(PN_VERSION); ?> &copy; <?php echo Html::escape(PN_COPYRIGHT_YEARS); ?> <a class="link-light" href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer">PowerScripts</a></small>
   </div>
 </footer>
 </body>

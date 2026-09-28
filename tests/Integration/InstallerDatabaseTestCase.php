@@ -26,7 +26,7 @@ require_once __DIR__ . '/../../pninc/installer/autoload.php';
  */
 abstract class InstallerDatabaseTestCase extends TestCase
 {
-    protected const array WEBSITE = ['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du'];
+    protected const array WEBSITE = ['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du', 'mail' => LocalConfig::DEFAULT_MAIL];
 
     protected const string ADMIN_PASSWORD = "Lichtblick-26 'ä\"\\";
 

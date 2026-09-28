@@ -14,7 +14,8 @@ use PowerNews\LocalConfig;
 
 /**
  * „Jetzt installieren“: Schema einspielen, Administrator anlegen,
- * config.local.php schreiben und den Installer sperren.
+ * config.local.php (Datenbank, Sprache, Mailversand) schreiben und den
+ * Installer sperren.
  *
  * @phpstan-import-type DbConfig from LocalConfig
  * @phpstan-import-type WebsiteSettings from FormValidator
@@ -84,7 +85,7 @@ final class Setup
             $mysqli->close();
         }
 
-        $source = LocalConfig::render($database, $website['language'], $timestamp);
+        $source = LocalConfig::render($database, $website['language'], $timestamp, $website['mail']);
 
         return [
             'admin_id' => $adminId,

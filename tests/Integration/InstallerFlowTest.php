@@ -23,8 +23,14 @@ final class InstallerFlowTest extends InstallerDatabaseTestCase
 
     private const array SERVER = ['HTTP_HOST' => 'news.example.org', 'SCRIPT_NAME' => '/news/install.php', 'HTTPS' => 'on'];
 
+    /** SMTP-Passwort mit Zeichen, die in PHP-Quelltext gefährlich wären. */
+    private const string SMTP_PASSWORD = 'Post\'fach"$pn?>\\ 26';
+
     /** @var array<string, mixed> Sitzung zwischen den Anfragen */
     private array $session = [];
+
+    /** @var list<array{0: array<string, mixed>, 1: string, 2: string}> verschickte Test-Mails */
+    private array $testMails = [];
 
     /**
      * @param array<string, mixed> $query
@@ -40,6 +46,11 @@ final class InstallerFlowTest extends InstallerDatabaseTestCase
             LocalConfig::DEFAULT_DB,
             static fn (): ?bool => null,
             DatabaseSetup::connect(...),
+            function (array $mail, string $recipient, string $sender): array {
+                $this->testMails[] = [$mail, $recipient, $sender];
+
+                return ['ok' => true, 'message' => 'Der Mailserver hat die Test-Mail an ' . $recipient . ' angenommen.'];
+            },
         );
         $response = $controller->handle($method, $query, $post === [] ? [] : $post + ['csrf_token' => self::TOKEN], self::SERVER);
         $this->session[Wizard::SESSION_KEY] = $wizard->toSession();
@@ -76,12 +87,23 @@ final class InstallerFlowTest extends InstallerDatabaseTestCase
         $this->assertSame('noreply@news.example.org', ($website->args['old'] ?? [])['site_email'] ?? null);
         $this->assertStringContainsString('geeignet', ($website->args['notice'] ?? [])['message'] ?? '');
 
-        $this->assertSame('install.php?step=4', $this->submit(3, [
-            'action' => 'website',
+        $website = [
             'site_url' => 'https://news.example.org/news',
             'site_email' => 'noreply@news.example.org',
             'site_language' => 'german-sie',
-        ])->location);
+            'mail_transport' => 'smtp',
+            'smtp_host' => 'smtp.example.org',
+            'smtp_port' => '',
+            'smtp_encryption' => 'ssl',
+            'smtp_user' => 'noreply@news.example.org',
+            'smtp_password' => self::SMTP_PASSWORD,
+        ];
+        $this->assertSame('install.php?step=3#smtp-test-result', $this->submit(3, ['action' => 'mail_test'] + $website)->location);
+        $this->assertSame('noreply@news.example.org', $this->testMails[0][1] ?? null);
+        $this->assertStringContainsString('angenommen', ($this->request('GET', ['step' => '3'])->args['mailTest'] ?? [])['message'] ?? '');
+
+        // Das Passwort muss nicht erneut eingegeben werden.
+        $this->assertSame('install.php?step=4', $this->submit(3, ['action' => 'website', 'smtp_password' => ''] + $website)->location);
         $this->assertSame('install.php?step=5', $this->submit(4, [
             'action' => 'admin',
             'admin_nickname' => 'Redaktion',
@@ -106,6 +128,11 @@ final class InstallerFlowTest extends InstallerDatabaseTestCase
         $this->assertIsArray($local);
         $this->assertSame(self::$db, $local['db']);
         $this->assertSame('german-sie', $local['language']);
+        $this->assertSame(
+            ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 465, 'encryption' => 'ssl', 'user' => 'noreply@news.example.org', 'password' => self::SMTP_PASSWORD],
+            $local['mail'],
+        );
+        $this->assertSame($local['mail'], LocalConfig::load(static fn (): false => false, $this->root . '/pninc/config.local.php')['mail']);
 
         $mysqli = $this->mysqli();
         $this->assertSame('https://news.example.org/news', self::value($mysqli, 'SELECT url FROM pn_config'));

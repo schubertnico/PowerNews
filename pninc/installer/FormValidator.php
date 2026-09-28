@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace PowerNews\Installer;
 
 use PowerNews\LocalConfig;
+use PowerNews\Mailer;
 
 /**
  * Prüft die Formulare der Installer-Schritte 2 bis 4.
@@ -19,8 +20,9 @@ use PowerNews\LocalConfig;
  * Schlüssel dem Feldnamen (und der id) im Formular entspricht.
  *
  * @phpstan-import-type DbConfig from LocalConfig
+ * @phpstan-import-type MailConfig from LocalConfig
  *
- * @phpstan-type WebsiteSettings array{url: string, email: string, language: string}
+ * @phpstan-type WebsiteSettings array{url: string, email: string, language: string, mail: MailConfig}
  * @phpstan-type AdminInput array{nickname: string, email: string, password: string}
  */
 final class FormValidator
@@ -59,6 +61,13 @@ final class FormValidator
     public const int PASSWORD_MIN = 8;
 
     public const int PASSWORD_MAX_BYTES = 72;
+
+    /**
+     * Zugangsdaten des E-Mail-Postfachs für den SMTP-Versand.
+     */
+    public const int SMTP_USER_MAX = 255;
+
+    public const int SMTP_PASSWORD_MAX = 255;
 
     /**
      * Schritt 2: Datenbankzugang. Das Passwort wird nicht getrimmt.
@@ -113,13 +122,15 @@ final class FormValidator
     }
 
     /**
-     * Schritt 3: Adresse der Website, Absenderadresse und Sprache.
+     * Schritt 3: Adresse der Website, Absenderadresse, Sprache und Mailversand.
      *
      * @param array<array-key, mixed> $input
+     * @param MailConfig|null $previousMail bereits gespeicherter Mailversand – ein leeres
+     *                                      Passwortfeld behält dessen Passwort (gleicher Benutzer)
      *
      * @return array{values: WebsiteSettings, errors: array<string, string>}
      */
-    public static function website(array $input): array
+    public static function website(#[\SensitiveParameter] array $input, #[\SensitiveParameter] ?array $previousMail = null): array
     {
         $url = rtrim(self::text($input, 'site_url'), '/');
         $email = self::text($input, 'site_email');
@@ -141,9 +152,11 @@ final class FormValidator
             'site_language' => isset(LocalConfig::LANGUAGES[$language]) ? null : 'Bitte wählen Sie eine Sprache aus der Liste.',
         ]);
 
+        [$mail, $mailErrors] = self::mail($input, $previousMail);
+
         return [
-            'values' => ['url' => $url, 'email' => $email, 'language' => $language],
-            'errors' => $errors,
+            'values' => ['url' => $url, 'email' => $email, 'language' => $language, 'mail' => $mail],
+            'errors' => $errors + $mailErrors,
         ];
     }
 
@@ -185,6 +198,36 @@ final class FormValidator
         return [
             'values' => ['nickname' => $nickname, 'email' => $email, 'password' => $password],
             'errors' => $errors,
+        ];
+    }
+
+    /**
+     * Formularwerte des Mailversands für Schritt 3 (ohne Passwort – das wird nie
+     * ausgegeben). Für einen neuen SMTP-Server ist STARTTLS auf Port 587 vorbelegt –
+     * das verlangen die meisten Hoster.
+     *
+     * @param MailConfig $mail
+     *
+     * @return array<string, string>
+     */
+    public static function mailFormValues(#[\SensitiveParameter] array $mail): array
+    {
+        if ($mail['transport'] !== Mailer::TRANSPORT_SMTP) {
+            return [
+                'mail_transport' => Mailer::TRANSPORT_MAIL,
+                'smtp_host' => '',
+                'smtp_port' => (string) Mailer::DEFAULT_PORTS[Mailer::ENCRYPTION_STARTTLS],
+                'smtp_encryption' => Mailer::ENCRYPTION_STARTTLS,
+                'smtp_user' => '',
+            ];
+        }
+
+        return [
+            'mail_transport' => Mailer::TRANSPORT_SMTP,
+            'smtp_host' => $mail['host'],
+            'smtp_port' => (string) Mailer::effectivePort($mail['port'], $mail['encryption']),
+            'smtp_encryption' => $mail['encryption'],
+            'smtp_user' => $mail['user'],
         ];
     }
 
@@ -241,6 +284,109 @@ final class FormValidator
         }
 
         return null;
+    }
+
+    /**
+     * Mailversand: „mail“ (Standard) braucht keine weiteren Angaben, die SMTP-Felder
+     * werden dann ignoriert. Bei „smtp“ ist der Server Pflicht, ein leerer Port ergibt
+     * den üblichen Port der Verschlüsselung, der Benutzer ist optional – mit Benutzer
+     * ist ein Passwort Pflicht.
+     *
+     * @param array<array-key, mixed> $input
+     * @param MailConfig|null $previous
+     *
+     * @return array{0: MailConfig, 1: array<string, string>}
+     */
+    private static function mail(#[\SensitiveParameter] array $input, #[\SensitiveParameter] ?array $previous): array
+    {
+        $transport = self::text($input, 'mail_transport');
+
+        if ($transport === '' || $transport === Mailer::TRANSPORT_MAIL) {
+            return [LocalConfig::DEFAULT_MAIL, []];
+        }
+
+        if ($transport !== Mailer::TRANSPORT_SMTP) {
+            return [LocalConfig::DEFAULT_MAIL, ['mail_transport' => 'Bitte wählen Sie eine Versandart aus der Liste.']];
+        }
+
+        $host = self::text($input, 'smtp_host');
+        $encryption = Mailer::normalizeEncryption(self::text($input, 'smtp_encryption'));
+        $port = self::smtpPort(self::text($input, 'smtp_port'), $encryption ?? Mailer::ENCRYPTION_NONE);
+        [$user, $password, $credentialErrors] = self::smtpCredentials($input, $host, $previous);
+
+        $errors = array_filter([
+            'smtp_host' => self::fieldError(
+                $host,
+                self::isHostname($host),
+                'Bitte geben Sie den SMTP-Server an, z. B. „smtp.ihr-hoster.de“.',
+                'Der SMTP-Server enthält ungültige Zeichen. Bitte nur den Namen angeben, z. B. „smtp.ihr-hoster.de“ – den Port ins eigene Feld.',
+            ),
+            'smtp_port' => $port === null ? 'Der Port muss eine Zahl zwischen 1 und 65535 sein.' : null,
+            'smtp_encryption' => $encryption === null ? 'Bitte wählen Sie eine Verschlüsselung aus der Liste.' : null,
+        ]);
+
+        return [
+            [
+                'transport' => Mailer::TRANSPORT_SMTP,
+                'host' => $host,
+                'port' => $port ?? Mailer::DEFAULT_PORTS[Mailer::ENCRYPTION_NONE],
+                'encryption' => $encryption ?? Mailer::ENCRYPTION_NONE,
+                'user' => $user,
+                'password' => $password,
+            ],
+            $errors + $credentialErrors,
+        ];
+    }
+
+    /**
+     * Benutzername und Passwort des Postfachs. Das Passwort wird nicht getrimmt; ohne
+     * Benutzer wird keines gespeichert. Ein leeres Passwortfeld behält das bereits
+     * eingegebene Passwort, solange Server und Benutzer gleich bleiben.
+     *
+     * @param array<array-key, mixed> $input
+     * @param MailConfig|null $previous
+     *
+     * @return array{0: string, 1: string, 2: array<string, string>} Benutzer, Passwort, Fehler
+     */
+    private static function smtpCredentials(#[\SensitiveParameter] array $input, string $host, #[\SensitiveParameter] ?array $previous): array
+    {
+        $user = self::text($input, 'smtp_user');
+
+        if ($user === '') {
+            return ['', '', []];
+        }
+
+        if (!self::isPlainText($user, self::SMTP_USER_MAX)) {
+            return [$user, '', ['smtp_user' => 'Der Benutzername ist zu lang oder enthält ungültige Zeichen.']];
+        }
+
+        $password = is_string($input['smtp_password'] ?? null) ? $input['smtp_password'] : '';
+
+        if ($password === '' && $previous !== null && $previous['user'] === $user && $previous['host'] === $host) {
+            $password = $previous['password'];
+        }
+
+        $error = match (true) {
+            $password === '' => 'Bitte geben Sie das Passwort des E-Mail-Postfachs an.',
+            strlen($password) > self::SMTP_PASSWORD_MAX || str_contains($password, "\0") => 'Das Passwort ist zu lang oder enthält ungültige Zeichen.',
+            default => null,
+        };
+
+        return [$user, $password, $error === null ? [] : ['smtp_password' => $error]];
+    }
+
+    /**
+     * Leerer Wert ergibt den üblichen Port der Verschlüsselung, ungültiger Wert null.
+     */
+    private static function smtpPort(string $value, string $encryption): ?int
+    {
+        if ($value === '') {
+            return Mailer::effectivePort(0, $encryption);
+        }
+
+        $port = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]);
+
+        return is_int($port) ? $port : null;
     }
 
     /**

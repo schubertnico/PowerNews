@@ -16,8 +16,8 @@ use PowerNews\LocalConfig;
  * Fortschritt des Installers in der Session.
  *
  * Gespeichert werden nur die Eingaben, die der letzte Schritt braucht. Das
- * Administrator-Passwort liegt ausschließlich als Hash vor; das
- * Datenbankpasswort wird nach Abschluss aus der Session entfernt.
+ * Administrator-Passwort liegt ausschließlich als Hash vor; Datenbank- und
+ * SMTP-Passwort werden nach Abschluss aus der Session entfernt.
  *
  * @phpstan-import-type DbConfig from LocalConfig
  * @phpstan-import-type WebsiteSettings from FormValidator
@@ -57,9 +57,19 @@ final class Wizard
         'website' => self::STEP_WEBSITE,
         'admin' => self::STEP_ADMIN,
         'finish' => self::STEP_FINISH,
+        self::ACTION_MAIL_TEST => self::STEP_WEBSITE,
     ];
 
-    private const array NOTICE_TYPES = ['success', 'danger', 'warning', 'info'];
+    /**
+     * „Test-Mail senden“ im Schritt „Website“.
+     */
+    public const string ACTION_MAIL_TEST = 'mail_test';
+
+    /**
+     * Höchstzahl der Test-Mails je Sitzung – der Installer soll kein Werkzeug für
+     * Massenmails sein.
+     */
+    public const int MAX_MAIL_TESTS = 10;
 
     private int $completed = 0;
 
@@ -80,6 +90,11 @@ final class Wizard
     /** @var Notice|null einmalige Meldung nach einer Weiterleitung */
     private ?array $notice = null;
 
+    /** @var Notice|null Ergebnis der letzten Test-Mail (einmalig) */
+    private ?array $mailTest = null;
+
+    private int $mailTests = 0;
+
     /**
      * Stellt den Zustand aus der Session wieder her. Unvollständige oder
      * manipulierte Daten führen zu einem früheren Schritt, nie zu einem Fehler.
@@ -94,19 +109,21 @@ final class Wizard
 
         $completed = $data['completed'] ?? 0;
         $wizard->completed = is_int($completed) ? max(0, min($completed, self::STEP_FINISH)) : 0;
-        $wizard->database = self::parseDatabase($data['database'] ?? null);
+        $wizard->database = SessionData::database($data['database'] ?? null);
         $serverLabel = $data['server'] ?? '';
         $wizard->serverLabel = is_string($serverLabel) ? $serverLabel : '';
-        $wizard->website = self::parseWebsite($data['website'] ?? null);
-        $wizard->admin = self::parseAdmin($data['admin'] ?? null);
-        $wizard->done = self::parseDone($data['done'] ?? null);
-        $wizard->notice = self::parseNotice($data['notice'] ?? null);
+        $wizard->website = SessionData::website($data['website'] ?? null);
+        $wizard->admin = SessionData::admin($data['admin'] ?? null);
+        $wizard->done = SessionData::done($data['done'] ?? null);
+        $wizard->notice = SessionData::notice($data['notice'] ?? null);
+        $wizard->mailTest = SessionData::notice($data['mail_test'] ?? null);
+        $wizard->mailTests = SessionData::count($data['mail_tests'] ?? null);
 
         return $wizard;
     }
 
     /**
-     * @return array{completed: int, database: DbConfig|null, server: string, website: WebsiteSettings|null, admin: AdminData|null, done: DoneInfo|null, notice: Notice|null}
+     * @return array{completed: int, database: DbConfig|null, server: string, website: WebsiteSettings|null, admin: AdminData|null, done: DoneInfo|null, notice: Notice|null, mail_test: Notice|null, mail_tests: int}
      */
     public function toSession(): array
     {
@@ -118,6 +135,8 @@ final class Wizard
             'admin' => $this->admin,
             'done' => $this->done,
             'notice' => $this->notice,
+            'mail_test' => $this->mailTest,
+            'mail_tests' => $this->mailTests,
         ];
     }
 
@@ -209,6 +228,7 @@ final class Wizard
         $this->website = null;
         $this->admin = null;
         $this->notice = null;
+        $this->mailTest = null;
     }
 
     /**
@@ -227,7 +247,7 @@ final class Wizard
      */
     public function setNotice(string $type, string $message): void
     {
-        $this->notice = ['type' => in_array($type, self::NOTICE_TYPES, true) ? $type : 'info', 'message' => $message];
+        $this->notice = ['type' => in_array($type, SessionData::NOTICE_TYPES, true) ? $type : 'info', 'message' => $message];
     }
 
     /**
@@ -241,6 +261,41 @@ final class Wizard
         $this->notice = null;
 
         return $notice;
+    }
+
+    /**
+     * Zählt eine Test-Mail; false, wenn das Limit dieser Sitzung erreicht ist.
+     */
+    public function countMailTest(): bool
+    {
+        if ($this->mailTests >= self::MAX_MAIL_TESTS) {
+            return false;
+        }
+
+        ++$this->mailTests;
+
+        return true;
+    }
+
+    /**
+     * Ergebnis der Test-Mail für die nächste Seite (nach der Weiterleitung).
+     */
+    public function setMailTestResult(string $type, string $message): void
+    {
+        $this->mailTest = ['type' => in_array($type, SessionData::NOTICE_TYPES, true) ? $type : 'info', 'message' => $message];
+    }
+
+    /**
+     * Liefert das Ergebnis der Test-Mail einmal und vergisst es dann.
+     *
+     * @return Notice|null
+     */
+    public function takeMailTestResult(): ?array
+    {
+        $result = $this->mailTest;
+        $this->mailTest = null;
+
+        return $result;
     }
 
     /**
@@ -322,119 +377,5 @@ final class Wizard
         $candidate = 'noreply@' . (str_starts_with(strtolower($host), 'www.') ? substr($host, 4) : $host);
 
         return filter_var($candidate, FILTER_VALIDATE_EMAIL) !== false ? $candidate : '';
-    }
-
-    /**
-     * @return DbConfig|null
-     */
-    private static function parseDatabase(mixed $data): ?array
-    {
-        if (!is_array($data) || !is_int($data['port'] ?? null)) {
-            return null;
-        }
-
-        $strings = self::strings($data, ['host', 'user', 'password', 'database']);
-
-        if ($strings === null) {
-            return null;
-        }
-
-        return [
-            'host' => $strings['host'],
-            'port' => $data['port'],
-            'user' => $strings['user'],
-            'password' => $strings['password'],
-            'database' => $strings['database'],
-        ];
-    }
-
-    /**
-     * @return WebsiteSettings|null
-     */
-    private static function parseWebsite(mixed $data): ?array
-    {
-        $strings = is_array($data) ? self::strings($data, ['url', 'email', 'language']) : null;
-
-        if ($strings === null) {
-            return null;
-        }
-
-        return ['url' => $strings['url'], 'email' => $strings['email'], 'language' => $strings['language']];
-    }
-
-    /**
-     * @return AdminData|null
-     */
-    private static function parseAdmin(mixed $data): ?array
-    {
-        $strings = is_array($data) ? self::strings($data, ['nickname', 'email', 'password_hash']) : null;
-
-        if ($strings === null) {
-            return null;
-        }
-
-        return ['nickname' => $strings['nickname'], 'email' => $strings['email'], 'password_hash' => $strings['password_hash']];
-    }
-
-    /**
-     * @return DoneInfo|null
-     */
-    private static function parseDone(mixed $data): ?array
-    {
-        if (!is_array($data) || !is_bool($data['config_written'] ?? null)) {
-            return null;
-        }
-
-        $strings = self::strings($data, ['config_source', 'lock_file', 'admin_nickname', 'site_url']);
-
-        if ($strings === null) {
-            return null;
-        }
-
-        return [
-            'config_written' => $data['config_written'],
-            'config_source' => $strings['config_source'],
-            'lock_file' => $strings['lock_file'],
-            'admin_nickname' => $strings['admin_nickname'],
-            'site_url' => $strings['site_url'],
-        ];
-    }
-
-    /**
-     * @return Notice|null
-     */
-    private static function parseNotice(mixed $data): ?array
-    {
-        $strings = is_array($data) ? self::strings($data, ['type', 'message']) : null;
-
-        if ($strings === null || !in_array($strings['type'], self::NOTICE_TYPES, true)) {
-            return null;
-        }
-
-        return ['type' => $strings['type'], 'message' => $strings['message']];
-    }
-
-    /**
-     * Liefert die angegebenen Schlüssel, wenn alle Zeichenketten sind.
-     *
-     * @param array<array-key, mixed> $data
-     * @param list<string> $keys
-     *
-     * @return array<string, string>|null
-     */
-    private static function strings(array $data, array $keys): ?array
-    {
-        $result = [];
-
-        foreach ($keys as $key) {
-            $value = $data[$key] ?? null;
-
-            if (!is_string($value)) {
-                return null;
-            }
-            $result[$key] = $value;
-        }
-
-        return $result;
     }
 }

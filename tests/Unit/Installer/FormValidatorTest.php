@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use PowerNews\Installer\FormValidator;
+use PowerNews\LocalConfig;
 
 require_once __DIR__ . '/../../../pninc/installer/autoload.php';
 
@@ -124,8 +125,107 @@ final class FormValidatorTest extends TestCase
 
         $this->assertSame([], $result['errors']);
         $this->assertSame(
-            ['url' => 'https://www.example.org/news', 'email' => 'noreply@example.org', 'language' => 'german-sie'],
+            ['url' => 'https://www.example.org/news', 'email' => 'noreply@example.org', 'language' => 'german-sie', 'mail' => LocalConfig::DEFAULT_MAIL],
             $result['values'],
+            'Ohne Angaben zum Mailversand bleibt es bei PHP-mail des Servers',
+        );
+    }
+
+    // ── Schritt 3: E-Mail-Versand ──
+
+    private const array SITE = ['site_url' => 'http://localhost:8229', 'site_email' => 'news@example.org', 'site_language' => 'german-du'];
+
+    #[Test]
+    public function phpMailIgnoresTheSmtpFields(): void
+    {
+        $result = FormValidator::website(self::SITE + ['mail_transport' => 'mail', 'smtp_host' => 'ungültig host', 'smtp_port' => 'abc', 'smtp_user' => 'x', 'smtp_password' => '']);
+
+        $this->assertSame([], $result['errors']);
+        $this->assertSame(LocalConfig::DEFAULT_MAIL, $result['values']['mail']);
+    }
+
+    #[Test]
+    public function smtpSettingsAreTakenOverWithUntrimmedPassword(): void
+    {
+        $result = FormValidator::website(self::SITE + [
+            'mail_transport' => 'smtp',
+            'smtp_host' => ' smtp.example.org ',
+            'smtp_port' => '',
+            'smtp_encryption' => 'ssl',
+            'smtp_user' => ' news@example.org ',
+            'smtp_password' => " geheim'\"$?> ",
+        ]);
+
+        $this->assertSame([], $result['errors']);
+        $this->assertSame(
+            ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 465, 'encryption' => 'ssl', 'user' => 'news@example.org', 'password' => " geheim'\"$?> "],
+            $result['values']['mail'],
+            'Leerer Port: üblicher Port der Verschlüsselung',
+        );
+    }
+
+    #[Test]
+    public function smtpWithoutLoginNeedsNoPassword(): void
+    {
+        $result = FormValidator::website(self::SITE + ['mail_transport' => 'smtp', 'smtp_host' => 'localhost', 'smtp_port' => '25', 'smtp_encryption' => 'none', 'smtp_user' => '', 'smtp_password' => 'wird verworfen']);
+
+        $this->assertSame([], $result['errors']);
+        $this->assertSame('', $result['values']['mail']['password']);
+        $this->assertSame(25, $result['values']['mail']['port']);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, string>, string}>
+     */
+    public static function invalidMailInput(): iterable
+    {
+        $smtp = ['mail_transport' => 'smtp', 'smtp_host' => 'smtp.example.org', 'smtp_port' => '587', 'smtp_encryption' => 'starttls', 'smtp_user' => 'news@example.org', 'smtp_password' => 'geheim'];
+
+        yield 'Versandart unbekannt' => [['mail_transport' => 'sendmail'] + $smtp, 'mail_transport'];
+        yield 'Server fehlt' => [['smtp_host' => ''] + $smtp, 'smtp_host'];
+        yield 'Server mit Port' => [['smtp_host' => 'smtp.example.org:587'] + $smtp, 'smtp_host'];
+        yield 'Server mit Schema' => [['smtp_host' => 'smtps://smtp.example.org'] + $smtp, 'smtp_host'];
+        yield 'Port zu groß' => [['smtp_port' => '70000'] + $smtp, 'smtp_port'];
+        yield 'Port Text' => [['smtp_port' => 'abc'] + $smtp, 'smtp_port'];
+        yield 'Verschlüsselung unbekannt' => [['smtp_encryption' => 'tls'] + $smtp, 'smtp_encryption'];
+        yield 'Passwort fehlt' => [['smtp_password' => ''] + $smtp, 'smtp_password'];
+        yield 'Passwort mit NUL' => [['smtp_password' => "a\0b"] + $smtp, 'smtp_password'];
+        yield 'Passwort zu lang' => [['smtp_password' => str_repeat('x', 256)] + $smtp, 'smtp_password'];
+        yield 'Benutzer mit Zeilenumbruch' => [['smtp_user' => "news\r\nRCPT TO:<x@y.z>"] + $smtp, 'smtp_user'];
+    }
+
+    /**
+     * @param array<string, string> $input
+     */
+    #[Test]
+    #[DataProvider('invalidMailInput')]
+    public function invalidMailInputIsReportedAtTheField(array $input, string $field): void
+    {
+        $this->assertSame([$field], array_keys(FormValidator::website(self::SITE + $input)['errors']));
+    }
+
+    #[Test]
+    public function emptyPasswordKeepsTheStoredOneForTheSameServerAndUser(): void
+    {
+        $previous = ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 587, 'encryption' => 'starttls', 'user' => 'news@example.org', 'password' => 'bereits-gespeichert'];
+        $input = self::SITE + ['mail_transport' => 'smtp', 'smtp_host' => 'smtp.example.org', 'smtp_port' => '587', 'smtp_encryption' => 'starttls', 'smtp_user' => 'news@example.org', 'smtp_password' => ''];
+
+        $this->assertSame('bereits-gespeichert', FormValidator::website($input, $previous)['values']['mail']['password']);
+        $this->assertArrayHasKey('smtp_password', FormValidator::website(['smtp_user' => 'anders@example.org'] + $input, $previous)['errors']);
+        $this->assertArrayHasKey('smtp_password', FormValidator::website(['smtp_host' => 'mail.example.org'] + $input, $previous)['errors'], 'Anderer Server: Passwort neu eingeben');
+    }
+
+    #[Test]
+    public function mailFormValuesNeverContainThePassword(): void
+    {
+        $this->assertSame(
+            ['mail_transport' => 'smtp', 'smtp_host' => 'smtp.example.org', 'smtp_port' => '465', 'smtp_encryption' => 'ssl', 'smtp_user' => 'news@example.org'],
+            FormValidator::mailFormValues(['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 0, 'encryption' => 'ssl', 'user' => 'news@example.org', 'password' => 'x']),
+        );
+        $this->assertSame(
+            ['mail_transport' => 'mail', 'smtp_host' => '', 'smtp_port' => '587', 'smtp_encryption' => 'starttls', 'smtp_user' => ''],
+            FormValidator::mailFormValues(LocalConfig::DEFAULT_MAIL),
+            'Für einen neuen SMTP-Server ist STARTTLS auf Port 587 vorbelegt',
         );
     }
 

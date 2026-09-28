@@ -37,6 +37,12 @@ final class ControllerTest extends TestCase
 
     private ?mysqli_sql_exception $connectError = null;
 
+    /** @var list<array{0: array<string, mixed>, 1: string, 2: string}> verschickte Test-Mails (Einstellungen, Empfänger, Absender) */
+    private array $testMails = [];
+
+    /** @var array{ok: bool, message: string} Ergebnis der nächsten Test-Mail */
+    private array $testMailOutcome = ['ok' => true, 'message' => 'Der Mailserver hat die Test-Mail angenommen.'];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -65,7 +71,32 @@ final class ControllerTest extends TestCase
 
                 throw $this->connectError ?? new mysqli_sql_exception('keine Testdatenbank', 2002);
             },
+            function (array $mail, string $recipient, string $sender): array {
+                $this->testMails[] = [$mail, $recipient, $sender];
+
+                return $this->testMailOutcome;
+            },
         );
+    }
+
+    private const array SITE = ['site_url' => 'http://localhost:8229', 'site_email' => 'news@example.org', 'site_language' => 'german-du'];
+
+    /** @var list<string> Protokolleinträge der letzten Anfrage */
+    private array $lastEvents = [];
+
+    /**
+     * @return array<string, string>
+     */
+    private function smtpInput(): array
+    {
+        return self::SITE + [
+            'mail_transport' => 'smtp',
+            'smtp_host' => 'smtp.example.org',
+            'smtp_port' => '',
+            'smtp_encryption' => 'starttls',
+            'smtp_user' => 'news@example.org',
+            'smtp_password' => 'Postfach-Geheim-26',
+        ];
     }
 
     /**
@@ -81,7 +112,11 @@ final class ControllerTest extends TestCase
      */
     private function post(int $step, array $post, ?Controller $controller = null): Response
     {
-        return ($controller ?? $this->controller())->handle('POST', ['step' => (string) $step], $post + ['csrf_token' => self::TOKEN], self::SERVER);
+        $controller ??= $this->controller();
+        $response = $controller->handle('POST', ['step' => (string) $step], $post + ['csrf_token' => self::TOKEN], self::SERVER);
+        $this->lastEvents = $controller->events();
+
+        return $response;
     }
 
     private function atStep(int $step): void
@@ -91,7 +126,7 @@ final class ControllerTest extends TestCase
             $this->wizard->storeDatabase(self::DB, 'MariaDB 10.11.15');
         }
         if ($step > Wizard::STEP_WEBSITE) {
-            $this->wizard->storeWebsite(['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du']);
+            $this->wizard->storeWebsite(['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du', 'mail' => LocalConfig::DEFAULT_MAIL]);
         }
         if ($step > Wizard::STEP_ADMIN) {
             $this->wizard->storeAdmin('admin', 'admin@example.org', password_hash('sicher-genug', PASSWORD_DEFAULT));
@@ -234,8 +269,13 @@ final class ControllerTest extends TestCase
         $response = $this->get(['step' => '3']);
 
         $this->assertSame('website', $response->template);
-        $this->assertSame(['site_url' => 'http://localhost:8229', 'site_email' => '', 'site_language' => 'german-du'], $response->args['old'] ?? null);
+        $this->assertSame(
+            ['site_url' => 'http://localhost:8229', 'site_email' => '', 'site_language' => 'german-du', 'mail_transport' => 'mail', 'smtp_host' => '', 'smtp_port' => '587', 'smtp_encryption' => 'starttls', 'smtp_user' => ''],
+            $response->args['old'] ?? null,
+        );
         $this->assertSame('success', ($response->args['notice'] ?? [])['type'] ?? null);
+        $this->assertNull($response->args['mailTest'] ?? null);
+        $this->assertFalse($response->args['passwordStored'] ?? true);
     }
 
     #[Test]
@@ -246,7 +286,110 @@ final class ControllerTest extends TestCase
         $response = $this->post(3, ['action' => 'website', 'site_url' => 'http://localhost:8229/', 'site_email' => 'news@example.org', 'site_language' => 'english']);
 
         $this->assertSame('install.php?step=4', $response->location);
-        $this->assertSame(['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'english'], $this->wizard->website());
+        $this->assertSame(['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'english', 'mail' => LocalConfig::DEFAULT_MAIL], $this->wizard->website());
+        $this->assertSame([], $this->testMails, 'Weiter verschickt keine Test-Mail');
+    }
+
+    // ── Schritt 3: Test-Mail ──
+
+    #[Test]
+    public function mailTestStoresTheSettingsSendsToTheSenderAndRedirects(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+
+        $response = $this->post(3, $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST]);
+
+        $this->assertSame(Response::REDIRECT, $response->kind);
+        $this->assertSame('install.php?step=3#smtp-test-result', $response->location);
+        $this->assertCount(1, $this->testMails);
+        [$mail, $recipient, $sender] = $this->testMails[0];
+        $this->assertSame(['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 587, 'encryption' => 'starttls', 'user' => 'news@example.org', 'password' => 'Postfach-Geheim-26'], $mail);
+        $this->assertSame('news@example.org', $recipient, 'Ohne Administrator an die Absenderadresse');
+        $this->assertSame('news@example.org', $sender);
+        $this->assertSame('smtp', $this->wizard->website()['mail']['transport'] ?? null);
+        $this->assertSame(['Test-Mail per smtp angenommen.'], $this->lastEvents);
+
+        $page = $this->get(['step' => '3']);
+        $this->assertSame(['type' => 'success', 'message' => 'Der Mailserver hat die Test-Mail angenommen.'], $page->args['mailTest'] ?? null);
+        $this->assertTrue($page->args['passwordStored'] ?? false);
+        $this->assertSame('smtp.example.org', ($page->args['old'] ?? [])['smtp_host'] ?? null);
+        $this->assertStringNotContainsString('Postfach-Geheim-26', serialize($page->args));
+        $this->assertNull($this->get(['step' => '3'])->args['mailTest'] ?? null, 'Das Ergebnis erscheint nur einmal');
+    }
+
+    #[Test]
+    public function mailTestGoesToTheAdministratorOnceKnown(): void
+    {
+        $this->atStep(Wizard::STEP_FINISH);
+
+        $this->post(3, self::SITE + ['action' => Wizard::ACTION_MAIL_TEST, 'mail_transport' => 'mail']);
+
+        $this->assertSame('admin@example.org', $this->testMails[0][1] ?? null);
+        $this->assertSame('admin@example.org', $this->get(['step' => '3'])->args['testRecipient'] ?? null);
+    }
+
+    #[Test]
+    public function failedMailTestIsShownAsDanger(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+        $this->testMailOutcome = ['ok' => false, 'message' => 'Die Test-Mail an news@example.org konnte nicht verschickt werden. Verbindungsaufbau fehlgeschlagen: Connection refused'];
+
+        $this->post(3, $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST]);
+
+        $this->assertSame('danger', ($this->get(['step' => '3'])->args['mailTest'] ?? [])['type'] ?? null);
+        $this->assertSame(['Test-Mail per smtp fehlgeschlagen.'], $this->lastEvents);
+    }
+
+    #[Test]
+    public function mailTestWithInvalidFieldsSendsNothing(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+
+        $response = $this->post(3, ['smtp_host' => ''] + $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST]);
+
+        $this->assertSame('website', $response->template);
+        $this->assertSame(['smtp_host'], array_keys((array) ($response->args['errors'] ?? [])));
+        $this->assertArrayNotHasKey('smtp_password', (array) ($response->args['old'] ?? []));
+        $this->assertStringNotContainsString('Postfach-Geheim-26', serialize($response->args));
+        $this->assertSame([], $this->testMails);
+    }
+
+    #[Test]
+    public function mailTestNeedsAValidCsrfToken(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+
+        $response = $this->controller()->handle('POST', ['step' => '3'], $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST, 'csrf_token' => 'falsch'], self::SERVER);
+
+        $this->assertSame('website', $response->template);
+        $this->assertStringContainsString('Sitzung ist abgelaufen', (string) ($response->args['message'] ?? ''));
+        $this->assertSame([], $this->testMails);
+    }
+
+    #[Test]
+    public function mailTestsAreLimitedPerSession(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+
+        for ($i = 0; $i < Wizard::MAX_MAIL_TESTS; ++$i) {
+            $this->assertSame(Response::REDIRECT, $this->post(3, $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST])->kind);
+        }
+        $response = $this->post(3, $this->smtpInput() + ['action' => Wizard::ACTION_MAIL_TEST]);
+
+        $this->assertSame('website', $response->template);
+        $this->assertStringContainsString('bereits ' . Wizard::MAX_MAIL_TESTS . ' Test-Mails', (string) ($response->args['message'] ?? ''));
+        $this->assertCount(Wizard::MAX_MAIL_TESTS, $this->testMails);
+    }
+
+    #[Test]
+    public function mailTestIsOnlyPossibleViaPost(): void
+    {
+        $this->atStep(Wizard::STEP_WEBSITE);
+
+        $response = $this->controller()->handle('GET', ['step' => '3', 'action' => Wizard::ACTION_MAIL_TEST], [], self::SERVER);
+
+        $this->assertSame('website', $response->template);
+        $this->assertSame([], $this->testMails);
     }
 
     #[Test]

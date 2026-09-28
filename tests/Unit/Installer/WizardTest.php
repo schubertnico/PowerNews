@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use PowerNews\Installer\Wizard;
+use PowerNews\LocalConfig;
 
 require_once __DIR__ . '/../../../pninc/installer/autoload.php';
 
@@ -18,7 +19,9 @@ final class WizardTest extends TestCase
 {
     private const array DB = ['host' => 'sql.example.org', 'port' => 3306, 'user' => 'news_user', 'password' => 'Lichtblick-DB26', 'database' => 'news_db'];
 
-    private const array WEBSITE = ['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du'];
+    private const array SMTP = ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 587, 'encryption' => 'starttls', 'user' => 'news@example.org', 'password' => 'Postfach-Geheim-26'];
+
+    private const array WEBSITE = ['url' => 'http://localhost:8229', 'email' => 'news@example.org', 'language' => 'german-du', 'mail' => self::SMTP];
 
     private static function completeWizard(): Wizard
     {
@@ -78,6 +81,38 @@ final class WizardTest extends TestCase
     }
 
     #[Test]
+    public function websiteFromOlderSessionsUsesPhpMail(): void
+    {
+        $session = self::completeWizard()->toSession();
+        unset($session['website']['mail']);
+
+        $this->assertSame(LocalConfig::DEFAULT_MAIL, Wizard::fromSession($session)->website()['mail'] ?? null);
+
+        $session['website']['mail'] = ['port' => '587'] + self::SMTP;
+        $this->assertNull(Wizard::fromSession($session)->website(), 'Kaputter Mailversand: Schritt 3 erneut');
+    }
+
+    #[Test]
+    public function mailTestResultIsShownOnceAndTestsAreLimited(): void
+    {
+        $wizard = self::completeWizard();
+        $wizard->setMailTestResult('success', 'Test-Mail angenommen');
+        $wizard->setMailTestResult('rot', 'unbekannter Typ');
+
+        $restored = Wizard::fromSession($wizard->toSession());
+        $this->assertSame(['type' => 'info', 'message' => 'unbekannter Typ'], $restored->takeMailTestResult());
+        $this->assertNull($restored->takeMailTestResult());
+        $this->assertNull($restored->takeNotice(), 'Getrennt von der Meldung des Verbindungstests');
+
+        for ($i = 0; $i < Wizard::MAX_MAIL_TESTS; ++$i) {
+            $this->assertTrue($restored->countMailTest());
+            $restored = Wizard::fromSession($restored->toSession());
+        }
+        $this->assertFalse($restored->countMailTest(), 'Höchstens ' . Wizard::MAX_MAIL_TESTS . ' Test-Mails je Sitzung');
+        $this->assertTrue(Wizard::fromSession(['mail_tests' => 'viele'] + $restored->toSession())->countMailTest(), 'Ungültiger Zähler beginnt bei 0');
+    }
+
+    #[Test]
     public function adminPasswordIsOnlyStoredAsHash(): void
     {
         $session = self::completeWizard()->toSession();
@@ -123,7 +158,9 @@ final class WizardTest extends TestCase
         $this->assertSame('http://localhost:8229', $done['site_url']);
         $this->assertNull($wizard->database());
         $this->assertNull($wizard->admin());
+        $this->assertNull($wizard->website());
         $this->assertStringNotContainsString('Lichtblick-DB26', serialize(array_diff_key($wizard->toSession(), ['done' => 1])));
+        $this->assertStringNotContainsString('Postfach-Geheim-26', serialize($wizard->toSession()), 'Auch das SMTP-Passwort ist weg');
 
         $wizard->forgetConfigSource();
         $this->assertSame('', $wizard->done()['config_source'] ?? null);

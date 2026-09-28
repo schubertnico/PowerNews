@@ -10,10 +10,13 @@ declare(strict_types=1);
 
 /*
  * Lädt die Klassen von Installer und Update (Namensraum PowerNews\Installer)
- * sowie PowerNews\LocalConfig. Gibt nichts aus und startet nichts.
+ * sowie PowerNews\LocalConfig, PowerNews\Mailer und die Versionsnummer. Gibt
+ * nichts aus und startet nichts.
  */
 
+require_once dirname(__DIR__) . '/version.inc.php';
 require_once dirname(__DIR__) . '/localconfig.inc.php';
+require_once dirname(__DIR__) . '/mailer.inc.php';
 
 spl_autoload_register(static function (string $class): void {
     $prefix = 'PowerNews\\Installer\\';

@@ -11,8 +11,10 @@ declare(strict_types=1);
 /* Web-Installer: Schritt 5 (Zusammenfassung und Abschluss) */
 
 use PowerNews\Installer\Html;
+use PowerNews\Installer\SmtpCheck;
 use PowerNews\Installer\Wizard;
 use PowerNews\LocalConfig;
+use PowerNews\Mailer;
 
 /**
  * @param array<string, string> $errors
@@ -26,6 +28,9 @@ return static function (string $csrf, array $errors, string $message, Wizard $wi
     if ($database === null || $website === null || $admin === null) {
         return;
     }
+
+    $mail = $website['mail'];
+    $smtp = $mail['transport'] === Mailer::TRANSPORT_SMTP;
     ?>
 <p>Bitte prüfen Sie Ihre Angaben. „Jetzt installieren“ legt die Tabellen an, erstellt Ihr Administrator-Konto und sperrt den Installer.</p>
 
@@ -80,11 +85,31 @@ return static function (string $csrf, array $errors, string $message, Wizard $wi
       </dl>
     </section>
   </div>
+  <div class="col-12">
+    <section class="card shadow-sm" id="summary-mail">
+      <header class="card-header bg-secondary-subtle d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0">E-Mail-Versand</h2>
+        <a class="small" href="install.php?step=3#mail-settings" id="edit-mail">Ändern</a>
+      </header>
+      <dl class="card-body row align-content-start mb-0 small">
+        <dt class="col-sm-4">Versand über</dt>
+        <dd class="col-sm-8<?php echo $smtp ? '' : ' mb-0'; ?>" id="summary-mail-transport"><?php echo Html::escape(SmtpCheck::TRANSPORTS[$smtp ? Mailer::TRANSPORT_SMTP : Mailer::TRANSPORT_MAIL]); ?></dd>
+<?php if ($smtp) { ?>
+        <dt class="col-sm-4">Server</dt>
+        <dd class="col-sm-8 text-break" id="summary-smtp-host"><?php echo Html::escape($mail['host'] . ':' . Mailer::effectivePort($mail['port'], $mail['encryption'])); ?></dd>
+        <dt class="col-sm-4">Verschlüsselung</dt>
+        <dd class="col-sm-8" id="summary-smtp-encryption"><?php echo Html::escape(SmtpCheck::ENCRYPTIONS[$mail['encryption']] ?? $mail['encryption']); ?></dd>
+        <dt class="col-sm-4">Anmeldung</dt>
+        <dd class="col-sm-8 text-break mb-0" id="summary-smtp-user"><?php echo Html::escape($mail['user'] !== '' ? 'als ' . $mail['user'] . ' (Passwort gespeichert)' : 'ohne Anmeldung'); ?></dd>
+<?php } ?>
+      </dl>
+    </section>
+  </div>
 </div>
 
 <?php if ($configWritable) { ?>
 <div class="alert alert-info" role="note" id="config-mode-auto">
-  Die Zugangsdaten werden in <code><?php echo Html::escape(LocalConfig::RELATIVE_PATH); ?></code> gespeichert.
+  Die Zugangsdaten für Datenbank und E-Mail-Versand werden in <code><?php echo Html::escape(LocalConfig::RELATIVE_PATH); ?></code> gespeichert.
 </div>
 <?php } else { ?>
 <div class="alert alert-warning" role="note" id="config-mode-manual">
