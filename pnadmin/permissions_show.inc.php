@@ -19,8 +19,8 @@ if ($pnadmin['canreadpermissions'] == 'YES') {
             <tbody>
 <?php
                 $permissions = new permissions();
-                $permissions->listpermissions();
-?>
+    $permissions->listpermissions();
+    ?>
             </tbody>
         </table>
     </div>

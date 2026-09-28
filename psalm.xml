@@ -60,14 +60,6 @@
             </errorLevel>
         </UndefinedFunction>
 
-        <!-- Legacy-Code: Undefinierte Klassen -->
-        <UndefinedClass>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </UndefinedClass>
-
         <!-- Nullable Return Types - Legacy-Pattern -->
         <NullableReturnStatement>
             <errorLevel type="suppress">
@@ -76,13 +68,6 @@
             </errorLevel>
         </NullableReturnStatement>
 
-        <InvalidNullableReturnType>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </InvalidNullableReturnType>
-
         <!-- Redundante Conditions - Legacy defensive coding -->
         <RedundantCondition>
             <errorLevel type="suppress">
@@ -90,50 +75,6 @@
                 <directory name="pnadmin"/>
             </errorLevel>
         </RedundantCondition>
-
-        <!-- Mixed Types - Legacy ohne strikte Typen -->
-        <MixedAssignment>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </MixedAssignment>
-
-        <MixedArgument>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </MixedArgument>
-
-        <MixedArrayAccess>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </MixedArrayAccess>
-
-        <MixedOperand>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </MixedOperand>
-
-        <MixedReturnStatement>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </MixedReturnStatement>
-
-        <!-- Readonly Properties bei DTOs -->
-        <InaccessibleProperty>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </InaccessibleProperty>
 
         <!-- Falsable Returns bei Legacy-Funktionen -->
         <FalsableReturnStatement>
@@ -150,13 +91,6 @@
                 <directory name="pnadmin"/>
             </errorLevel>
         </InvalidArgument>
-
-        <InvalidScalarArgument>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </InvalidScalarArgument>
 
         <!-- Redundante Casts -->
         <RedundantCast>

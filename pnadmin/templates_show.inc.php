@@ -18,8 +18,8 @@ if ($pnadmin['canreadtemplates'] == 'YES') {
             <tbody>
 <?php
                 $template = new template();
-                $template->listtemplates();
-?>
+    $template->listtemplates();
+    ?>
             </tbody>
         </table>
     </div>

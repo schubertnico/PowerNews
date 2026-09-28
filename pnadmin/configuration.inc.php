@@ -57,11 +57,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_CATEGORIES; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="categories" value="YES" id="cfg_cat_yes" <?php if ($pnconfig['categories'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="categories" value="YES" id="cfg_cat_yes" <?php if ($pnconfig['categories'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_cat_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="categories" value="NO" id="cfg_cat_no" <?php if ($pnconfig['categories'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="categories" value="NO" id="cfg_cat_no" <?php if ($pnconfig['categories'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_cat_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -73,11 +77,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_CATPICS; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="categorypics" value="YES" id="cfg_catpics_yes" <?php if ($pnconfig['categorypics'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="categorypics" value="YES" id="cfg_catpics_yes" <?php if ($pnconfig['categorypics'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_catpics_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="categorypics" value="NO" id="cfg_catpics_no" <?php if ($pnconfig['categorypics'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="categorypics" value="NO" id="cfg_catpics_no" <?php if ($pnconfig['categorypics'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_catpics_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -89,11 +97,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_COMMENTS; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="comments" value="YES" id="cfg_com_yes" <?php if ($pnconfig['comments'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="comments" value="YES" id="cfg_com_yes" <?php if ($pnconfig['comments'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_com_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="comments" value="NO" id="cfg_com_no" <?php if ($pnconfig['comments'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="comments" value="NO" id="cfg_com_no" <?php if ($pnconfig['comments'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_com_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -104,8 +116,12 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           <div class="mb-3">
               <label for="cfg_commentwriting" class="form-label fw-bold"><?php echo L_CONF_WRITECOMMENTS; ?></label>
               <select class="form-select" name="commentwriting" id="cfg_commentwriting" aria-describedby="cfg_commentwriting_help">
-                  <option value="Guests/Registered" <?php if ($pnconfig['commentwriting'] == 'Guests/Registered') { echo 'selected'; } ?>><?php echo L_CONF_GUESTSANDREGS; ?></option>
-                  <option value="Registered" <?php if ($pnconfig['commentwriting'] == 'Registered') { echo 'selected'; } ?>><?php echo L_CONF_REGS; ?></option>
+                  <option value="Guests/Registered" <?php if ($pnconfig['commentwriting'] == 'Guests/Registered') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_GUESTSANDREGS; ?></option>
+                  <option value="Registered" <?php if ($pnconfig['commentwriting'] == 'Registered') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_REGS; ?></option>
               </select>
               <div id="cfg_commentwriting_help" class="form-text"><?php echo L_CONF_WRITECOMMENTS_DESC; ?></div>
           </div>
@@ -115,11 +131,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_MORETEXT; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="moretext" value="YES" id="cfg_mtext_yes" <?php if ($pnconfig['moretext'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="moretext" value="YES" id="cfg_mtext_yes" <?php if ($pnconfig['moretext'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_mtext_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="moretext" value="NO" id="cfg_mtext_no" <?php if ($pnconfig['moretext'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="moretext" value="NO" id="cfg_mtext_no" <?php if ($pnconfig['moretext'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_mtext_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -130,11 +150,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_SENDIN; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="sendnews" value="YES" id="cfg_sendnews_yes" <?php if ($pnconfig['sendnews'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="sendnews" value="YES" id="cfg_sendnews_yes" <?php if ($pnconfig['sendnews'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_sendnews_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="sendnews" value="NO" id="cfg_sendnews_no" <?php if ($pnconfig['sendnews'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="sendnews" value="NO" id="cfg_sendnews_no" <?php if ($pnconfig['sendnews'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_sendnews_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -144,8 +168,12 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           <div class="mb-3">
               <label for="cfg_newssending" class="form-label fw-bold"><?php echo L_CONF_SENDNEWS; ?></label>
               <select class="form-select" name="newssending" id="cfg_newssending" aria-describedby="cfg_newssending_help">
-                  <option value="Guests/Registered" <?php if ($pnconfig['newssending'] == 'Guests/Registered') { echo 'selected'; } ?>><?php echo L_CONF_GUESTSANDREGS; ?></option>
-                  <option value="Registered" <?php if ($pnconfig['newssending'] == 'Registered') { echo 'selected'; } ?>><?php echo L_CONF_REGS; ?></option>
+                  <option value="Guests/Registered" <?php if ($pnconfig['newssending'] == 'Guests/Registered') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_GUESTSANDREGS; ?></option>
+                  <option value="Registered" <?php if ($pnconfig['newssending'] == 'Registered') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_REGS; ?></option>
               </select>
               <div id="cfg_newssending_help" class="form-text"><?php echo L_CONF_SENDNEWS_DESC; ?></div>
           </div>
@@ -154,10 +182,18 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           <div class="mb-3">
               <label for="cfg_smilies" class="form-label fw-bold"><?php echo L_CONF_SMILIES; ?></label>
               <select class="form-select" name="smilies" id="cfg_smilies" aria-describedby="cfg_smilies_help">
-                  <option value="NO" <?php if ($pnconfig['smilies'] == 'NO') { echo 'selected'; } ?>><?php echo L_ALL_NO; ?></option>
-                  <option value="Comments" <?php if ($pnconfig['smilies'] == 'Comments') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTS; ?></option>
-                  <option value="Comments/News" <?php if ($pnconfig['smilies'] == 'Comments/News') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTSANDNEWS; ?></option>
-                  <option value="News" <?php if ($pnconfig['smilies'] == 'News') { echo 'selected'; } ?>><?php echo L_CONF_NEWS; ?></option>
+                  <option value="NO" <?php if ($pnconfig['smilies'] == 'NO') {
+                      echo 'selected';
+                  } ?>><?php echo L_ALL_NO; ?></option>
+                  <option value="Comments" <?php if ($pnconfig['smilies'] == 'Comments') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_COMMENTS; ?></option>
+                  <option value="Comments/News" <?php if ($pnconfig['smilies'] == 'Comments/News') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_COMMENTSANDNEWS; ?></option>
+                  <option value="News" <?php if ($pnconfig['smilies'] == 'News') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_NEWS; ?></option>
               </select>
               <div id="cfg_smilies_help" class="form-text"><?php echo L_CONF_SMILIES_DESC; ?></div>
           </div>
@@ -165,10 +201,18 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           <div class="mb-3">
               <label for="cfg_bbcode" class="form-label fw-bold"><?php echo L_CONF_BBCODE; ?></label>
               <select class="form-select" name="bbcode" id="cfg_bbcode" aria-describedby="cfg_bbcode_help">
-                  <option value="NO" <?php if ($pnconfig['bbcode'] == 'NO') { echo 'selected'; } ?>><?php echo L_ALL_NO; ?></option>
-                  <option value="Comments" <?php if ($pnconfig['bbcode'] == 'Comments') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTS; ?></option>
-                  <option value="Comments/News" <?php if ($pnconfig['bbcode'] == 'Comments/News') { echo 'selected'; } ?>><?php echo L_CONF_COMMENTSANDNEWS; ?></option>
-                  <option value="News" <?php if ($pnconfig['bbcode'] == 'News') { echo 'selected'; } ?>><?php echo L_CONF_NEWS; ?></option>
+                  <option value="NO" <?php if ($pnconfig['bbcode'] == 'NO') {
+                      echo 'selected';
+                  } ?>><?php echo L_ALL_NO; ?></option>
+                  <option value="Comments" <?php if ($pnconfig['bbcode'] == 'Comments') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_COMMENTS; ?></option>
+                  <option value="Comments/News" <?php if ($pnconfig['bbcode'] == 'Comments/News') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_COMMENTSANDNEWS; ?></option>
+                  <option value="News" <?php if ($pnconfig['bbcode'] == 'News') {
+                      echo 'selected';
+                  } ?>><?php echo L_CONF_NEWS; ?></option>
               </select>
               <div id="cfg_bbcode_help" class="form-text"><?php echo L_CONF_BBCODE_DESC; ?></div>
           </div>
@@ -228,11 +272,15 @@ if ($pnadmin['canreadconfig'] == 'YES') {
               <label class="form-label fw-bold"><?php echo L_CONF_RELATEDLINKS; ?></label>
               <div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="relatedlinks" value="YES" id="cfg_rl_yes" <?php if ($pnconfig['relatedlinks'] == 'YES') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="relatedlinks" value="YES" id="cfg_rl_yes" <?php if ($pnconfig['relatedlinks'] == 'YES') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_rl_yes"><?php echo L_ALL_YES; ?></label>
                   </div>
                   <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="relatedlinks" value="NO" id="cfg_rl_no" <?php if ($pnconfig['relatedlinks'] == 'NO') { echo 'checked'; } ?>>
+                      <input class="form-check-input" type="radio" name="relatedlinks" value="NO" id="cfg_rl_no" <?php if ($pnconfig['relatedlinks'] == 'NO') {
+                          echo 'checked';
+                      } ?>>
                       <label class="form-check-label" for="cfg_rl_no"><?php echo L_ALL_NO; ?></label>
                   </div>
               </div>
@@ -253,11 +301,11 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           </div>
       </form>
       <?php
-      }
+    }
 
-  } else {
-      ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
-  }
+} else {
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
+}
 
 ?>
     </div>

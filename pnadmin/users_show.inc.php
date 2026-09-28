@@ -8,6 +8,7 @@
 
 if ($pnadmin['canreadusers'] == 'YES') {
     $listusers = new user();
+
     if (!isset($_GET['current'])) {
         $_GET['current'] = '0';
     }

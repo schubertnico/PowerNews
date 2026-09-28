@@ -98,38 +98,66 @@ if ($pnadmin['canreadpermissions'] == 'YES' && $pnadmin['canwritepermissions'] =
                               <tbody>
                                   <tr>
                                       <td><?php echo L_PERM_TEMPLATES; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadtemplates" value="YES" <?php if ($data['canreadtemplates'] == 'YES') { echo 'checked'; } ?> aria-label="Templates lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritetemplates" value="YES" <?php if ($data['canwritetemplates'] == 'YES') { echo 'checked'; } ?> aria-label="Templates schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadtemplates" value="YES" <?php if ($data['canreadtemplates'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Templates lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritetemplates" value="YES" <?php if ($data['canwritetemplates'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Templates schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_CONFIG; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadconfig" value="YES" <?php if ($data['canreadconfig'] == 'YES') { echo 'checked'; } ?> aria-label="Konfiguration lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwriteconfig" value="YES" <?php if ($data['canwriteconfig'] == 'YES') { echo 'checked'; } ?> aria-label="Konfiguration schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadconfig" value="YES" <?php if ($data['canreadconfig'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Konfiguration lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwriteconfig" value="YES" <?php if ($data['canwriteconfig'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Konfiguration schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_USER; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadusers" value="YES" <?php if ($data['canreadusers'] == 'YES') { echo 'checked'; } ?> aria-label="Benutzer lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwriteusers" value="YES" <?php if ($data['canwriteusers'] == 'YES') { echo 'checked'; } ?> aria-label="Benutzer schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadusers" value="YES" <?php if ($data['canreadusers'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Benutzer lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwriteusers" value="YES" <?php if ($data['canwriteusers'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Benutzer schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_PERMISSIONS; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadpermissions" value="YES" <?php if ($data['canreadpermissions'] == 'YES') { echo 'checked'; } ?> aria-label="Berechtigungen lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritepermissions" value="YES" <?php if ($data['canwritepermissions'] == 'YES') { echo 'checked'; } ?> aria-label="Berechtigungen schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadpermissions" value="YES" <?php if ($data['canreadpermissions'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Berechtigungen lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritepermissions" value="YES" <?php if ($data['canwritepermissions'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Berechtigungen schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_CATS; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadcategories" value="YES" <?php if ($data['canreadcategories'] == 'YES') { echo 'checked'; } ?> aria-label="Kategorien lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritecategories" value="YES" <?php if ($data['canwritecategories'] == 'YES') { echo 'checked'; } ?> aria-label="Kategorien schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadcategories" value="YES" <?php if ($data['canreadcategories'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Kategorien lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritecategories" value="YES" <?php if ($data['canwritecategories'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Kategorien schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_NEWS; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadnews" value="YES" <?php if ($data['canreadnews'] == 'YES') { echo 'checked'; } ?> aria-label="News lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritenews" value="YES" <?php if ($data['canwritenews'] == 'YES') { echo 'checked'; } ?> aria-label="News schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadnews" value="YES" <?php if ($data['canreadnews'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="News lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritenews" value="YES" <?php if ($data['canwritenews'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="News schreiben"></td>
                                   </tr>
                                   <tr>
                                       <td><?php echo L_PERM_COMMENTS; ?></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadcomments" value="YES" <?php if ($data['canreadcomments'] == 'YES') { echo 'checked'; } ?> aria-label="Kommentare lesen"></td>
-                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritecomments" value="YES" <?php if ($data['canwritecomments'] == 'YES') { echo 'checked'; } ?> aria-label="Kommentare schreiben"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canreadcomments" value="YES" <?php if ($data['canreadcomments'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Kommentare lesen"></td>
+                                      <td class="text-center"><input class="form-check-input" type="checkbox" name="canwritecomments" value="YES" <?php if ($data['canwritecomments'] == 'YES') {
+                                          echo 'checked';
+                                      } ?> aria-label="Kommentare schreiben"></td>
                                   </tr>
                               </tbody>
                           </table>

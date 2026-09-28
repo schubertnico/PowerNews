@@ -182,30 +182,32 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
 <?php
                               /* Gespeicherte Links (JSON oder Altformat) */
                               $link = [];
-                              foreach (pn_relatedlinks_decode((string) $data['relatedlinks']) as $stored) {
-                                  $link[] = [$stored['title'], $stored['url'], $stored['target']];
-                              }
 
-                              /* List forms for related links */
-                              for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
-                                  ?>
+    foreach (pn_relatedlinks_decode((string) $data['relatedlinks']) as $stored) {
+        $link[] = [$stored['title'], $stored['url'], $stored['target']];
+    }
+
+    /* List forms for related links */
+    for ($i = 0; $i < $pnconfig['relatedlinks_num']; ++$i) {
+        ?>
                                   <tr>
                                       <td><input class="form-control form-control-sm" name="rl_title[]" maxlength="50" value="<?php echo pnadmin_escape($link[$i][0] ?? ''); ?>" aria-label="<?php echo L_NEWS_RL_TITLE; ?>"></td>
                                       <td><input class="form-control form-control-sm" name="rl_url[]" maxlength="250" value="<?php echo pnadmin_escape($link[$i][1] ?? ''); ?>" aria-label="<?php echo L_NEWS_RL_URL; ?>"></td>
                                       <td>
                                           <select class="form-select form-select-sm" name="rl_target[]" aria-label="<?php echo L_NEWS_RL_TARGET; ?>">
 <?php
-                                              $tcounter = count($pn_config['rltargets']);
-                                              for ($i2 = 0; $i2 < $tcounter; ++$i2) {
-                                                  ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>" <?php echo ($pn_config['rltargets'][$i2] ?? '') == ($link[$i][2] ?? '') ? 'selected' : ''; ?>><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
-                                              }
-?>
+                    $tcounter = count($pn_config['rltargets']);
+
+        for ($i2 = 0; $i2 < $tcounter; ++$i2) {
+            ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>" <?php echo ($pn_config['rltargets'][$i2] ?? '') == ($link[$i][2] ?? '') ? 'selected' : ''; ?>><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
+        }
+        ?>
                                           </select>
                                       </td>
                                   </tr>
 <?php
-                              }
-?>
+    }
+    ?>
                               </tbody>
                           </table>
                       </div>
@@ -240,8 +242,8 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
             <section class="mt-4">
                 <h2 class="h6"><?php echo L_NEWS_COMMENTS; ?></h2>
 <?php
-                $editnews->getcomments($newsid, false);
-?>
+                $editnews->getcommentsreadonly($newsid);
+              ?>
             </section>
             <?php
           } elseif ($pnconfig['comments'] == 'YES' && $pnadmin['canreadcomments'] == 'YES') {
@@ -251,7 +253,7 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                     <legend class="h6"><?php echo L_NEWS_EDITCOMMENTS; ?></legend>
 <?php
                     $editnews->getcomments($newsid);
-?>
+              ?>
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-primary"><?php echo L_NEWS_EDITCOMMENTS; ?></button>
                         <button type="reset" class="btn btn-outline-secondary"><?php echo L_ALL_RESETDATA; ?></button>

@@ -51,7 +51,7 @@ function pn_run_migrations(mysqli $db, array $pn_config): array
         $db,
         'CREATE TABLE IF NOT EXISTS pn_migrations ('
         . '`name` varchar(100) NOT NULL, `applied_at` int(14) NOT NULL, PRIMARY KEY (`name`)'
-        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci'
+        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
     );
 
     $applied = [];

@@ -8,6 +8,7 @@
 
 if ($pnadmin['canreadnews'] == 'YES') {
     $news = new news();
+
     if (!isset($_GET['current'])) {
         $_GET['current'] = '0';
     }

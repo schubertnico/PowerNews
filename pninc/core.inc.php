@@ -384,7 +384,7 @@ function pn_password_resets_prepare(mysqli $db): void
         . '`id` int(11) NOT NULL AUTO_INCREMENT, `userid` int(11) NOT NULL, `token_hash` char(64) NOT NULL, '
         . '`created` int(14) NOT NULL, `expires` int(14) NOT NULL, `ip` varchar(64) NOT NULL DEFAULT \'\', '
         . 'PRIMARY KEY (`id`), KEY `idx_token` (`token_hash`), KEY `idx_userid` (`userid`), KEY `idx_ip_created` (`ip`, `created`)'
-        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci'
+        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
     );
 
     $now = time();
@@ -452,7 +452,7 @@ function pn_password_reset_user(mysqli $db, array $pn_config, string $token): ?a
     $stmt = mysqli_prepare(
         $db,
         'SELECT u.* FROM ' . $pn_config['usertable'] . ' u INNER JOIN pn_password_resets r ON r.userid = u.id '
-        . "WHERE r.token_hash = ? AND r.expires > ? AND u.status = 'Activated'"
+        . "WHERE r.token_hash = ? AND r.expires > ? AND u.status = 'Activated'",
     );
     mysqli_stmt_bind_param($stmt, 'si', $tokenHash, $now);
     mysqli_stmt_execute($stmt);

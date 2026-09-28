@@ -199,7 +199,8 @@ function pnadmin_auth_check(): ?array
     }
 
     [$userId, $token] = $session;
-    $user = (new getadmin())->getuserdata($userId, $token);
+    $checkdata = new getadmin();
+    $user = $checkdata->getuserdata($userId, $token);
 
     if (($user['loggedin'] ?? 'NO') !== 'YES') {
         return null;
@@ -207,12 +208,14 @@ function pnadmin_auth_check(): ?array
 
     // Permissions laden.
     $pstmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
+
     if (!$pstmt) {
         return null;
     }
     mysqli_stmt_bind_param($pstmt, 'i', $userId);
     mysqli_stmt_execute($pstmt);
     $presult = mysqli_stmt_get_result($pstmt);
+
     if (mysqli_num_rows($presult) !== 1) {
         return null;
     }
@@ -223,7 +226,7 @@ function pnadmin_auth_check(): ?array
         return null;
     }
 
-    return array_merge(is_array($user) ? $user : [], is_array($perms) ? $perms : []);
+    return array_merge($user, is_array($perms) ? $perms : []);
 }
 
 // Function for checking logindata
@@ -693,7 +696,6 @@ class getadmin
 
 class menus
 {
-
     public function submenu(string $page): void
     {
         global $pnconfig;
@@ -702,47 +704,47 @@ class menus
         $activeSub = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
 
         // Erzeugt einen einzelnen Subpage-Link als Bootstrap-Outline-Button.
-        // Die Klasse wechselt zu "btn-primary" (gefuellt), wenn der Tab aktiv ist.
-        $renderItem = static function (string $href, string $label, bool $active = false, ?string $target = null): void {
-            $classes = $active ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
+        // Die Klasse wechselt zu "btn-primary" (gefüllt), wenn die aktuelle Unterseite in $activeFor steht.
+        $renderItem = static function (string $href, string $label, array $activeFor = [], ?string $target = null) use ($activeSub): void {
+            $classes = in_array($activeSub, $activeFor, true) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
             $targetAttr = $target !== null ? ' target="' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '" rel="noopener noreferrer"' : '';
             ?><a class="<?php echo $classes; ?>" href="<?php echo htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $targetAttr; ?>><?php echo $label; ?></a><?php
         };
 
         switch ($page) {
             case 'templates':
-                $renderItem('index.php?page=templates&subpage=add', L_MENU_ADDTEMPLATE, $activeSub === 'add');
-                $renderItem('index.php?page=templates&subpage=show', L_MENU_SHOWTEMPLATES, $activeSub === 'show' || $activeSub === 'edit');
+                $renderItem('index.php?page=templates&subpage=add', L_MENU_ADDTEMPLATE, ['add']);
+                $renderItem('index.php?page=templates&subpage=show', L_MENU_SHOWTEMPLATES, ['show', 'edit']);
                 break;
             case 'users':
-                $renderItem('index.php?page=users&subpage=add', L_MENU_ADDUSER, $activeSub === 'add');
-                $renderItem('index.php?page=users&subpage=show', L_MENU_SHOWUSER, $activeSub === 'show' || $activeSub === 'edit');
-                $renderItem('index.php?page=users&subpage=search', L_MENU_SEARCHUSER, $activeSub === 'search');
+                $renderItem('index.php?page=users&subpage=add', L_MENU_ADDUSER, ['add']);
+                $renderItem('index.php?page=users&subpage=show', L_MENU_SHOWUSER, ['show', 'edit']);
+                $renderItem('index.php?page=users&subpage=search', L_MENU_SEARCHUSER, ['search']);
                 break;
             case 'permissions':
-                $renderItem('index.php?page=permissions&subpage=add', L_MENU_ADDPERMISSIONS, $activeSub === 'add');
-                $renderItem('index.php?page=permissions&subpage=show', L_MENU_SHOWPERMISSIONS, $activeSub === 'show' || $activeSub === 'edit');
+                $renderItem('index.php?page=permissions&subpage=add', L_MENU_ADDPERMISSIONS, ['add']);
+                $renderItem('index.php?page=permissions&subpage=show', L_MENU_SHOWPERMISSIONS, ['show', 'edit']);
                 break;
             case 'configuration':
-                $renderItem('index.php?page=configuration', L_MENU_EDITCONFIG, true);
+                $renderItem('index.php?page=configuration', L_MENU_EDITCONFIG, [$activeSub]);
                 break;
             case 'categories':
                 if ($pnconfig['categories'] == 'YES') {
-                    $renderItem('index.php?page=categories&subpage=add', L_MENU_ADDCAT, $activeSub === 'add');
-                    $renderItem('index.php?page=categories&subpage=show', L_MENU_SHOWCATS, $activeSub === 'show' || $activeSub === 'edit');
+                    $renderItem('index.php?page=categories&subpage=add', L_MENU_ADDCAT, ['add']);
+                    $renderItem('index.php?page=categories&subpage=show', L_MENU_SHOWCATS, ['show', 'edit']);
                 } else {
                     ?><span class="badge text-bg-secondary"><?php echo L_MENU_CATSDEACTIVATED; ?></span><?php
                 }
                 break;
             case 'news':
-                $renderItem('index.php?page=news&subpage=add', L_MENU_ADDNEWS, $activeSub === 'add');
-                $renderItem('index.php?page=news&subpage=show', L_MENU_SHOWNEWS, $activeSub === 'show' || $activeSub === 'edit');
-                $renderItem('index.php?page=news&subpage=search', L_MENU_SEARCHNEWS, $activeSub === 'search');
+                $renderItem('index.php?page=news&subpage=add', L_MENU_ADDNEWS, ['add']);
+                $renderItem('index.php?page=news&subpage=show', L_MENU_SHOWNEWS, ['show', 'edit']);
+                $renderItem('index.php?page=news&subpage=search', L_MENU_SEARCHNEWS, ['search']);
                 break;
             case 'other':
-                $renderItem('index.php?page=other&subpage=help', L_MENU_HELP, $activeSub === 'help');
-                $renderItem('index.php?page=other&subpage=license', L_MENU_LICENSE, $activeSub === 'license');
-                $renderItem('https://www.powerscripts.org', L_MENU_PSHP, false, '_ps');
+                $renderItem('index.php?page=other&subpage=help', L_MENU_HELP, ['help']);
+                $renderItem('index.php?page=other&subpage=license', L_MENU_LICENSE, ['license']);
+                $renderItem('https://www.powerscripts.org', L_MENU_PSHP, [], '_ps');
                 break;
             default:
                 ?><span class="text-muted"><?php echo L_MENU_CHOOSESECTION; ?></span><?php
@@ -755,6 +757,14 @@ class menus
 
 class user
 {
+    /** Alle Rechte-Spalten aus pn_permissions. */
+    public const PERMISSION_FIELDS = [
+        'canreadtemplates', 'canwritetemplates', 'canreadconfig', 'canwriteconfig',
+        'canreadusers', 'canwriteusers', 'canreadpermissions', 'canwritepermissions',
+        'canreadcategories', 'canwritecategories', 'canreadnews', 'canwritenews',
+        'canreadcomments', 'canwritecomments',
+    ];
+
     public function generate_password(): string
     {
         $pwarray = array_merge(range('a', 'z'), range('A', 'Z'), range('0', '9'));
@@ -902,14 +912,6 @@ class user
             }
         }
     }
-
-    /** Alle Rechte-Spalten aus pn_permissions. */
-    public const PERMISSION_FIELDS = [
-        'canreadtemplates', 'canwritetemplates', 'canreadconfig', 'canwriteconfig',
-        'canreadusers', 'canwriteusers', 'canreadpermissions', 'canwritepermissions',
-        'canreadcategories', 'canwritecategories', 'canreadnews', 'canwritenews',
-        'canreadcomments', 'canwritecomments',
-    ];
 
     /**
      * Darf der angemeldete Admin dieses Konto bearbeiten (B24)? Konten ohne Admin-Rechte
@@ -1322,6 +1324,7 @@ class permissions
                         if ($value == 'YES') {
                             return '<span class="badge text-bg-success" aria-label="' . L_ALL_YES . '">&check;</span>';
                         }
+
                         return '<span class="badge text-bg-secondary" aria-label="' . L_ALL_NO . '">&minus;</span>';
                     };
                     ?>
@@ -1607,14 +1610,15 @@ class category
             return null;
         }
 
-        $info = @getimagesize($path);
+        $info = getimagesize($path);
 
         if ($info === false || !isset(self::PICTURE_TYPES[$info[2]])) {
             return null;
         }
 
         [$mime, $canonical] = self::PICTURE_TYPES[$info[2]];
-        $detected = (new finfo(FILEINFO_MIME_TYPE))->file($path);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $detected = $finfo->file($path);
 
         if ($detected !== $mime || ($extension === 'jpeg' ? 'jpg' : $extension) !== $canonical) {
             return null;
@@ -2010,63 +2014,20 @@ class news
     }
 
     /**
-     * Listet die Kommentare einer News. Ohne das Recht „Kommentare schreiben“ ($editable
-     * = false) erscheinen sie nur zum Lesen, ohne Eingabefelder (B39).
+     * Listet die Kommentare einer News mit Eingabefeldern zum Bearbeiten und Löschen.
      */
-    public function getcomments(int $newsid, bool $editable = true): void
+    public function getcomments(int $newsid): void
     {
-        global $pn_config, $pn_handler;
+        $this->rendercomments($newsid, 'edit');
+    }
 
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? ORDER BY id DESC');
-        mysqli_stmt_bind_param($stmt, 'i', $newsid);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
-
-        if ($num == 0) {
-            ?><div class="alert alert-info mb-0" role="alert"><?php echo L_NEWS_NOCOMMENTS; ?></div><?php
-        } else {
-            while ($row = mysqli_fetch_array($result)) {
-                ?>
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="small text-muted mb-2">
-                            <?php echo L_NEWS_WRITTENBY; ?>
-                            <?php if ($row['userid'] == '0') {
-                                echo L_NEWS_GUEST;
-                            } else {
-                                echo $this->getcommentauthor((int) $row['userid']);
-                            } ?>
-                            <?php echo L_NEWS_ONDATE; ?> <?php echo date('d.m.Y', (int) $row['time']); ?>
-                            <?php echo L_NEWS_AT; ?> <?php echo date('H:i', (int) $row['time']); ?>
-                            (IP: <?php echo pnadmin_escape($row['ip']); ?>)
-                        </div>
-<?php if (!$editable) { ?>
-                        <div class="pn-comment-text"><?php echo nl2br(pnadmin_escape((string) $row['text'])); ?></div>
-                    </div>
-                </div>
-<?php
-                    continue;
-                } ?>
-                        <input type="hidden" name="commentid[]" value="<?php echo (int) $row['id']; ?>">
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" for="pn_commenttext_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_TEXT; ?></label>
-                            <textarea class="form-control" name="commenttext[]" id="pn_commenttext_<?php echo (int) $row['id']; ?>" rows="4" aria-describedby="pn_commenttext_help_<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['text']); ?></textarea>
-                            <div id="pn_commenttext_help_<?php echo (int) $row['id']; ?>" class="form-text"><?php echo L_NEWS_COMMENTEXT_DESC; ?></div>
-                        </div>
-
-                        <div class="pn-danger-action">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="commentdelete[]" value="<?php echo (int) $row['id']; ?>" id="pn_commentdelete_<?php echo (int) $row['id']; ?>">
-                                <label class="form-check-label fw-bold text-danger" for="pn_commentdelete_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_DELETECOMMENT; ?></label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php
-            }
-        }
+    /**
+     * Listet die Kommentare einer News nur zum Lesen, ohne Eingabefelder. Für Admins ohne
+     * das Recht „Kommentare schreiben“ (B39).
+     */
+    public function getcommentsreadonly(int $newsid): void
+    {
+        $this->rendercomments($newsid, 'read');
     }
 
     public function getcommentauthor(int $userid): string
@@ -2222,24 +2183,25 @@ class news
      */
     public static function parsetime(array $time): ?int
     {
-        $parts = [];
+        $number = static function (mixed $value, int $min, int $max): ?int {
+            $int = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => $min, 'max_range' => $max]]);
 
-        foreach (['day' => [1, 31], 'month' => [1, 12], 'year' => [1970, 2100], 'hour' => [0, 23], 'min' => [0, 59]] as $key => [$min, $max]) {
-            $value = filter_var($time[$key] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => $min, 'max_range' => $max]]);
+            return $int === false ? null : $int;
+        };
 
-            if ($value === false) {
-                return null;
-            }
-            $parts[$key] = $value;
-        }
+        $day = $number($time['day'] ?? null, 1, 31);
+        $month = $number($time['month'] ?? null, 1, 12);
+        $year = $number($time['year'] ?? null, 1970, 2100);
+        $hour = $number($time['hour'] ?? null, 0, 23);
+        $minute = $number($time['min'] ?? null, 0, 59);
 
-        if (!checkdate($parts['month'], $parts['day'], $parts['year'])) {
+        if ($day === null || $month === null || $year === null || $hour === null || $minute === null || !checkdate($month, $day, $year)) {
             return null;
         }
 
-        $timestamp = mktime($parts['hour'], $parts['min'], 0, $parts['month'], $parts['day'], $parts['year']);
+        $date = new DateTimeImmutable();
 
-        return $timestamp === false ? null : $timestamp;
+        return $date->setDate($year, $month, $day)->setTime($hour, $minute)->getTimestamp();
     }
 
     /**
@@ -2368,6 +2330,64 @@ class news
                 ?>
                     </td>
                 </tr>
+                <?php
+            }
+        }
+    }
+
+    private function rendercomments(int $newsid, string $mode): void
+    {
+        global $pn_config, $pn_handler;
+
+        $editable = $mode === 'edit';
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? ORDER BY id DESC');
+        mysqli_stmt_bind_param($stmt, 'i', $newsid);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $num = mysqli_num_rows($result);
+
+        if ($num == 0) {
+            ?><div class="alert alert-info mb-0" role="alert"><?php echo L_NEWS_NOCOMMENTS; ?></div><?php
+        } else {
+            while ($row = mysqli_fetch_array($result)) {
+                ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="small text-muted mb-2">
+                            <?php echo L_NEWS_WRITTENBY; ?>
+                            <?php if ($row['userid'] == '0') {
+                                echo L_NEWS_GUEST;
+                            } else {
+                                echo $this->getcommentauthor((int) $row['userid']);
+                            } ?>
+                            <?php echo L_NEWS_ONDATE; ?> <?php echo date('d.m.Y', (int) $row['time']); ?>
+                            <?php echo L_NEWS_AT; ?> <?php echo date('H:i', (int) $row['time']); ?>
+                            (IP: <?php echo pnadmin_escape($row['ip']); ?>)
+                        </div>
+<?php if (!$editable) { ?>
+                        <div class="pn-comment-text"><?php echo nl2br(pnadmin_escape((string) $row['text'])); ?></div>
+                    </div>
+                </div>
+<?php
+                    continue;
+} ?>
+                        <input type="hidden" name="commentid[]" value="<?php echo (int) $row['id']; ?>">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="pn_commenttext_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_TEXT; ?></label>
+                            <textarea class="form-control" name="commenttext[]" id="pn_commenttext_<?php echo (int) $row['id']; ?>" rows="4" aria-describedby="pn_commenttext_help_<?php echo (int) $row['id']; ?>"><?php echo pnadmin_escape((string) $row['text']); ?></textarea>
+                            <div id="pn_commenttext_help_<?php echo (int) $row['id']; ?>" class="form-text"><?php echo L_NEWS_COMMENTEXT_DESC; ?></div>
+                        </div>
+
+                        <div class="pn-danger-action">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="commentdelete[]" value="<?php echo (int) $row['id']; ?>" id="pn_commentdelete_<?php echo (int) $row['id']; ?>">
+                                <label class="form-check-label fw-bold text-danger" for="pn_commentdelete_<?php echo (int) $row['id']; ?>"><?php echo L_NEWS_DELETECOMMENT; ?></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php
             }
         }

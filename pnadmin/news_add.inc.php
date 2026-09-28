@@ -124,16 +124,17 @@ if ($pnadmin['canwritenews'] == 'YES') {
                                       <select class="form-select form-select-sm" name="rl_target[]" aria-label="<?php echo L_NEWS_RL_TARGET; ?>">
 <?php
                                           $counter = count($pn_config['rltargets']);
-                                          for ($i2 = 0; $i2 < $counter; ++$i2) {
-                                              ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>"><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
-                                          }
-?>
+
+                              for ($i2 = 0; $i2 < $counter; ++$i2) {
+                                  ?><option value="<?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?>"><?php echo pnadmin_escape($pn_config['rltargets'][$i2]); ?></option><?php
+                              }
+                              ?>
                                       </select>
                                   </td>
                               </tr>
 <?php
                           }
-?>
+    ?>
                           </tbody>
                       </table>
                   </div>

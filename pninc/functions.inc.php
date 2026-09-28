@@ -48,15 +48,18 @@ function pn_convert_date_format(string $format): string
 
     $result = '';
     $len = strlen($format);
+
     for ($i = 0; $i < $len; ++$i) {
         if ($format[$i] === '%' && $i + 1 < $len) {
             $token = substr($format, $i, 2);
+
             if (isset($map[$token])) {
                 $result .= $map[$token];
                 ++$i;
                 continue;
             }
         }
+
         // Escape literal characters that have meaning in date()
         if (strpos('dDjlNSwzWFmMntLoYyaABgGhHisuveIOPpTZcrU', $format[$i]) !== false) {
             $result .= '\\' . $format[$i];
@@ -390,6 +393,7 @@ class pn_news
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $template->message(L_ALL_CSRFINVALID, $backToNews, 'danger');
+
             return;
         }
 
@@ -397,13 +401,16 @@ class pn_news
 
         if ($text === '' || $text === '0') {
             $template->message(L_ALL_FILLALL, $backToNews, 'danger');
+
             return;
         }
 
         // Length limit (BUG-038)
         $maxLen = 5000;
+
         if (mb_strlen($text) > $maxLen) {
             $template->message(sprintf(L_NEWS_COMMENTTOOLONG, $maxLen), $backToNews, 'danger');
+
             return;
         }
 
@@ -411,8 +418,10 @@ class pn_news
         $stmt = mysqli_prepare($pn_handler, 'SELECT id FROM ' . $pn_config['newstable'] . " WHERE id = ? AND status = 'Activated'");
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
         mysqli_stmt_execute($stmt);
+
         if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) !== 1) {
             $template->message(L_NEWS_NEWSNOTFOUND, $pn_config['newsfile']);
+
             return;
         }
 
@@ -438,11 +447,13 @@ class pn_news
                 $sp_unit = L_NEWS_SECONDS;
             }
             $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", $backToNews, 'warning');
+
             return;
         }
 
         if (($pnconfig['commentwriting'] ?? '') === 'Registered' && (($pnuser['loggedin'] ?? 'NO') !== 'YES')) {
             $template->message(L_NEWS_CANNOTPOSTCOMMENTS, $pn_config['userfile'] . '?page=login', 'warning');
+
             return;
         }
 
@@ -644,6 +655,7 @@ class pn_news
                     // CSRF-Token pruefen (IMP-003)
                     if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
                         $template->message(L_ALL_CSRFINVALID, $pn_config['sendnewsfile'], 'danger');
+
                         return;
                     }
 
@@ -733,6 +745,7 @@ class pn_user
 
         if ($sendFlag !== 'YES') {
             $template->registerform();
+
             return;
         }
 
@@ -741,6 +754,7 @@ class pn_user
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $template->message(L_ALL_CSRFINVALID, $registerUrl, 'danger');
+
             return;
         }
 
@@ -750,6 +764,7 @@ class pn_user
 
         if ($nickname === '' || $email === '') {
             $template->message(L_USR_INVALIDREGISTRATION, $registerUrl, 'danger');
+
             return;
         }
 
@@ -760,6 +775,7 @@ class pn_user
 
         if (mysqli_num_rows($result) !== 0) {
             $template->message(L_USR_USRALREADYEXISTS, $registerUrl, 'danger');
+
             return;
         }
 
@@ -768,12 +784,14 @@ class pn_user
         $now = time();
 
         mysqli_begin_transaction($pn_handler);
+
         try {
             $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail) VALUES(?, ?, ?, ?, ?)');
             mysqli_stmt_bind_param($stmt, 'sssis', $nickname, $email, $hashedPassword, $now, $showemail);
             mysqli_stmt_execute($stmt);
 
             $pemail = new pn_email();
+
             if (!$pemail->registeremail($nickname, $email, $password)) {
                 throw new RuntimeException('mail send failed');
             }
@@ -865,9 +883,11 @@ class pn_user
             // Ist PowerNews anders eingebunden, erscheint ein Link statt einer leeren Seite (B32).
             if (($pnuser['loggedin'] ?? 'NO') === 'YES') {
                 $template->message(L_USR_ALREADYLOGGEDIN, $pn_config['userfile'] . '?page=profile');
+
                 return;
             }
             $template->loginform();
+
             return;
         }
 
@@ -876,6 +896,7 @@ class pn_user
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $template->message(L_ALL_CSRFINVALID, $loginUrl, 'danger');
+
             return;
         }
 
@@ -885,6 +906,7 @@ class pn_user
 
         if ($nickname === '' || $password === '') {
             $template->message(L_ALL_FILLALL, $loginUrl, 'danger');
+
             return;
         }
 
@@ -892,6 +914,7 @@ class pn_user
         // Nickname sperren dessen Inhaber nicht aus.
         if (pn_login_throttled($pn_handler, $ip)) {
             $template->message(L_USR_TOOMANYATTEMPTS, $loginUrl, 'danger');
+
             return;
         }
 
@@ -902,8 +925,10 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
 
         $valid = false;
+
         if (mysqli_num_rows($result) === 1) {
             $row = mysqli_fetch_array($result);
+
             if (($row['status'] ?? 'Activated') === 'Activated'
                 && pn_verify_password($password, $row['password'], (int) $row['id'])) {
                 $valid = true;
@@ -934,6 +959,7 @@ class pn_user
 
         if ($search === '') {
             $template->senddataform();
+
             return;
         }
 
@@ -942,6 +968,7 @@ class pn_user
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $template->message(L_ALL_CSRFINVALID, $senddataUrl, 'danger');
+
             return;
         }
 
@@ -952,6 +979,7 @@ class pn_user
 
         if (pn_password_reset_requests($pn_handler, $ip) >= PN_RESET_MAX_PER_IP) {
             $template->message(L_USR_TOOMANYREQUESTS, $senddataUrl, 'danger');
+
             return;
         }
 
@@ -973,7 +1001,8 @@ class pn_user
         pn_password_reset_store($pn_handler, $send ? $userId : 0, $token, $ip);
 
         if ($send && is_array($row)) {
-            (new pn_email())->dataemail((string) $row['nickname'], (string) $row['email'], $this->resetlink($token));
+            $mailer = new pn_email();
+            $mailer->dataemail((string) $row['nickname'], (string) $row['email'], $this->resetlink($token));
         }
 
         // Always reply generic (BUG-021)
@@ -1006,16 +1035,19 @@ class pn_user
 
         if ($user === null) {
             $template->message(L_USR_RESETINVALID, $pn_config['userfile'] . '?page=senddata', 'danger');
+
             return;
         }
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
             $this->resetform($user, $token, '');
+
             return;
         }
 
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $this->resetform($user, $token, L_ALL_CSRFINVALID);
+
             return;
         }
 
@@ -1024,50 +1056,18 @@ class pn_user
 
         if ($password !== $password2) {
             $this->resetform($user, $token, L_USR_PASSNOTEQUAL);
+
             return;
         }
 
         if (strlen($password) < 8) {
             $this->resetform($user, $token, L_USR_PASSWORDTOOSHORT);
+
             return;
         }
 
         pn_password_reset_complete($pn_handler, $pn_config, (int) $user['id'], $password);
         $template->message(L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login', 'success');
-    }
-
-    /**
-     * Formular für das neue Passwort.
-     *
-     * @param array<string, mixed> $user
-     */
-    private function resetform(array $user, string $token, string $error): void
-    {
-        global $pn_config;
-
-        $action = pn_escape($pn_config['userfile']) . '?page=resetpassword';
-        ?>
-<form accept-charset="UTF-8" action="<?php echo $action; ?>" method="post" class="card mb-4">
-    <h2 class="card-header h6 mb-0"><?php echo L_USR_RESETTITLE; ?></h2>
-    <div class="card-body">
-<?php if ($error !== '') { ?>
-        <div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
-<?php } ?>
-        <p><?php echo sprintf(L_USR_RESETINTRO, pn_escape((string) $user['nickname'])); ?></p>
-        <div class="mb-3">
-            <label for="pn_newpassword" class="form-label fw-bold"><?php echo L_USR_NEWPASSWORD; ?></label>
-            <input type="password" class="form-control" name="pndata[password]" id="pn_newpassword" minlength="8" maxlength="128" autocomplete="new-password" required>
-        </div>
-        <div class="mb-3">
-            <label for="pn_newpassword2" class="form-label fw-bold"><?php echo L_USR_REPEATNEWPASSWORD; ?></label>
-            <input type="password" class="form-control" name="pndata[password2]" id="pn_newpassword2" minlength="8" maxlength="128" autocomplete="new-password" required>
-        </div>
-        <button type="submit" class="btn btn-primary"><?php echo L_USR_SAVEPASSWORD; ?></button>
-        <input type="hidden" name="pndata[token]" value="<?php echo pn_escape($token); ?>">
-        <input type="hidden" name="csrf_token" value="<?php echo pn_escape(pn_csrf_token()); ?>">
-    </div>
-</form>
-        <?php
     }
 
     // Print out usermenu
@@ -1092,6 +1092,7 @@ class pn_user
 
         if (!isset($pnuser) || ($pnuser['loggedin'] ?? 'NO') !== 'YES') {
             $template->message(L_USR_NOTLOGGEDIN, $pn_config['userfile'] . '?page=login', 'warning');
+
             return;
         }
 
@@ -1099,6 +1100,7 @@ class pn_user
 
         if ($sendFlag !== 'YES') {
             $template->profileform($pnuser);
+
             return;
         }
 
@@ -1107,6 +1109,7 @@ class pn_user
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
             $template->message(L_ALL_CSRFINVALID, $profileUrl, 'danger');
+
             return;
         }
 
@@ -1126,19 +1129,24 @@ class pn_user
 
         if ($nickname === '' || $email === '' || ($homepageInput !== '' && $homepage === '')) {
             $template->message(L_USR_INVALIDPROFILE, $profileUrl, 'danger');
+
             return;
         }
 
         // Passwort-Felder sind optional
         $updatePw = false;
         $hashedPassword = '';
+
         if ($password !== '' || $password2 !== '') {
             if ($password !== $password2) {
                 $template->message(L_USR_PASSNOTEQUAL, $profileUrl, 'danger');
+
                 return;
             }
+
             if (strlen($password) < 8) {
                 $template->message(L_USR_PASSWORDTOOSHORT, $profileUrl, 'danger');
+
                 return;
             }
             $hashedPassword = pn_hash_password($password);
@@ -1153,6 +1161,7 @@ class pn_user
 
         if (mysqli_num_rows($result) !== 0) {
             $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, $profileUrl, 'danger');
+
             return;
         }
 
@@ -1207,6 +1216,40 @@ class pn_user
         if (!headers_sent()) {
             header('Location: ./' . $pn_config['userfile'] . '?page=login');
         }
+    }
+
+    /**
+     * Formular für das neue Passwort.
+     *
+     * @param array<string, mixed> $user
+     */
+    private function resetform(array $user, string $token, string $error): void
+    {
+        global $pn_config;
+
+        $action = pn_escape($pn_config['userfile']) . '?page=resetpassword';
+        ?>
+<form accept-charset="UTF-8" action="<?php echo $action; ?>" method="post" class="card mb-4">
+    <h2 class="card-header h6 mb-0"><?php echo L_USR_RESETTITLE; ?></h2>
+    <div class="card-body">
+<?php if ($error !== '') { ?>
+        <div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
+<?php } ?>
+        <p><?php echo sprintf(L_USR_RESETINTRO, pn_escape((string) $user['nickname'])); ?></p>
+        <div class="mb-3">
+            <label for="pn_newpassword" class="form-label fw-bold"><?php echo L_USR_NEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password]" id="pn_newpassword" minlength="8" maxlength="128" autocomplete="new-password" required>
+        </div>
+        <div class="mb-3">
+            <label for="pn_newpassword2" class="form-label fw-bold"><?php echo L_USR_REPEATNEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password2]" id="pn_newpassword2" minlength="8" maxlength="128" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary"><?php echo L_USR_SAVEPASSWORD; ?></button>
+        <input type="hidden" name="pndata[token]" value="<?php echo pn_escape($token); ?>">
+        <input type="hidden" name="csrf_token" value="<?php echo pn_escape(pn_csrf_token()); ?>">
+    </div>
+</form>
+        <?php
     }
 }
 
@@ -1329,12 +1372,14 @@ class pn_template
             "!\[(?i)img\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[(?i)/img\]!",
             static function ($m) use ($allowedImgHosts) {
                 $url = $m[1];
+
                 if (preg_match($allowedImgHosts, $url)) {
                     return '<img src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" alt="" border="0">';
                 }
+
                 return '[img]' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '[/img]';
             },
-            (string) $text
+            (string) $text,
         );
 
         return preg_replace("!\n!", '<br>', (string) $text);
@@ -1451,6 +1496,7 @@ class pn_template
             // damit der Platzhalter-Text nicht im Output sichtbar bleibt, wenn die
             // Funktion in der Konfiguration deaktiviert ist oder keine Links gepflegt wurden.
             $rlinks = '';
+
             if ($pnconfig['relatedlinks'] == 'YES') {
                 foreach (pn_relatedlinks_decode($relatedlinks) as $link) {
                     // Auch Altdaten mit fremdem Schema (javascript: …) nie als Link ausgeben (B37).
@@ -1897,7 +1943,6 @@ class pn_template
 
         if ($num == 1) {
             [$sendnewsform] = mysqli_fetch_array($result);
-
 
             $relatedlinks = '';
 

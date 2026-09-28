@@ -176,6 +176,12 @@ class PermissionsData
  */
 class ConfigData
 {
+    /** Gültige Werte der ENUM-Spalten commentwriting/newssending in pn_config. */
+    public const WRITERS = ['Guests/Registered', 'Registered'];
+
+    /** Gültige Werte der ENUM-Spalten smilies/bbcode/html in pn_config. */
+    public const AREAS = ['NO', 'Comments', 'Comments/News', 'News'];
+
     public function __construct(
         public readonly string $categories = 'NO',
         public readonly string $categorypics = 'NO',
@@ -199,12 +205,6 @@ class ConfigData
         public readonly int $relatedlinks_num = 3,
     ) {
     }
-
-    /** Gültige Werte der ENUM-Spalten commentwriting/newssending in pn_config. */
-    public const WRITERS = ['Guests/Registered', 'Registered'];
-
-    /** Gültige Werte der ENUM-Spalten smilies/bbcode/html in pn_config. */
-    public const AREAS = ['NO', 'Comments', 'Comments/News', 'News'];
 
     /**
      * Erstellt ConfigData aus POST-Daten.

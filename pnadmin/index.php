@@ -206,31 +206,31 @@ $isLoggedIn = ($pnloggedin === 'YES');
     <div class="container-fluid">
 <?php if ($isLoggedIn && isset($_GET['page']) && $_GET['page']) { ?>
 <?php
-        // Lokalisierte Sektions- und Subpage-Namen fuer die Brotkrumen-Navigation.
-        $sectionLabels = [
-            'templates' => L_MENU_TEMPLATES,
-            'users' => L_MENU_USERS,
-            'permissions' => L_MENU_PERMISSIONS,
-            'configuration' => L_MENU_CONFIG,
-            'categories' => L_MENU_CATEGORIES,
-            'news' => L_MENU_NEWS,
-            'other' => L_MENU_OTHER,
-            'profile' => L_TITLE_PROFILE,
-            'main' => L_ALL_START,
-        ];
-        $subpageLabels = [
-            'add' => L_SUB_ADD,
-            'show' => L_SUB_SHOW,
-            'edit' => L_SUB_EDIT,
-            'search' => L_SUB_SEARCH,
-            'help' => L_SUB_HELP,
-            'license' => L_SUB_LICENSE,
-        ];
-        $sectionKey = (string) $_GET['page'];
-        $sectionLabel = $sectionLabels[$sectionKey] ?? ucfirst($sectionKey);
-        $subpageKey = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
-        $subpageLabel = $subpageKey !== '' ? ($subpageLabels[$subpageKey] ?? ucfirst($subpageKey)) : '';
-?>
+    // Lokalisierte Sektions- und Subpage-Namen fuer die Brotkrumen-Navigation.
+    $sectionLabels = [
+        'templates' => L_MENU_TEMPLATES,
+        'users' => L_MENU_USERS,
+        'permissions' => L_MENU_PERMISSIONS,
+        'configuration' => L_MENU_CONFIG,
+        'categories' => L_MENU_CATEGORIES,
+        'news' => L_MENU_NEWS,
+        'other' => L_MENU_OTHER,
+        'profile' => L_TITLE_PROFILE,
+        'main' => L_ALL_START,
+    ];
+    $subpageLabels = [
+        'add' => L_SUB_ADD,
+        'show' => L_SUB_SHOW,
+        'edit' => L_SUB_EDIT,
+        'search' => L_SUB_SEARCH,
+        'help' => L_SUB_HELP,
+        'license' => L_SUB_LICENSE,
+    ];
+    $sectionKey = (string) $_GET['page'];
+    $sectionLabel = $sectionLabels[$sectionKey] ?? ucfirst($sectionKey);
+    $subpageKey = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
+    $subpageLabel = $subpageKey !== '' ? ($subpageLabels[$subpageKey] ?? ucfirst($subpageKey)) : '';
+    ?>
         <nav aria-label="<?php echo L_ALL_BREADCRUMB; ?>" class="mb-3">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="index.php"><?php echo L_ALL_START; ?></a></li>
@@ -247,8 +247,8 @@ $isLoggedIn = ($pnloggedin === 'YES');
         <nav aria-label="<?php echo L_QUICKLINKS; ?>" class="card mb-3">
             <div class="card-body py-2 d-flex flex-wrap gap-2 align-items-center">
 <?php
-                $individualmenus->submenu($sectionKey);
-?>
+                    $individualmenus->submenu($sectionKey);
+    ?>
             </div>
         </nav>
 <?php } ?>
@@ -320,9 +320,9 @@ if (!$isLoggedIn) {
     <div class="container-fluid text-center small">
 <?php
     $endoutput = explode(' ', microtime());
-    $startop = (float) $startoutput[1] + (float) $startoutput[0];
-    $endop = (float) $endoutput[1] + (float) $endoutput[0];
-    $outputtime = round($endop - $startop, 3);
+$startop = (float) $startoutput[1] + (float) $startoutput[0];
+$endop = (float) $endoutput[1] + (float) $endoutput[0];
+$outputtime = round($endop - $startop, 3);
 ?>
         <?php echo L_ALL_PAGECREATEDIN; ?> <?php echo pnadmin_escape((string) $outputtime); ?> <?php echo L_ALL_SECONDSBY; ?>
         <a href="https://www.powerscripts.org" target="_blank" rel="noopener noreferrer"><?php echo pnadmin_escape($psdesignscript . ' ' . PN_VERSION); ?> &copy; <?php echo PN_COPYRIGHT_YEARS; ?> PowerScripts</a>
