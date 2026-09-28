@@ -161,11 +161,12 @@ define('L_USR_SHOWEMAIL', 'Show E-Mail');
 define('L_USR_SHOWEMAIL_DESC', 'Show the E-Mail address of the new user?');
 define('L_USR_SENDMAIL', 'Send E-Mail');
 define('L_USR_SENDMAIL_DESC', 'Send E-Mail with login data to the new user?');
+define('L_USR_SENDMAIL_EDIT_DESC', 'Send the changed data to the user by e-mail. With a new password the e-mail is always sent.');
 define('L_USR_USREDITED', 'User was edited successfully');
 define('L_USR_EDITUSR', 'Edit user');
 define('L_USR_CHOOSEUSER', 'Please choose a user');
 define('L_USR_NEWPW', 'New password');
-define('L_USR_NEWPW_DESC', 'Generate new password for the user?');
+define('L_USR_NEWPW_DESC', 'Generate a new password for the user? It is sent to the user by e-mail.');
 define('L_USR_STATUS', 'Status');
 define('L_USR_STATUS_DESC', 'Status of the user');
 define('L_USR_ADMIN', 'Admin');
@@ -409,8 +410,8 @@ define('L_TITLE_USERS', 'Users');
 define('L_TITLE_DOCUMENTNOTFOUND', '404 – Document not found');
 
 /* E-Mails */
-define('L_EMAIL_SUBJECT', 'PowerNews Auto Notification');
-define('L_EMAIL_AUTHOR', 'PowerScripts Automailer');
+define('L_EMAIL_SUBJECT', 'PowerNews notification');
+define('L_EMAIL_AUTHOR', 'PowerNews');
 
 /* Something else */
 define('L_ALL_NOPAGE', 'The requested page does not exist!');
@@ -428,6 +429,7 @@ define('L_QUICKLINKS', 'Quick links');
 define('L_ALL_PAGECREATEDIN', 'Page created in');
 define('L_ALL_SECONDSBY', 'seconds by');
 define('L_ALL_WELCOME', 'Welcome to the PowerNews administration!<br><br>Please report any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a>.');
+define('L_ALL_DEFAULTCONFIGWARNING', 'URL and sender address are still set to the factory defaults (powerscripts.org). E-mails would be sent with this sender and with links to powerscripts.org. Please change both in the <a href="index.php?page=configuration">configuration</a>.');
 define('L_ALL_CSRFINVALID', 'The security check failed, so nothing was saved. The form was open too long or did not come from the administration. Please try again.');
 define('L_ALL_BACK', 'Back');
 define('L_ALL_BACKTOFORM', 'Back to the form');

@@ -339,7 +339,8 @@ class template
 
         if ($num == 1) {
             [$addemail] = mysqli_fetch_array($result);
-            return pn_template_fill((string) $addemail, [
+
+            return pn_mail_text((string) $addemail, [
                 'NICKNAME' => $nickname,
                 'EMAIL' => $email,
                 'PASSWORD' => $password,
@@ -363,7 +364,9 @@ class template
 
         if ($num == 1) {
             [$editemail] = mysqli_fetch_array($result);
-            return pn_template_fill((string) $editemail, [
+
+            // Ohne neues Passwort entfällt die Passwortzeile (B21).
+            return pn_mail_text((string) $editemail, [
                 'NICKNAME' => $nickname,
                 'EMAIL' => $email,
                 'PASSWORD' => $password,
@@ -607,9 +610,7 @@ class email
         $addemail = $template->addemail($nickname, $email, $password);
 
         if ($addemail) {
-            $headers = 'From: ' . L_EMAIL_AUTHOR . ' <' . $pnconfig['email'] . '>';
-
-            return mail($email, L_EMAIL_SUBJECT, $addemail, $headers);
+            return pn_send_mail($email, L_EMAIL_SUBJECT, $addemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -622,9 +623,7 @@ class email
         $editemail = $template->editemail($nickname, $email, $password);
 
         if ($editemail) {
-            $headers = 'From: ' . L_EMAIL_AUTHOR . ' <' . $pnconfig['email'] . '>';
-
-            return mail($email, L_EMAIL_SUBJECT, $editemail, $headers);
+            return pn_send_mail($email, L_EMAIL_SUBJECT, $editemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -999,6 +998,9 @@ class user
 
             if ($num == 0) {
                 if (pn_validate_email($email) !== '') {
+                    // Das Formular sendet kein Passwort; nur ein neu erzeugtes wird verschickt.
+                    $password = '';
+
                     if ($newpassword === 'YES') {
                         $password = $this->generate_password();
                         $hashedPassword = pnadmin_hash_password($password);
@@ -1021,7 +1023,8 @@ class user
                         pn_sessions_delete_for_user($pn_handler, $userid);
                     }
 
-                    if ($sendemail === 'YES') {
+                    // Ein neues Passwort muss den Benutzer erreichen, deshalb geht die Mail dann immer raus.
+                    if ($sendemail === 'YES' || $password !== '') {
                         $emailObj = new email();
                         $emailObj->editemail($nickname, $email, $password);
                     }

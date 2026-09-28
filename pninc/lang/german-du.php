@@ -92,8 +92,8 @@ define('L_NEWS_COMMENTTOOLONG', 'Der Kommentar ist zu lang (höchstens %d Zeiche
 define('L_NEWS_NEWSNOTFOUND', 'Die News wurde nicht gefunden.');
 
 /* E-Mail */
-define('L_EMAIL_TITLE', 'PowerNews Autobenachrichtigung');
-define('L_EMAIL_AUTHOR', 'PowerNews Automailer');
+define('L_EMAIL_TITLE', 'PowerNews-Benachrichtigung');
+define('L_EMAIL_AUTHOR', 'PowerNews');
 
 /* Templates */
 define('L_TEMPL_CANNOTLOADTEMPL', 'Das Template konnte nicht geladen werden!');

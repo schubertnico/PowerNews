@@ -161,11 +161,12 @@ define('L_USR_SHOWEMAIL', 'E-Mail anzeigen');
 define('L_USR_SHOWEMAIL_DESC', 'Soll die E-Mail-Adresse des Benutzers angezeigt werden?');
 define('L_USR_SENDMAIL', 'E-Mail senden');
 define('L_USR_SENDMAIL_DESC', 'Soll dem Benutzer eine E-Mail mit seinen Daten gesendet werden?');
+define('L_USR_SENDMAIL_EDIT_DESC', 'Die geänderten Daten per E-Mail an den Benutzer schicken. Mit einem neuen Passwort geht die E-Mail immer raus.');
 define('L_USR_USREDITED', 'Der Benutzer wurde erfolgreich editiert!');
 define('L_USR_EDITUSR', 'Benutzer editieren');
 define('L_USR_CHOOSEUSER', 'Du musst einen Benutzer auswählen!');
 define('L_USR_NEWPW', 'Neues Passwort');
-define('L_USR_NEWPW_DESC', 'Soll für den Benutzer ein neues Passwort generiert werden?');
+define('L_USR_NEWPW_DESC', 'Soll für den Benutzer ein neues Passwort erzeugt werden? Es wird ihm per E-Mail zugeschickt.');
 define('L_USR_STATUS', 'Status');
 define('L_USR_STATUS_DESC', 'Der Status des Benutzers');
 define('L_USR_ADMIN', 'Admin');
@@ -409,8 +410,8 @@ define('L_TITLE_USERS', 'Benutzer');
 define('L_TITLE_DOCUMENTNOTFOUND', '404 – Dokument nicht gefunden');
 
 /* E-Mails */
-define('L_EMAIL_SUBJECT', 'PowerNews Auto-Benachrichtigung');
-define('L_EMAIL_AUTHOR', 'PowerScripts Automailer');
+define('L_EMAIL_SUBJECT', 'PowerNews-Benachrichtigung');
+define('L_EMAIL_AUTHOR', 'PowerNews');
 
 /* Something else */
 define('L_ALL_NOPAGE', 'Die aufgerufene Seite existiert nicht!');
@@ -428,6 +429,7 @@ define('L_QUICKLINKS', 'Schnellzugriff');
 define('L_ALL_PAGECREATEDIN', 'Seite erstellt in');
 define('L_ALL_SECONDSBY', 'Sekunden von');
 define('L_ALL_WELCOME', 'Willkommen in der PowerNews-Administration!<br><br>Gefundene Fehler kannst Du gerne an <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a> melden.');
+define('L_ALL_DEFAULTCONFIGWARNING', 'URL und Absenderadresse stehen noch auf den Werkseinstellungen (powerscripts.org). E-Mails würden mit diesem Absender und mit Links auf powerscripts.org verschickt. Bitte passe beides in der <a href="index.php?page=configuration">Konfiguration</a> an.');
 define('L_ALL_CSRFINVALID', 'Die Sicherheitsprüfung ist fehlgeschlagen, deshalb wurde nichts gespeichert. Das Formular war zu lange geöffnet oder stammt nicht aus der Administration. Bitte versuche es erneut.');
 define('L_ALL_BACK', 'Zurück');
 define('L_ALL_BACKTOFORM', 'Zurück zum Formular');

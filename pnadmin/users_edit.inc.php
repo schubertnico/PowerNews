@@ -107,8 +107,9 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                   </div>
 
                   <div class="form-check mb-3">
-                      <input class="form-check-input" type="checkbox" name="sendemail" value="YES" id="pn_sendemail" checked>
+                      <input class="form-check-input" type="checkbox" name="sendemail" value="YES" id="pn_sendemail" aria-describedby="pn_sendemail_help">
                       <label class="form-check-label fw-bold" for="pn_sendemail"><?php echo L_USR_SENDMAIL; ?></label>
+                      <div id="pn_sendemail_help" class="form-text"><?php echo L_USR_SENDMAIL_EDIT_DESC; ?></div>
                   </div>
 
                   <div class="d-flex gap-2">

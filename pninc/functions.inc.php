@@ -1223,9 +1223,7 @@ class pn_email
         $registeremail = $template->registeremail($nickname, $email, $password);
 
         if ($registeremail) {
-            $headers = 'From: ' . L_EMAIL_AUTHOR . ' <' . $pnconfig['email'] . '>';
-
-            return mail($email, L_EMAIL_TITLE, $registeremail, $headers);
+            return pn_send_mail($email, L_EMAIL_TITLE, $registeremail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -1239,9 +1237,7 @@ class pn_email
         $dataemail = $template->dataemail($nickname, $email, $resetlink);
 
         if ($dataemail) {
-            $headers = 'From: ' . L_EMAIL_AUTHOR . ' <' . $pnconfig['email'] . '>';
-
-            return mail($email, L_EMAIL_TITLE, $dataemail, $headers);
+            return pn_send_mail($email, L_EMAIL_TITLE, $dataemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -1650,7 +1646,7 @@ class pn_template
         if ($num == 1) {
             [$registeremail] = mysqli_fetch_array($result);
 
-            return pn_template_fill((string) $registeremail, [
+            return pn_mail_text((string) $registeremail, [
                 'NICKNAME' => $nickname,
                 'EMAIL' => $email,
                 'PASSWORD' => $password,

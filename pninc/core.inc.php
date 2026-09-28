@@ -609,3 +609,49 @@ function pn_relatedlinks_from_input(array $titles, array $urls, array $targets, 
 
     return [$links, $invalid];
 }
+
+/**
+ * Verschickt eine Text-Mail mit korrekten Kopfzeilen (B21): UTF-8, MIME-Version,
+ * kodierter Betreff und Absendername. Absender und Empfänger werden geprüft, damit
+ * keine zusätzlichen Kopfzeilen eingeschleust werden können.
+ */
+function pn_send_mail(string $to, string $subject, string $body, string $fromName, string $fromAddress): bool
+{
+    if (filter_var($to, FILTER_VALIDATE_EMAIL) === false || filter_var($fromAddress, FILTER_VALIDATE_EMAIL) === false) {
+        return false;
+    }
+
+    return mail($to, mb_encode_mimeheader($subject, 'UTF-8', 'B'), str_replace("\r\n", "\n", $body), pn_mail_headers($fromName, $fromAddress));
+}
+
+/**
+ * Kopfzeilen einer PowerNews-Mail.
+ *
+ * @return array<string, string>
+ */
+function pn_mail_headers(string $fromName, string $fromAddress): array
+{
+    $fromName = trim(str_replace(["\r", "\n"], ' ', $fromName));
+
+    return [
+        'From' => mb_encode_mimeheader($fromName, 'UTF-8', 'B') . ' <' . str_replace(["\r", "\n"], '', $fromAddress) . '>',
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding' => '8bit',
+    ];
+}
+
+/**
+ * Füllt einen Mailtext. Ist kein Passwort zu übermitteln, entfällt die Zeile mit {PASSWORD}
+ * ganz, statt „Passwort: “ leer zu verschicken (B21).
+ *
+ * @param array<string, string|int> $values
+ */
+function pn_mail_text(string $template, array $values): string
+{
+    if (($values['PASSWORD'] ?? '') === '') {
+        $template = (string) preg_replace('/^[^\n]*\{PASSWORD\}[^\n]*(?:\n|$)/m', '', str_replace("\r\n", "\n", $template));
+    }
+
+    return pn_template_fill($template, $values);
+}
