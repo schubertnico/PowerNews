@@ -6,545 +6,469 @@
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
 
-/* German help file written by PowerScripts (Stefan Kraemer) */
+/* German help file (Sie-Form) written by PowerScripts (Stefan Kraemer) */
+/* Stand PowerNews 3.12; german-du_help.php und english_help.php haben denselben Aufbau. */
 ?>
-<a name="#top"></a>
-<ul type="square">
-  <li><a href="#user">Benutzer</a>
-  <li><a href="#permissions">Berechtigungen</a>
-  <li><a href="#configuration">Konfiguration</a>
-  <li><a href="#templates">Templates</a>
-  <li><a href="#categories">Kategorien</a>
-  <li><a href="#news">News</a>
-  <li><a href="#other">Sonstiges</a>
-</ul>
+<div id="pn-help-top"></div>
 
-<!-- USER -->
+<p class="lead">Diese Hilfe beschreibt den Adminbereich von PowerNews. Klicken Sie auf einen Bereich, um direkt zur Erklärung zu springen.</p>
 
-  <a name="#user"></a><b>BENUTZER</b>
-  <ul>
-    <li><a href="#user.add">Benutzer hinzufügen</a>
-    <li><a href="#user.edit">Benutzer editieren</a>
-    <li><a href="#user.delete">Benutzer löschen</a>
-  </ul>
+<nav class="card mb-4">
+    <div class="card-body">
+        <h2 class="h6 fw-bold mb-2">Inhalt</h2>
+        <ul class="mb-0">
+            <li><a href="#help-start">Startseite</a></li>
+            <li><a href="#help-news">News</a></li>
+            <li><a href="#help-categories">Kategorien</a></li>
+            <li><a href="#help-users">Benutzer</a></li>
+            <li><a href="#help-permissions">Berechtigungen</a></li>
+            <li><a href="#help-templates">Templates</a></li>
+            <li><a href="#help-configuration">Konfiguration</a></li>
+            <li><a href="#help-profile">Eigenes Profil</a></li>
+            <li><a href="#help-other">Sonstiges (BB-Code, Smilies, Lizenz)</a></li>
+        </ul>
+    </div>
+</nav>
 
-    <blockquote>
-    <a name="#user.add"></a><b>BENUTZER HINZUFüGEN</b><br>
-    Normalerweise registrieren sich die Benutzer auf der externen Seite. Sollte man dieses Feature jedoch
-    nicht eingebaut haben, so kann man über den Adminbereich
-    <a href="index.php?page=users&subpage=add">Benutzer hinzufügen</a>. Diese Funktion ist wichtig, da ein
-    Benutzer erst Administrator werden kann wenn er registriert ist. Es wird empfohlen dem neuen Benutzer eine
-    E-Mail mit seinen Daten zukommen zu lassen damit dieser auch darüber informiert ist, dass er jetzt
-    registriert ist.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+<!-- ==================== STARTSEITE ==================== -->
+<section id="help-start" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Startseite</h2>
+    <p>Die Startseite zeigt, was Aufmerksamkeit braucht: <strong>Zu prüfen</strong> nennt die Zahl der von Besuchern eingesendeten News mit Status <em>Ungeprüft</em> und führt mit <em>Einsendungen prüfen</em> direkt zur gefilterten News-Liste. <strong>Kommentare</strong> zählt die neuen Kommentare der letzten 7 Tage und verlinkt die fünf neuesten.</p>
+    <p>Navigation, Schnellzugriff und Startseite zeigen nur, wofür Ihr Konto das Recht hat. Ohne Leserecht für einen Bereich erscheint er nicht im Menü; ein direkter Aufruf endet mit „Zugriff verweigert“.</p>
+    <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+</section>
 
-    <blockquote>
-    <a name="#user.edit"></a><b>BENUTZER EDITIEREN</b><br>
-    Es ist möglich die Benutzer über den Adminbereich zu editieren. Um einen Benutzer auszuwählen kann man
-    diesen entweder aus der <a href="index.php?page=users&subpage=show">Benutzerliste</a> auswählen oder ihn
-    über das <a href="index.php?page=users&subpage=search">Suchformular</a> suchen.<br>
-    Wenn der Status eines Benutzers auf <b>Deaktiviert</b> steht, so kann dieser keine Kommentare posten und
-    keine News einsenden. Außerdem ist es dann auch nicht möglich dem Benutzer Adminrechte zu geben.<br>
-    Sollte man Nickname oder Passwort des Benutzers editieren so ist es von Vorteil, wenn man ihm eine E-Mail
-    mit seinen neuen Logindaten zukommen lässt.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#user.delete"></a><b>BENUTZER LöSCHEN</b><br>
-    Zur Zeit ist es nicht möglich Benutzer zu löschen, jedoch kann der Status des Benutzers auf
-    <b>Deaktiviert</b> gesetzt werden.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-<!-- PERMISSIONS -->
-
-  <a name="#permissions"></a><b>BERECHTIGUNGEN</b>
-  <ul>
-    <li><a href="#permissions.add">Berechtigungen hinzufügen</a>
-    <li><a href="#permissions.edit">Berechtigungen editieren</a>
-    <li><a href="#permissions.delete">Berechtigungen löschen</a>
-  </ul>
-
-    <blockquote>
-    <a name="#permissions.add"></a><b>BERECHTIGUNGEN HINZUFüGEN</b><br>
-    Berechtigungen werden hinzugefügt indem man den korrekten Nicknamen des Benutzers angibt der
-    Adminrechte bekommen soll und dann auswählt welche Berechtigungen der Benutzer bekommt.<br>
-    Der Benutzer wird nach dem
-    <a href="index.php?page=permissions&subpage=add">Hinzufügen der Berechtigungen</a> nicht über seine
-    Adminrechte informiert, man sollte ihn deshalb selbst aufklären.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#permissions.edit"></a><b>BERECHTIGUNGEN EDITIEREN</b><br>
-    Um die Berechtigungen zu editieren wählt man den Benutzer dessen Berechtigungen man editieren will
-    in der <a href="index.php?page=permissions&subpage=show">Berechtigunsliste</a> aus. Hier kann man die
-    Berechtigungen des Benutzers schon auf einen Blick erfassen. Mit einem Klick auf den Nickname des
-    Admins kann man dann die Rechte editieren.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#permissions.delete"></a><b>BERECHTIGUNGEN LöSCHEN</b><br>
-    Um die Berechtigungen eines Benutzers zu löschen geht man vor wie beim
-    <a href="#permissions.edit">Berechtigungen editieren</a> nur aktiviert man das Häckchen bei
-    <b>Löschen</b>.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-<!-- CONFIGURATION -->
-
-  <a name="#configuration"></a><b>KONFIGURATION</b>
-  <ul>
-    <li><a href="#configuration.categories">Kategorien</a>
-    <li><a href="#configuration.catpics">Kategoriebilder</a>
-    <li><a href="#configuration.comments">Kommentare</a>
-    <li><a href="#configuration.writecomments">Kommentare schreiben</a>
-    <li><a href="#configuration.longtext">Textaufteilung</a>
-    <li><a href="#configuration.sendnews">Einsenden Funktion</a>
-    <li><a href="#configuration.newssending">News einsenden</a>
-    <li><a href="#configuration.smilies">Smilies</a>
-    <li><a href="#configuration.bbcode">BB Code</a>
-    <li><a href="#configuration.html">HTML</a>
-    <li><a href="#configuration.dateformat">Datums- & Zeitformat</a>
-    <li><a href="#configuration.template">Template</a>
-    <li><a href="#configuration.url">URL</a>
-    <li><a href="#configuration.email">E-Mail</a>
-    <li><a href="#configuration.headlines">Headlines</a>
-    <li><a href="#configuration.news">News</a>
-    <li><a href="#configuration.spamprotection">Spamschutz</a>
-  </ul>
-
-    <blockquote>
-    <a name="#configuration.categories"></a><b>KATEGORIEN</b><br>
-    über diese Einstellung kann man auswählen, ob man Newskategorien verwenden will oder nicht. Sollte diese
-    Option aktiviert sein, so muss mindestens eine Kategorie bestehen damit man News schreiben kann.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.catpics"></a><b>KATEGORIEBILDER</b><br>
-    Wenn man Bilder für die Newskategorien verwenden möchte, dann muss diese Option aktiviert sein. Sollte
-    man generell keine <a href="#configuration.categories">Kategorien</a> erlauben, so ist diese Option
-    deaktiviert.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.comments"></a><b>KOMMENTARE</b><br>
-    über diese Option kann man einstellen ob Kommentare zu Newseinträgen erlaubt sind oder nicht.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.writecomments"></a><b>KOMMENTARE SCHREIBEN</b><br>
-    Hier kann man einstellen wer alles Newskommentare schreiben darf. Sollten keine Kommentare erlaubt sein
-    so ist diese Einstellung deaktiviert.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.longtext"></a><b>TEXTAUFTEILUNG</b><br>
-    Wenn diese Option aktiviert ist, so kann man beim Newsschreiben einen kurzen und einen langen Text
-    angeben. Der kurze Text wird auf der Startseite angezeigt, der lange als Ergänzung wenn man sich die
-    News ganz ansieht.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.sendnews"></a><b>EINSENDEN FUNKTION</b><br>
-    Diese Option regelt ob Benutzer News einsenden dürfen oder nicht.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.newssending"></a><b>NEWS EINSENDEN</b><br>
-    Durch diese Option kann man bestimmen ob nur registrierte Benutzer News einsenden können oder auch Gäste.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.smilies"></a><b>SMILIES</b><br>
-    Hier kann man wählen ob Smilies erlaubt werden sollen und wenn ja wo. Unter <a href="#other">Sonstiges</a>
-    sind alle möglichen <a href="#other.smilies">Smilies</a> aufgelistet.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.bbcode"></a><b>BB CODE</b><br>
-    Hier kann man wählen ob BB Code erlaubt werden soll und wenn ja wo. Unter <a href="#other">Sonstiges</a>
-    sind alle möglichen <a href="#other.bbcode">BB Codes</a> aufgelistet.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a name="#configuration.html"></a><b>HTML</b><br>
-    Hier kann man wählen ob HTML erlaubt werden soll und wenn ja wo. Unter <a href="#other">Sonstiges</a>
-    ist eine übersicht der wichtigsten <a href="#other.html">HTML Befehle</a> zu finden.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
-
-    <blockquote>
-    <a id="help-configuration-dateformat"></a><b>DATUMS- & ZEITFORMAT</b><br>
-    über diese Option kann man einstellen wie das Datum und die Zeit ausgegeben wird. Dabei sind eine Vielzahl
-    von Platzhaltern möglich, hier ein Auszug:<br>
-    <ul type="square">
-      <li><b>%d</b> für den Tag (01-31)
-      <li><b>%m</b> für den Monat (01-12)
-      <li><b>%Y</b> für das Jahr (z.B. 2002)
-      <li><b>%H</b> für die Stunden (00-23)
-      <li><b>%M</b> für die Minuten (01-59)
+<!-- ==================== NEWS ==================== -->
+<section id="help-news" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">News</h2>
+    <ul>
+        <li><a href="#help-news-add">News schreiben</a></li>
+        <li><a href="#help-news-show">News anzeigen und filtern</a></li>
+        <li><a href="#help-news-edit">News editieren, löschen, Kommentare moderieren</a></li>
+        <li><a href="#help-news-search">News suchen</a></li>
+        <li><a href="#help-news-status">Status-Erklärung</a></li>
     </ul>
-    Die gesamte Liste von Platzhaltern finden Sie auf der
-    <a href="http://www.php.net/manual/de/function.strftime.php" target="_blank">PHP Webseite</a>.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
 
-    <blockquote>
-    <a name="#configuration.template"></a><b>TEMPLATE</b><br>
-    über diese Option kann das aktive Template gewählt werden. über die
-    <a href="index.php?page=templates&subpage=add">Template hinzufügen</a> Funktion können weitere Templates
-    erstellt werden.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-news-add" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">News schreiben</h3>
+        <p>Über <a href="index.php?page=news&amp;subpage=add">News &gt; News schreiben</a> legen Sie einen neuen Eintrag an. Pflichtfelder sind <strong>Titel</strong> und <strong>Text</strong>; ist die Kategorie-Funktion aktiv, ist zusätzlich eine <strong>Kategorie</strong> nötig. Zur Auswahl stehen nur aktive Kategorien.</p>
+        <p>Den Erscheinungstermin wählen Sie mit Tag, Monat, Jahr, Stunde und Minute. Liegt er in der Zukunft, erscheint die News erst dann auf der Startseite und im Archiv.</p>
+        <p>Ist <em>Textaufteilung</em> in der Konfiguration aktiviert, können Sie zusätzlich einen <strong>langen Text</strong> hinterlegen, der erst auf der Detailseite erscheint. Sind <em>weiterführende Links</em> aktiv, tragen Sie je Link Titel, Adresse (http://, https:// oder ein relativer Pfad) und Ziel ein: <em>Neues Fenster</em> oder <em>Gleiches Fenster</em>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#configuration.url"></a><b>URL</b><br>
-    Hier muss die korrekte URL zum PowerNews Verzeichnis angegeben werden. Sollte sich der Adminbereich also
-    zum Beispiel unter <b>http://www.host.tld/dir/pnadmin</b> befinden, so muss der korrekte Pfad
-    <b>http://www.host.tld/dir</b> lauten. Die URL wird ohne den letzten Slash angegeben.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-news-show" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">News anzeigen und filtern</h3>
+        <p>Unter <a href="index.php?page=news&amp;subpage=show">News &gt; News anzeigen</a> finden Sie alle Beiträge, die neuesten zuerst, 25 pro Seite. Über der Liste filtern Sie nach Status: <em>Alle</em>, <em>Ungeprüft</em> (mit Anzahl), <em>Aktiviert</em> oder <em>Deaktiviert</em>. Ein Klick auf den Titel öffnet die Bearbeitung.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#configuration.email"></a><b>EMAIL</b><br>
-    Die hier angegebene Adresse wird verwendet um alle automatisch generierten E-Mails abzuschicken. Es ist
-    wichtig, dass hier eine korrekte E-Mail-Adresse steht, da der Mailverkehr ansonsten nicht korrekt
-    ausgeführt werden könnte.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-news-edit" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">News editieren, löschen, Kommentare moderieren</h3>
+        <p>Wählen Sie eine News in der <a href="index.php?page=news&amp;subpage=show">News-Liste</a> oder im <a href="index.php?page=news&amp;subpage=search">Suchergebnis</a> aus. Sie können alle Felder, die Kategorie, den Erscheinungstermin und den Status ändern. Steht die News in einer inzwischen deaktivierten Kategorie, bleibt diese Kategorie vorgewählt und ist mit „(deaktiviert)“ gekennzeichnet; die News wandert beim Speichern nicht in eine andere Kategorie.</p>
+        <p>Die rot umrandete Box <strong>Löschen</strong> entfernt den Eintrag samt Kommentaren <strong>endgültig</strong>. Wollen Sie eine News nur ausblenden, setzen Sie den Status auf <em>Deaktiviert</em>.</p>
+        <p>Sind Kommentare aktiviert, stehen sie unter dem Formular in zeitlicher Reihenfolge, der älteste zuerst. Mit dem Recht <em>Kommentare schreiben</em> können Sie Texte überarbeiten und einzelne Kommentare über die rot markierte Checkbox löschen; gespeichert werden nur Kommentare, die Sie tatsächlich geändert haben.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#configuration.headlines"></a><b>HEADLINES</b><br>
-    Hier wird die Anzahl der Headlines angegeben die an der Stelle angezeigt werden wo die Headline Datei
-    eingebunden wurde.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-news-search" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">News suchen</h3>
+        <p>Unter <a href="index.php?page=news&amp;subpage=search">News &gt; News suchen</a> suchen Sie in Titel, Text, ID oder – falls aktiviert – im langen Text. Das Ergebnis erscheint als Tabelle wie unter <a href="#help-news-show">News anzeigen</a>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#configuration.news"></a><b>NEWS</b><br>
-    Hier wird die Anzahl der Headlines angegeben die an der Stelle angezeigt werden wo die Headline Datei
-    eingebunden wurde.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-news-status" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Status-Erklärung</h3>
+        <ul>
+            <li><span class="badge text-bg-success">Aktiviert</span> &ndash; Die News ist freigegeben, im Frontend sichtbar und kommentierbar (sobald der Erscheinungstermin erreicht ist).</li>
+            <li><span class="badge text-bg-warning">Ungeprüft</span> &ndash; Ein Besucher hat die News eingesendet, sie wartet auf Ihre Freigabe und erscheint im Frontend nicht.</li>
+            <li><span class="badge text-bg-danger">Deaktiviert</span> &ndash; Die News ist im Frontend nicht sichtbar.</li>
+        </ul>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
 
-    <blockquote>
-    <a name="#configuration.spamprotection"></a><b>SPAMSCHUTZ</b><br>
-    Hier wird die Zwangspause beim Posten von 2 Kommentaren hintereinander in Sekunden eingestellt.
-    Als Minimum muss 1 Sekunde eingestellt werden, das Maximum liegt bei 999 Sekunden (16,65 Minuten).
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+<!-- ==================== KATEGORIEN ==================== -->
+<section id="help-categories" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Kategorien</h2>
+    <p>Kategorien stehen nur zur Verfügung, wenn die Option <em>Kategorien</em> in der <a href="#help-configuration-categories">Konfiguration</a> aktiviert ist.</p>
+    <ul>
+        <li><a href="#help-categories-add">Kategorie hinzufügen</a></li>
+        <li><a href="#help-categories-edit">Kategorie editieren</a></li>
+        <li><a href="#help-categories-deactivate">Kategorie deaktivieren statt löschen</a></li>
+    </ul>
 
-    <blockquote>
-    <a name="#configuration.relatedlinks"></a><b>RELATED LINKS</b><br>
-    Hier können Sie bestimmen ob man bei den News Related Links verwenden kann. Diese Links werden dann bei den
-    News an der in den Templates gewählten Stelle eingefügt.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-categories-add" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kategorie hinzufügen</h3>
+        <p>Über <a href="index.php?page=categories&amp;subpage=add">Kategorien &gt; Kategorie hinzufügen</a> tragen Sie Titel und Beschreibung (höchstens 255 Zeichen) ein. Ist <em>Kategorie-Bilder</em> aktiv, können Sie zusätzlich ein Bild (GIF, JPG oder PNG, höchstens 2&nbsp;MB) hochladen, das im Template über <code>{CATPIC}</code> erscheint.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#configuration.relatedlinks_num"></a><b>ANZAHL RELATED LINKS</b><br>
-    Hier wird die Anzahl der Related Links bestimmt. Für jeden Related Link werden beim
-    <a href="index.php?page=news&subpage=add">News schreiben</a> Formular 2 Felder für den Titel des Links und
-    das Ziel hinzugefügt. Die maximale Anzahl der Links liegt bei 99.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-categories-edit" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kategorie editieren</h3>
+        <p>In der <a href="index.php?page=categories&amp;subpage=show">Kategorie-Liste</a> wählen Sie den gewünschten Eintrag aus und ändern Titel, Beschreibung und Status. Für ein neues Bild aktivieren Sie zuerst <em>Bild hochladen</em> und wählen dann die Datei aus.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-<!-- TEMPLATES -->
+    <div id="help-categories-deactivate" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kategorie deaktivieren statt löschen</h3>
+        <p>Kategorien lassen sich nicht löschen, weil sonst die zugeordneten News verwaisen würden. Setzen Sie stattdessen den Status der Kategorie auf <em>Deaktiviert</em>: Sie verschwindet aus der Auswahl für neue News und aus dem Einsendeformular. Bestehende News behalten ihre Kategorie, auch wenn Sie sie bearbeiten.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
 
-  <a name="#templates"></a><b>TEMPLATES</b>
-  <ul>
-    <li><a href="#templates.add">Templates hinzufügen</a>
-    <li><a href="#templates.edit">Templates editieren</a>
-    <li><a href="#templates.default">Default Template</a>
-  </ul>
+<!-- ==================== BENUTZER ==================== -->
+<section id="help-users" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Benutzer</h2>
+    <ul>
+        <li><a href="#help-users-add">Benutzer hinzufügen (Einladung)</a></li>
+        <li><a href="#help-users-show">Benutzerliste</a></li>
+        <li><a href="#help-users-search">Benutzer suchen</a></li>
+        <li><a href="#help-users-edit">Benutzer editieren / deaktivieren</a></li>
+    </ul>
 
-    <blockquote>
-    <a name="#templates.add"></a><b>TEMPLATES HINZUFüGEN</b><br>
-    Unter <a href="index.php?page=templates&subpage=add">Template hinzufügen</a> wird ein Titel für das neue
-    Template angegeben. Dann wird das Standardtemplate als Grundlage für das neue Template eingefügt.<br>
-    Das Template kann dann über <a href="index.php?page=templates&subpage=show">Template Auswahl</a> gewählt
-    und editiert werden.
-    </blockquote>
+    <div id="help-users-add" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Benutzer hinzufügen (Einladung)</h3>
+        <p>Im Regelfall registrieren sich Benutzer selbst über <code>user.php</code> und wählen dabei ihr Passwort. Über <a href="index.php?page=users&amp;subpage=add">Benutzer &gt; Benutzer hinzufügen</a> legen Sie ein Konto trotzdem selbst an, etwa für eine neue Redakteurin.</p>
+        <p>PowerNews verschickt dabei <strong>kein Passwort</strong>. Das neue Konto bekommt eine Einladung mit einem Einmal-Link, über den der Benutzer sein Passwort selbst festlegt; der Link gilt 48 Stunden. Bis dahin ist keine Anmeldung möglich. Mit <em>Einladung per E-Mail senden</em> geht der Link per Mail raus; ohne Häkchen zeigt PowerNews ihn Ihnen nach dem Speichern einmal an, damit Sie ihn selbst weitergeben. Ist der Link abgelaufen, hilft „Passwort vergessen“ auf der Website oder erneut <em>Link für ein neues Passwort senden</em> beim Bearbeiten.</p>
+        <p>Admin-Rechte vergeben Sie danach unter <a href="#help-permissions">Berechtigungen</a>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#templates.edit"></a><b>TEMPLATES EDITIEREN</b><br>
-    Nach dem <a href="index.php?page=templates&subpage=show">Auswählen des Templates</a> kann dieses editiert
-    werden. Die fett geschriebenen Platzhalter in geschweiften Klammern (z.B. <b>{ID}</b>) stehen für
-    verschiedene dynamische Inhalte. Betrachtet das
-    <a href="index.php?page=templates&subpage=edit&templateid=1">Default Template</a> um einen Einblick in die
-    Funktion zu bekommen.
-    </blockquote>
+    <div id="help-users-show" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Benutzerliste</h3>
+        <p><a href="index.php?page=users&amp;subpage=show">Benutzer &gt; Benutzer anzeigen</a> listet alle Konten, 25 pro Seite. Die Spalte <strong>Mit E-Mail verlinkt</strong> zeigt, ob der Name des Benutzers unter News und Kommentaren zum Mail-Link wird, <strong>Admin</strong>, ob Berechtigungen vergeben sind, und <strong>Status</strong>, ob das Konto aktiv ist.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#templates.default"></a><b>DEFAULT TEMPLATE</b><br>
-    Das <a href="index.php?page=templates&subpage=edit&templateid=1">Default Template</a> dient als Vorlage für
-    eigene Templates. Das Default Template kann weder editiert noch gelöscht werden.<br>
-    Jedes neu erstellte Template entählt anfangs die Inhalte des Default Templates, andere Templates können
-    jedoch an das eigene Design angepasst werden.
-    </blockquote>
+    <div id="help-users-search" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Benutzer suchen</h3>
+        <p>Unter <a href="index.php?page=users&amp;subpage=search">Benutzer &gt; Benutzer suchen</a> suchen Sie nach Nickname, E-Mail-Adresse oder ID. Ein Klick auf den Nickname im Ergebnis öffnet die Bearbeitung.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-<!-- CATEGORIES -->
+    <div id="help-users-edit" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Benutzer editieren / deaktivieren</h3>
+        <p>Klicken Sie in der Liste auf den Nickname. Bearbeitbar sind Nickname, E-Mail-Adresse, die Verlinkung des Namens mit der E-Mail-Adresse und der Status. <em>Link für ein neues Passwort senden</em> schickt dem Benutzer einen Einmal-Link, über den er sein Passwort selbst neu festlegt; bis dahin gilt das bisherige. Hat das Konto noch kein Passwort, geht stattdessen die Einladung erneut raus. Mit <em>E-Mail senden</em> bekommt der Benutzer die geänderten Daten (ohne Passwort) per Mail.</p>
+        <p>Löschen lässt sich ein Konto nicht. Setzen Sie den Status auf <em>Deaktiviert</em>: Der Benutzer kann sich nicht mehr einloggen, keine Kommentare schreiben und keine News einsenden; laufende Anmeldungen enden sofort. Deaktivierte Konten können keine Adminrechte erhalten.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
 
-  <a name="#categories"></a><b>KATEGORIEN</b>
-  <ul>
-    <li><a href="#categories.add">Kategorien hinzufügen</a>
-    <li><a href="#categories.edit">Kategorien editieren</a>
-    <li><a href="#categories.delete">Kategorien löschen</a>
-  </ul>
+<!-- ==================== BERECHTIGUNGEN ==================== -->
+<section id="help-permissions" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Berechtigungen</h2>
+    <p>Berechtigungen legen fest, welche Bereiche ein Benutzer im Adminbereich lesen oder schreiben darf. Es gibt sieben Bereiche – Templates, Konfiguration, Benutzer, Berechtigungen, Kategorien, News, Kommentare – jeweils mit getrenntem Lese- und Schreibrecht. Das Leserecht entscheidet, ob ein Bereich in der Navigation erscheint.</p>
+    <ul>
+        <li><a href="#help-permissions-add">Berechtigungen hinzufügen</a></li>
+        <li><a href="#help-permissions-show">Berechtigungen anzeigen</a></li>
+        <li><a href="#help-permissions-edit">Berechtigungen editieren / löschen</a></li>
+    </ul>
 
-    <blockquote>
-    <a name="#categories.add"></a><b>KATEGORIEN HINZUFüGEN</b><br>
-    über den Punkt <a href="index.php?page=categories&subpage=add">Kategorie hinzufügen</a> kann man, wenn die
-    Kategorien über die <a href="#configuration.categories">Konfiguration</a> freigeschaltet sind, neue
-    Kategorien erstellen, eine Beschreibung für dieselbe angeben und, falls
-    <a href="#configuration.catpics">aktiviert</a>, ein Bild für diese Kategorie hochladen.<br>
-    Die Beschreibung der Kategorie darf höchstens 255 Zeichen lang sein!
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-permissions-add" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Berechtigungen hinzufügen</h3>
+        <p>Über <a href="index.php?page=permissions&amp;subpage=add">Berechtigungen &gt; Berechtigungen hinzufügen</a> geben Sie den Nickname eines bestehenden Benutzers an und setzen seine Lese- und Schreibrechte. Vorausgewählt sind <em>News</em> und <em>Kommentare</em>, mehr braucht eine Redakteurin nicht. <em>Berechtigungen schreiben</em> und <em>Templates schreiben</em> sind faktisch Admin-Rechte. Der Benutzer wird nicht automatisch über seine neuen Rechte informiert.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#categories.edit"></a><b>KATEGORIEN EDITIEREN</b><br>
-    über die <a href="index.php?page=categories&subpage=show">Kategorienliste</a> kann man eine Kategorie
-    auswählen welche man dann editieren kann. Wenn man für die Kategorie ein neues Bild hochladen möchte, dann
-    muss man zuerst die Checkbox neben "Bild hochladen" aktivieren und dann ein neues Bild von der Festplatte
-    auswählen.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-permissions-show" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Berechtigungen anzeigen</h3>
+        <p>Die <a href="index.php?page=permissions&amp;subpage=show">Berechtigungs-Liste</a> zeigt alle Admin-Konten mit einer Übersicht der Lese- und Schreibrechte. <span class="badge text-bg-success">&check;</span> bedeutet erlaubt, <span class="badge text-bg-secondary">&minus;</span> nicht erlaubt.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#categories.delete"></a><b>KATEGORIEN LöSCHEN</b><br>
-    Kategorien können nicht direkt gelöscht werden, da davon die News betroffen werden. Es ist aber möglich
-    den Status der News auf "Deaktiviert" zu setzten, dadurch ist es nicht möglich weiterhin News in diese
-    Kategorie zu posten und die Kategorie wird aus der Kategorieauswahl entfernt.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-permissions-edit" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Berechtigungen editieren / löschen</h3>
+        <p>Klicken Sie in der Liste auf den Nickname, um die Rechte anzupassen. Die rot umrandete Box <strong>Löschen</strong> entzieht dem Benutzer sämtliche Adminrechte; das Benutzerkonto selbst bleibt bestehen.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
 
-<!-- NEWS -->
+<!-- ==================== TEMPLATES ==================== -->
+<section id="help-templates" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Templates</h2>
+    <p>Templates steuern die HTML-Ausgabe (Schlagzeilen, News, Kommentare, Formulare) und die Texte der E-Mails.</p>
+    <ul>
+        <li><a href="#help-templates-add">Template hinzufügen</a></li>
+        <li><a href="#help-templates-show">Templates anzeigen</a></li>
+        <li><a href="#help-templates-edit">Template editieren / löschen</a></li>
+        <li><a href="#help-templates-default">Default-Template</a></li>
+    </ul>
 
-  <a name="#news"></a><b>NEWS</b>
-  <ul>
-    <li><a href="#news.add">News schreiben</a>
-    <li><a href="#news.list">News auflisten</a>
-    <li><a href="#news.edit">News editieren/löschen</a>
-    <li><a href="#news.search">News suchen</a>
-  </ul>
+    <div id="help-templates-add" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Template hinzufügen</h3>
+        <p>Unter <a href="index.php?page=templates&amp;subpage=add">Templates &gt; Template hinzufügen</a> geben Sie einen Titel an. Als Inhalt übernimmt PowerNews das Default-Template, so haben Sie eine vollständige, funktionierende Grundlage.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#news.add"></a><b>NEWS SCHREIBEN</b><br>
-    Unter <a href="index.php?page=news&subpage=add">News schreiben</a> kann man neue Newseinträge
-    erstellen.<br>
-    Dabei wählt man, falls aktiviert, zuerst eine Kategorie in der die News erscheinen sollen, danach gibt
-    man den Titel des Eintrags an und macht sich dann an den Newstext. Sollte die Funktion aktiviert sein,
-    so kann man noch einen langen Text angeben. Dabei erscheint dann nur der normale Text auf der Mainpage,
-    der lange Text wird dann erst bei einem klick auf den Mehr-Link angezeigt.<br>
-    Sollte es erwünscht sein, so kann man das Datum des Newsreleases auch manuell einstellen. Als
-    Standardeinstellung wird das momentane Datum und die momentane Zeit verwendet. Die News erscheinen erst
-    auf der Startseite und im Archiv wenn der eingestellte Termin vorüber ist.<br>
-    Wenn die <a href="#configuration.relatedlinks">Related Links</a> in der Konfiguration aktiviert sind kann
-    man unter dem Newstext noch eine Anzahl von Links mit Titel und Zielfenster angeben.<br>
-    In der Kurzbeschreibung unter dem Titel des Feldes kann man lesen ob man HTML/BB Code verwenden darf.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-templates-show" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Templates anzeigen</h3>
+        <p>Unter <a href="index.php?page=templates&amp;subpage=show">Templates &gt; Templates anzeigen</a> sehen Sie alle vorhandenen Templates. Ein Klick auf den Namen öffnet die Bearbeitung.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#news.list"></a><b>NEWS AUFLISTEN</b><br>
-    Unter <a href="index.php?page=news&subpage=show">News auflisten</a> können alle bisherigen Newseintrage
-    eingesehen werden. Unter Status gibt es drei mögliche Grafiken:
-      <ul type="square">
-        <li><b>Grüner Haken</b><br>
-            Die News sind freigeschaltet und aktiv. Das heißt jeder kann die News extern lesen und
-            kommentieren (falls Funktion aktiviert).
-        <li><b>Grauer Strich</b><br>
-            Der graue Strich bedeutet, dass die News von einem Besucher der Seite eingesendet wurden, aber
-            noch nicht freigeschaltet wurden. Die News erscheinen extern nicht und sind auch nicht
-            kommentierbar.
-        <li><b>Rotes Kreuz</b><br>
-            Das rote Kreuz zeigt an, dass die News deaktiviert sind. Das bedeutet, dass sie extern nicht
-            einsehbar und nicht kommentierbar sind.
-      </ul>
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-templates-edit" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Template editieren / löschen</h3>
+        <p>Im Editor sind die Bausteine in drei Bereiche gegliedert:</p>
+        <ul>
+            <li><strong>Ausgabe</strong> &ndash; Meldung, Schlagzeile, News, Kommentar, Benutzermenüs, weiterführender Link.</li>
+            <li><strong>Formulare und Eingaben</strong> &ndash; Kommentar, Registrierung (mit den Passwortfeldern <code>pndata[password]</code> und <code>pndata[password2]</code>), Login, Logout, Passwort vergessen, Profil, Archiv und News einsenden.</li>
+            <li><strong>E-Mails</strong> &ndash; Einladung, Datenänderung, Registrierung und Passwort vergessen.</li>
+        </ul>
+        <p>Platzhalter wie <code>{ID}</code>, <code>{TITLE}</code>, <code>{DATE}</code>, <code>{TIME}</code>, <code>{AUTHOR}</code>, <code>{TEXT}</code>, <code>{NICKNAME}</code>, <code>{EMAIL}</code> und <code>{CSRF}</code> werden ersetzt; welche wo gelten, steht unter jedem Feld. In den E-Mails stehen zusätzlich <code>{SITE}</code> (Name der Website), <code>{URL}</code>, <code>{LOGINLINK}</code>, <code>{INVITELINK}</code> mit <code>{VALIDHOURS}</code> (Einladung) und <code>{RESETLINK}</code> mit <code>{VALIDMINUTES}</code> (Passwort vergessen) zur Verfügung. Passwörter verschickt PowerNews nie; eine Zeile mit <code>{PASSWORD}</code> aus älteren Templates entfällt. Fehlt einer E-Mail der Link-Platzhalter, gilt der Standardtext aus der Sprachdatei.</p>
+        <p>Die Texte des Default-Templates kommen ohne Anrede aus und passen deshalb zu jeder Sprache. Die rot umrandete Box <strong>Löschen</strong> entfernt ein Template komplett; achten Sie vorher darauf, dass es in der <a href="#help-configuration-template">Konfiguration</a> nicht aktiv ist.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#news.edit"></a><b>NEWS EDITIEREN/LöSCHEN</b><br>
-    Um News zu editieren wählt man diese direkt aus der
-    <a href="index.php?page=news&subpage=show">Auflistung</a> oder aus dem
-    <a href="index.php?page=news&subpage=search">Suchergebnis</a> aus.<br>
-    Wenn man ein Häckchen bei Löschen setzt und die News dann editiert so werden diese total aus der
-    Datenbank gelöscht und sind nicht wieder herstellbar.<br>
-    Es ist möglich die News einfach von der externen Seite zu nehmen indem man den Status auf Deaktiviert
-    setzt.<br>
-    Ansonsten gilt das gleiche wie bei <a href="#news.add">News schreiben</a>.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-templates-default" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Default-Template</h3>
+        <p>Das <a href="index.php?page=templates&amp;subpage=edit&amp;templateid=1">Default-Template</a> (ID&nbsp;1) können Sie editieren, aber nicht löschen: Es dient als Vorlage für jedes neu angelegte Template. Änderungen daran wirken sich deshalb auch auf alle künftig angelegten Templates aus.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
 
-    <blockquote>
-    <a name="#news.search"></a><b>NEWS SUCHEN</b><br>
-    Da mit der Zeit die Anzahl der Newseinträge unüberschaubar wird und man sich sehr lange durch die
-    <a href="index.php?page=news&subpage=show">Liste</a> klicken muss um den gewünschten Eintrag zu finden,
-    gibt es die Möglichkeit <a href="index.php?page=news&subpage=search">News zu suchen</a>.<br>
-    Hier wählt man einfach in welchem der Felder (Titel, Text, ID, Langer Text) man nach welchem Wort suchen
-    will. Das Ergebnis wird als Liste wie unter <a href="#news.list">News auflisten</a> beschrieben
-    dargestellt.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+<!-- ==================== KONFIGURATION ==================== -->
+<section id="help-configuration" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Konfiguration</h2>
+    <p>Die <a href="index.php?page=configuration">Konfiguration</a> enthält die globalen Einstellungen. Änderungen wirken sofort im Frontend.</p>
+    <ul>
+        <li><a href="#help-configuration-categories">Kategorien</a></li>
+        <li><a href="#help-configuration-catpics">Kategorie-Bilder</a></li>
+        <li><a href="#help-configuration-comments">Kommentare</a></li>
+        <li><a href="#help-configuration-writecomments">Wer darf Kommentare schreiben?</a></li>
+        <li><a href="#help-configuration-moretext">Textaufteilung (kurz / lang)</a></li>
+        <li><a href="#help-configuration-sendnews">News einsenden erlauben</a></li>
+        <li><a href="#help-configuration-newssending">Wer darf News einsenden?</a></li>
+        <li><a href="#help-configuration-smilies">Smilies</a></li>
+        <li><a href="#help-configuration-bbcode">BB-Code</a></li>
+        <li><a href="#help-configuration-html">HTML</a></li>
+        <li><a href="#help-configuration-dateformat">Datums- &amp; Zeitformat</a></li>
+        <li><a href="#help-configuration-template">Aktives Template</a></li>
+        <li><a href="#help-configuration-url">URL</a></li>
+        <li><a href="#help-configuration-email">Absender-E-Mail</a></li>
+        <li><a href="#help-configuration-headlines">Anzahl Schlagzeilen</a></li>
+        <li><a href="#help-configuration-news">Anzahl News auf der Startseite</a></li>
+        <li><a href="#help-configuration-spamprotection">Spamschutz</a></li>
+        <li><a href="#help-configuration-relatedlinks">Weiterführende Links</a></li>
+        <li><a href="#help-configuration-relatedlinks-num">Anzahl weiterführender Links</a></li>
+    </ul>
 
-<!-- SONSTIGES -->
+    <div id="help-configuration-categories" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kategorien</h3>
+        <p>Schaltet die Kategorien ein oder aus. Sind sie aktiv, verlangt das Schreiben einer News eine Kategorie.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-  <a name="#other"></a><b>SONSTIGES</b>
-  <ul>
-    <li><a href="#other.bbcode">BB Code</a>
-    <li><a href="#other.html">HTML</a>
-    <li><a href="#other.smilies">Smilies</a>
-    <li><a href="#other.about">über PowerNews</a>
-  </ul>
+    <div id="help-configuration-catpics" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kategorie-Bilder</h3>
+        <p>Erlaubt Bilder für Kategorien, die Templates über <code>{CATPIC}</code> ausgeben. Die Option erscheint nur, wenn <em>Kategorien</em> aktiv sind.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a id="help-other-bbcode"></a><b>BB CODE</b><br>
-    Die folgenden BB Codes können in den News und in den Kommentaren (falls aktiviert) verwendet werden.
-    Die Kommandos selbst sind <b>fett</b> gekennzeichnet.<br>
-    <br>
-    <center>
-      <table border="0" cellpadding="3" cellspacing="3">
-      <tr><td>
-      <u><b>Eingabe</b></u>
-      </td><td width="25">
-      </td><td>
-      <u><b>Ausgabe</b></u>
-      </td></tr>
-      <tr><td>
-      <b>[b]</b>PowerNews<b>[/b]</b>
-      </td><td>
-      </td><td>
-      <b>PowerNews</b>
-      </td></tr>
-      <tr><td>
-      <b>[u]</b>PowerNews<b>[/u]</b>
-      </td><td>
-      </td><td>
-      <u>PowerNews</u>
-      </td></tr>
-      <tr><td>
-      <b>[i]</b>PowerNews<b>[/i]</b>
-      </td><td>
-      </td><td>
-      <i>PowerNews</i>
-      </td></tr>
-      <tr><td>
-      <b>[url]</b>http://www.powerscripts.org<b>[/url]</b><br>
-      <b>[url]</b>www.powerscripts.org<b>[/url]</b>
-      </td><td>
-      </td><td>
-      <a href="http://www.powerscripts.org" target="_blank">http://www.powerscripts.org</a><br>
-      <a href="http://www.powerscripts.org" target="_blanK">www.powerscripts.org</a>
-      </td></tr>
-      <tr><td>
-      <b>[email]</b>info@powerscripts.org<b>[/email]</b>
-      </td><td>
-      </td><td>
-      <a href="mailto:info@powerscripts.org">info@powerscripts.org</a>
-      </td></tr>
-      <tr><td>
-      <b>[img]</b>http://www.powerscripts.org/gfx/psbutton.gif<b>[/img]</b>
-      </td><td>
-      </td><td>
-      <img src="http://www.powerscripts.org/gfx/psbutton.gif" border="0">
-      </td></tr>
-      </table>
-    </center>
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-configuration-comments" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Kommentare</h3>
+        <p>Schaltet die Kommentare global ein oder aus.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#other.html"></a><b>HTML</b><br>
-    HTML ist eine Formatierungssprache für das Internet. Mit Hilfe der <u>H</u>yper<u>t</u>ext <u>M</u>arkup
-    <u>L</u>anguage kann man Tabellen erstellen, Schriftarten festlegen, Texte fett, kursiv oder unterstrichen
-    schreiben etc.<br>
-    Für einen Webmaster sind zumindest grundlegende HTML Kenntnisse erforderlich. Zu empfehlen ist hier das
-    HTML Nachschlagewerk <a href="http://selfhtml.teamone.de/" target="_blank">SelfHTML</a>.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-configuration-writecomments" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Wer darf Kommentare schreiben?</h3>
+        <p>Sind Kommentare aktiviert, wählen Sie zwischen <em>Gäste &amp; Registrierte</em> und <em>Registrierte</em>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#other.smilies"></a><b>SMILIES</b><br>
-    Die folgenden Smilies sind für News und Kommentare (falls aktiviert) verfügbar:<br>
-    <br>
-    <center>
-      <table border="0" cellpadding="3" cellspacing="3">
-      <tr><td>
-      <u><b>Eingabe</b></u>
-      </td><td width="25">
-      </td><td>
-      <u><b>Ausgabe</b></u>
-      </td></tr>
-      <tr><td align="center">
-      <b>:)</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/smile.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>;)</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/wink.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>:))</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/laugh.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>:D</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/bigsmile.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>:P</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/tongue.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>:(</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/sad.gif" width="15" height="15" border="0">
-      </td></tr>
-      <tr><td align="center">
-      <b>:?:</b>
-      </td><td>
-      </td><td align="center">
-      <img src="../pngfx/smilies/confused.gif" width="15" height="22" border="0">
-      </td></tr>
-      </table>
-    </center>
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-configuration-moretext" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Textaufteilung (kurz / lang)</h3>
+        <p>Erlaubt einen kurzen Text für die Startseite und einen langen Text, der zusätzlich auf der Detailseite erscheint.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
 
-    <blockquote>
-    <a name="#other.about"></a><b>üBER POWERNEWS</b><br>
-    PowerNews ist ein Projekt der <a href="http://www.powerscripts.org" target="_blank">PowerScripts</a>
-    Entwicklungsgruppe und wurde von <b>Stefan Kraemer</b> programmiert.<br>
-    PowerNews ist ein leistungsstarkes Newssystem dass über eine mySQL Datenbank eine komfortable und
-    schnelle Newsverwaltung ermöglicht.<br>
-    Zudem ist ab Version 2.5 ein eigenes Benutzersystem integriert dass die Verwaltung noch mal leichter
-    gestaltet.<br>
-    PowerNews bietet somit auch eine ideale Möglichkeit für den Aufbau eines ganzen Communitysystems.
-    <div align="right">[ <a href="#top">top</a> ]</div>
-    </blockquote>
+    <div id="help-configuration-sendnews" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">News einsenden erlauben</h3>
+        <p>Schaltet das Formular <code>sendnews.php</code> im Frontend ein oder aus.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-newssending" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Wer darf News einsenden?</h3>
+        <p>Wahl zwischen <em>Gäste &amp; Registrierte</em> und <em>Registrierte</em>. Eingesendete News landen mit Status <em>Ungeprüft</em> in der Liste; die Startseite des Adminbereichs zeigt, wie viele auf Ihre Freigabe warten.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-smilies" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Smilies</h3>
+        <p>Legt fest, wo Smilie-Codes (siehe <a href="#help-other-smilies">Sonstiges &gt; Smilies</a>) als Bild erscheinen: <em>Nein</em>, <em>Kommentare</em>, <em>News</em> oder <em>Kommentare &amp; News</em>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-bbcode" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">BB-Code</h3>
+        <p>Legt wie bei den Smilies fest, wo BB-Codes wie <code>[b]</code>, <code>[i]</code> und <code>[url]</code> ausgewertet werden. Die unterstützten Codes finden Sie unter <a href="#help-other-bbcode">Sonstiges &gt; BB-Code</a>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-html" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">HTML</h3>
+        <p>HTML in News und Kommentaren wird aus Sicherheitsgründen nie ausgewertet, sondern als Text angezeigt. Die Einstellung bleibt aus Kompatibilitätsgründen gespeichert, erscheint aber nicht mehr im Formular. Für Formatierungen gibt es BB-Code.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-dateformat" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Datums- &amp; Zeitformat</h3>
+        <p>Beide Felder nehmen ein Format mit höchstens 50 Zeichen auf. PowerNews versteht zwei Schreibweisen:</p>
+        <ul>
+            <li><strong>date()-Schreibweise</strong> (empfohlen), z.&nbsp;B. <code>d.m.Y</code> und <code>H:i</code>. Buchstaben ohne Bedeutung stehen mit vorangestelltem Backslash im Text, etwa <code>H:i \U\h\r</code> für „17:30 Uhr“.</li>
+            <li><strong>strftime-Schreibweise</strong> mit Prozentzeichen, z.&nbsp;B. <code>%d.%m.%Y</code> und <code>%H:%M</code> (Vorgabe bei Neuinstallationen). PowerNews rechnet sie intern in die date()-Schreibweise um.</li>
+        </ul>
+        <p>Wochentage und Monatsnamen erscheinen in der Sprache der Installation, bei deutscher Sprache also „Sonntag, 14. März 2021“.</p>
+        <table class="table table-sm align-middle mt-2">
+            <thead>
+                <tr><th>date()</th><th>strftime</th><th>Bedeutung</th><th>Beispiel</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>d</code></td><td><code>%d</code></td><td>Tag, zweistellig</td><td>07</td></tr>
+                <tr><td><code>j</code></td><td><code>%e</code></td><td>Tag ohne führende Null</td><td>7</td></tr>
+                <tr><td><code>l</code> / <code>D</code></td><td><code>%A</code> / <code>%a</code></td><td>Wochentag / kurz</td><td>Sonntag / So</td></tr>
+                <tr><td><code>m</code></td><td><code>%m</code></td><td>Monat, zweistellig</td><td>03</td></tr>
+                <tr><td><code>F</code> / <code>M</code></td><td><code>%B</code> / <code>%b</code></td><td>Monatsname / kurz</td><td>März / Mär</td></tr>
+                <tr><td><code>Y</code></td><td><code>%Y</code></td><td>Jahr, vierstellig</td><td>2026</td></tr>
+                <tr><td><code>H</code></td><td><code>%H</code></td><td>Stunde (00–23)</td><td>17</td></tr>
+                <tr><td><code>i</code></td><td><code>%M</code></td><td>Minute (00–59)</td><td>30</td></tr>
+            </tbody>
+        </table>
+        <p class="mb-0">Alle Zeichen der date()-Schreibweise nennt das <a href="https://www.php.net/manual/de/datetime.format.php" rel="noopener noreferrer">PHP-Handbuch</a>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-template" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Aktives Template</h3>
+        <p>Wählt das Template, das im Frontend gilt. Eigene Templates legen Sie unter <a href="#help-templates-add">Templates &gt; Template hinzufügen</a> an.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-url" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">URL</h3>
+        <p>Vollständige Adresse des PowerNews-Verzeichnisses ohne abschließenden Schrägstrich, z.&nbsp;B. <em>https://www.example.org/news</em>, wenn der Adminbereich unter <em>https://www.example.org/news/pnadmin</em> liegt. Aus ihr entstehen die Links in allen E-Mails (Anmeldung, Einladung, Passwort vergessen) und der Name der Website im Betreff.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-email" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Absender-E-Mail</h3>
+        <p>Absenderadresse aller automatischen Mails (Registrierung, Einladung, Datenänderung, Passwort vergessen). Eine korrekte, zustellbare Adresse ist wichtig, damit die Mails nicht im Spam landen.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-headlines" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Anzahl Schlagzeilen</h3>
+        <p>Wie viele Schlagzeilen die Datei <code>pninc/headlines.inc.php</code> dort ausgibt, wo sie eingebunden ist (1 bis 99).</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-news" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Anzahl News auf der Startseite</h3>
+        <p>Wie viele News die Startseite zeigt (1 bis 99). Ältere Einträge bleiben über das Archiv erreichbar.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-spamprotection" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Spamschutz</h3>
+        <p>Mindestabstand in Sekunden zwischen zwei Kommentaren von derselben IP-Adresse. Erlaubt sind 0 bis 86400 Sekunden (ein Tag); 0 schaltet die Sperre ab.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-relatedlinks" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Weiterführende Links</h3>
+        <p>Erlaubt zu jeder News eine Liste weiterführender Links. Wo sie erscheint, legt das Template über <code>{RELATEDLINKS}</code> fest.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-configuration-relatedlinks-num" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Anzahl weiterführender Links</h3>
+        <p>Wie viele Eingabezeilen für weiterführende Links die News-Formulare anbieten (1 bis 20).</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>
+
+<!-- ==================== EIGENES PROFIL ==================== -->
+<section id="help-profile" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Eigenes Profil</h2>
+    <p>Über <em>Profil editieren</em> oben rechts oder direkt unter <a href="index.php?page=profile">Profil</a> bearbeiten Sie Ihr eigenes Konto.</p>
+    <p>Pflichtfelder sind <strong>Nickname</strong> und <strong>E-Mail</strong>. Mit <em>Namen mit E-Mail-Adresse verlinken (öffentlich sichtbar)</em> wird Ihr Name unter Ihren News und Kommentaren zum Mail-Link; die Adresse ist dann für alle Besucher sichtbar. Ein öffentliches Profil gibt es nicht. Die beiden Passwortfelder lassen Sie leer, wenn Sie das Passwort nicht ändern wollen; ein neues Passwort braucht mindestens 8 Zeichen und beendet alle Anmeldungen.</p>
+    <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+</section>
+
+<!-- ==================== SONSTIGES ==================== -->
+<section id="help-other" class="mb-4">
+    <h2 class="h5 fw-bold border-bottom pb-2">Sonstiges</h2>
+    <ul>
+        <li><a href="#help-other-bbcode">BB-Code-Referenz</a></li>
+        <li><a href="#help-other-smilies">Smilies-Übersicht</a></li>
+        <li><a href="#help-other-license">Lizenz</a></li>
+        <li><a href="#help-other-external">Externe Seite</a></li>
+        <li><a href="#help-other-about">Über PowerNews</a></li>
+    </ul>
+
+    <div id="help-other-bbcode" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">BB-Code-Referenz</h3>
+        <p>Die folgenden BB-Codes gelten in News bzw. Kommentaren, sofern sie in der <a href="#help-configuration-bbcode">Konfiguration</a> aktiviert sind.</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr><th>Eingabe</th><th>Ausgabe</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>[b]PowerNews[/b]</code></td><td><strong>PowerNews</strong></td></tr>
+                    <tr><td><code>[u]PowerNews[/u]</code></td><td><u>PowerNews</u></td></tr>
+                    <tr><td><code>[i]PowerNews[/i]</code></td><td><em>PowerNews</em></td></tr>
+                    <tr><td><code>[url]https://www.example.org[/url]</code></td><td><a href="https://www.example.org" rel="noopener noreferrer">https://www.example.org</a></td></tr>
+                    <tr><td><code>[url]www.example.org[/url]</code></td><td><a href="https://www.example.org" rel="noopener noreferrer">www.example.org</a> (ohne Schema gilt https://)</td></tr>
+                    <tr><td><code>[url=https://www.example.org]Beispiel[/url]</code></td><td><a href="https://www.example.org" rel="noopener noreferrer">Beispiel</a></td></tr>
+                    <tr><td><code>[email]info@example.org[/email]</code></td><td><a href="mailto:info@example.org">info@example.org</a></td></tr>
+                    <tr><td><code>[img]https://www.example.org/bild.png[/img]</code></td><td>(Bild von der eigenen Domain – sonst bleibt der Code stehen)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="form-text">Links öffnen in einem neuen Fenster. <code>[url]</code> akzeptiert nur http- und https-Adressen; andere Schemata wie <code>javascript:</code> bleiben als Text stehen. <code>[img]</code> zeigt aus Sicherheitsgründen nur Bilder der eigenen Domain.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-other-smilies" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Smilies-Übersicht</h3>
+        <p>Folgende Smilie-Codes werden ersetzt, sofern Smilies in der <a href="#help-configuration-smilies">Konfiguration</a> aktiviert sind:</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr><th>Eingabe</th><th>Ausgabe</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>:)</code></td><td><img src="../pngfx/smilies/smile.gif" width="15" height="15" alt="lächeln"></td></tr>
+                    <tr><td><code>;)</code></td><td><img src="../pngfx/smilies/wink.gif" width="15" height="15" alt="zwinkern"></td></tr>
+                    <tr><td><code>:))</code></td><td><img src="../pngfx/smilies/laugh.gif" width="15" height="15" alt="lachen"></td></tr>
+                    <tr><td><code>:D</code></td><td><img src="../pngfx/smilies/bigsmile.gif" width="15" height="15" alt="breit lachen"></td></tr>
+                    <tr><td><code>:P</code></td><td><img src="../pngfx/smilies/tongue.gif" width="15" height="15" alt="Zunge"></td></tr>
+                    <tr><td><code>:(</code></td><td><img src="../pngfx/smilies/sad.gif" width="15" height="15" alt="traurig"></td></tr>
+                    <tr><td><code>:?:</code></td><td><img src="../pngfx/smilies/confused.gif" width="15" height="22" alt="verwirrt"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-other-license" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Lizenz</h3>
+        <p>PowerNews steht unter der MIT-Lizenz. Den vollständigen Text finden Sie unter <a href="index.php?page=other&amp;subpage=license">Sonstiges &gt; Lizenzbedingungen</a>.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-other-external" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Externe Seite</h3>
+        <p>Der Knopf <em>Externe Seite</em> oben rechts führt zur Startseite der Website – praktisch, um nach einer Änderung die Außensicht zu prüfen.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+
+    <div id="help-other-about" class="ms-3 mb-3">
+        <h3 class="h6 fw-bold">Über PowerNews</h3>
+        <p>PowerNews ist ein News-Skript für PHP und MySQL/MariaDB der Entwicklungsgruppe <a href="https://www.powerscripts.org" rel="noopener noreferrer">PowerScripts</a>, ursprünglich von Stefan Krämer geschrieben. Version 3 nutzt Bootstrap 5 und bringt ein Benutzer- und Berechtigungssystem mit.</p>
+        <p class="text-end mb-0"><a href="#pn-help-top">Zurück nach oben</a></p>
+    </div>
+</section>

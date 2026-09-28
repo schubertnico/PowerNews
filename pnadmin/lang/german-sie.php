@@ -89,7 +89,7 @@ define('L_CONF_HEADLINES', 'Schlagzeilen');
 define('L_CONF_HEADLINES_DESC', 'Die Anzahl der Schlagzeilen pro Seite');
 define('L_CONF_NEWS_DESC', 'Die Anzahl der Newseinträge pro Seite');
 define('L_CONF_SPAMPROTECT', 'Spamschutz');
-define('L_CONF_SPAMPROTECT_DESC', 'Wie lange ist die Zwangspause zwischen 2 Kommentarposts (in Sekunden)');
+define('L_CONF_SPAMPROTECT_DESC', 'Wie lange ist die Zwangspause zwischen zwei Kommentaren derselben IP-Adresse? In Sekunden, 0 bis 86400; 0 schaltet die Sperre ab.');
 define('L_CONF_EDITCONFIG', 'Konfiguration editieren');
 define('L_CONF_ONLYNUMBERS', 'Bei Schlagzeilen/News pro Seite und Spamschutz dürfen nur Zahlen angegeben werden!');
 define('L_CONF_WRONGURL', 'Die URL scheint nicht korrekt zu sein!');

@@ -89,7 +89,7 @@ define('L_CONF_HEADLINES', 'Headlines');
 define('L_CONF_HEADLINES_DESC', 'Number of headlines');
 define('L_CONF_NEWS_DESC', 'Number of news');
 define('L_CONF_SPAMPROTECT', 'Spam protection');
-define('L_CONF_SPAMPROTECT_DESC', 'How many seconds have to elapse until you can post another comment?');
+define('L_CONF_SPAMPROTECT_DESC', 'Minimum pause between two comments from the same IP address, in seconds (0 to 86400; 0 turns it off).');
 define('L_CONF_EDITCONFIG', 'Edit configuration');
 define('L_CONF_ONLYNUMBERS', 'Headlines, news and spam protection must be numbers!');
 define('L_CONF_WRONGURL', 'The URL seems to be incorrect!');
