@@ -12,7 +12,7 @@ $startoutput = explode(' ', microtime());
 if (@file_exists('phpheader.inc.php')) {
     include __DIR__ . '/phpheader.inc.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>phpheader.inc.php</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Datei <strong>phpheader.inc.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 

@@ -419,6 +419,7 @@ define('L_ALL_SECONDSBY', 'seconds by');
 define('L_ALL_WELCOME', 'Welcome to the PowerNews administration!<br><br>Please report any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a>.');
 define('L_ALL_DEFAULTCONFIGWARNING', 'URL and sender address are still set to the factory defaults (powerscripts.org). E-mails would be sent with this sender and with links to powerscripts.org. Please change both in the <a href="index.php?page=configuration">configuration</a>.');
 define('L_ALL_CSRFINVALID', 'The security check failed, so nothing was saved. The form was open too long or did not come from the administration. Please try again.');
+define('L_ALL_CONFIGROWS', 'The table %s must contain exactly one PowerNews configuration. Please check the database.');
 define('L_ALL_BACK', 'Back');
 define('L_ALL_BACKTOFORM', 'Back to the form');
 define('L_ALL_BACKTOLIST', 'Back to the list');

@@ -101,6 +101,7 @@ define('L_TEMPL_DECEMBER', 'Dezember');
 /* Other */
 define('L_ALL_FILLALL', 'Du musst alle Felder ausfüllen!');
 define('L_ALL_CSRFINVALID', 'Das Formular ist abgelaufen oder ungültig. Bitte lade die Seite neu und versuche es erneut.');
+define('L_ALL_CONFIGROWS', 'Die Tabelle %s muss genau eine PowerNews-Konfiguration enthalten. Bitte die Datenbank prüfen.');
 define('L_MSG_SUCCESS', 'Erledigt');
 define('L_MSG_DANGER', 'Fehler');
 define('L_MSG_WARNING', 'Hinweis');

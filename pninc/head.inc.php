@@ -15,7 +15,7 @@ header('Content-Type: text/html; charset=UTF-8');
 if (file_exists(__DIR__ . '/config.inc.php')) {
     include __DIR__ . '/config.inc.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>config.inc.php</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Datei <strong>config.inc.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -23,7 +23,7 @@ if (file_exists(__DIR__ . '/config.inc.php')) {
 if (file_exists(__DIR__ . '/functions.inc.php')) {
     include __DIR__ . '/functions.inc.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>functions.inc.php</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Datei <strong>functions.inc.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -35,8 +35,8 @@ pn_php_session_start();
 if (file_exists(__DIR__ . '/lang/' . $pn_config['language'] . '.php')) {
     include __DIR__ . '/lang/' . $pn_config['language'] . '.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>' .
-      htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Sprachdatei <strong>' .
+      htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -47,15 +47,9 @@ $cnum = mysqli_num_rows($cresult);
 if ($cnum == 1) {
     $pnconfig = mysqli_fetch_array($cresult);
 } else {
-    if ($cnum == 0) {
-        ?>
-      <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">No PowerNews configuration found. Please check the mySQL table <strong><?php
-          echo htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8'); ?></strong></div><?php
-    } elseif ($cnum > 1) {
-        ?>
-      <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Too many PowerNews configurations found. Please check the mySQL table <strong><?php
-          echo htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8'); ?></strong></div><?php
-    }
+    ?>
+      <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><?php
+          echo sprintf(L_ALL_CONFIGROWS, '<strong>' . htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8') . '</strong>'); ?></div><?php
     exit;
 }
 

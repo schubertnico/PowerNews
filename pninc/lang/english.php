@@ -101,6 +101,7 @@ define('L_TEMPL_DECEMBER', 'December');
 /* Other */
 define('L_ALL_FILLALL', 'Please fill in all fields!');
 define('L_ALL_CSRFINVALID', 'The form has expired or is invalid. Please reload the page and try again.');
+define('L_ALL_CONFIGROWS', 'The table %s must contain exactly one PowerNews configuration. Please check the database.');
 define('L_MSG_SUCCESS', 'Done');
 define('L_MSG_DANGER', 'Error');
 define('L_MSG_WARNING', 'Notice');

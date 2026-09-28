@@ -419,6 +419,7 @@ define('L_ALL_SECONDSBY', 'Sekunden von');
 define('L_ALL_WELCOME', 'Willkommen in der PowerNews-Administration!<br><br>Gefundene Fehler kannst Du gerne an <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a> melden.');
 define('L_ALL_DEFAULTCONFIGWARNING', 'URL und Absenderadresse stehen noch auf den Werkseinstellungen (powerscripts.org). E-Mails würden mit diesem Absender und mit Links auf powerscripts.org verschickt. Bitte passe beides in der <a href="index.php?page=configuration">Konfiguration</a> an.');
 define('L_ALL_CSRFINVALID', 'Die Sicherheitsprüfung ist fehlgeschlagen, deshalb wurde nichts gespeichert. Das Formular war zu lange geöffnet oder stammt nicht aus der Administration. Bitte versuche es erneut.');
+define('L_ALL_CONFIGROWS', 'Die Tabelle %s muss genau eine PowerNews-Konfiguration enthalten. Bitte die Datenbank prüfen.');
 define('L_ALL_BACK', 'Zurück');
 define('L_ALL_BACKTOFORM', 'Zurück zum Formular');
 define('L_ALL_BACKTOLIST', 'Zurück zur Liste');

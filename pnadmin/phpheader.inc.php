@@ -14,7 +14,7 @@ error_reporting(E_ALL);
 if (file_exists('../pninc/config.inc.php')) {
     include __DIR__ . '/../pninc/config.inc.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>config.inc.php</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Datei <strong>config.inc.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -22,7 +22,7 @@ if (file_exists('../pninc/config.inc.php')) {
 if (file_exists('functions.inc.php')) {
     include __DIR__ . '/functions.inc.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">File <strong>functions.inc.php</strong> was not found!</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Datei <strong>functions.inc.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -35,7 +35,7 @@ if (file_exists(__DIR__ . '/dto.inc.php')) {
 if (file_exists('./lang/' . $pn_config['language'] . '.php')) {
     include './lang/' . $pn_config['language'] . '.php';
 } else {
-    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Language file <strong>' . htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '.php</strong> was not found</div>';
+    echo '<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">Die Sprachdatei <strong>' . htmlspecialchars((string) $pn_config['language'], ENT_QUOTES, 'UTF-8') . '.php</strong> wurde nicht gefunden!</div>';
     exit;
 }
 
@@ -91,7 +91,7 @@ if ($cnum == 1) {
     //var_dump($pnconfig);exit;
 } else {
     ?>
-    <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;">There are too many configurations or no one!</div><?php
+    <div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><?php echo sprintf(L_ALL_CONFIGROWS, '<strong>' . htmlspecialchars((string) $pn_config['configtable'], ENT_QUOTES, 'UTF-8') . '</strong>'); ?></div><?php
     exit;
 }
 
