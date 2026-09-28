@@ -23,7 +23,7 @@ if ($pnadmin['canreadusers'] == 'YES') {
                 <tr>
                     <th><?php echo L_USR_NICKNAME; ?></th>
                     <th><?php echo L_USR_EMAIL; ?></th>
-                    <th class="text-center"><?php echo L_USR_SHOWEMAIL; ?></th>
+                    <th class="text-center"><?php echo L_USR_SHOWEMAIL_COLUMN; ?></th>
                     <th class="text-center"><?php echo L_USR_ADMIN; ?></th>
                     <th class="text-center"><?php echo L_USR_STATUS; ?></th>
                 </tr>
