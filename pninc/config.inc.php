@@ -101,7 +101,7 @@ if (!isset($pn_handler)) {
         }
     } catch (Exception $e) {
         error_log($e->getMessage());
-        die('<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><strong>Database connection error.</strong> Please check your configuration.</div>');
+        die('<div style="font-family:system-ui;margin:2rem;padding:1rem;border:1px solid #dc3545;color:#842029;background:#f8d7da;border-radius:.375rem;"><strong>Keine Verbindung zur Datenbank.</strong> Bitte prüfen Sie die Zugangsdaten in pninc/config.local.php. <span lang="en">(Database connection error – please check your configuration.)</span></div>');
     }
 }
 
