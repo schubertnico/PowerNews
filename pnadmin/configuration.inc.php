@@ -20,7 +20,14 @@ if ($pnadmin['canreadconfig'] == 'YES') {
         if ($pnadmin['canwriteconfig'] == 'YES') {
             $configData = ConfigData::fromPost($pnconfig);
 
-            if ($configData->dateformat === '' || $configData->timeformat === '' || $configData->url === '' || $configData->email === '') {
+            if (ConfigData::formatTooLong()) {
+                ?>
+                <div class="alert alert-danger" role="alert">
+                    <?php echo sprintf(L_CONF_FORMATTOOLONG, ConfigData::FORMAT_MAX_LENGTH); ?>
+                    <div class="mt-2"><a href="index.php?page=configuration" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
+                </div>
+                <?php
+            } elseif ($configData->dateformat === '' || $configData->timeformat === '' || $configData->url === '' || $configData->email === '') {
                 ?>
                 <div class="alert alert-danger" role="alert">
                     <?php echo L_CONF_FILLALL; ?>
@@ -221,12 +228,12 @@ if ($pnadmin['canreadconfig'] == 'YES') {
           <div class="row g-3 mb-3">
               <div class="col-12 col-md-6">
                   <label for="cfg_dateformat" class="form-label fw-bold"><?php echo L_CONF_DATEFORMAT; ?></label>
-                  <input class="form-control" name="dateformat" id="cfg_dateformat" maxlength="50" value="<?php echo pnadmin_escape($pnconfig['dateformat']); ?>" required aria-describedby="cfg_dateformat_help">
+                  <input class="form-control" name="dateformat" id="cfg_dateformat" maxlength="<?php echo ConfigData::FORMAT_MAX_LENGTH; ?>" value="<?php echo pnadmin_escape($pnconfig['dateformat']); ?>" required aria-describedby="cfg_dateformat_help">
                   <div id="cfg_dateformat_help" class="form-text"><?php echo L_CONF_DATEFORMAT_DESC; ?></div>
               </div>
               <div class="col-12 col-md-6">
                   <label for="cfg_timeformat" class="form-label fw-bold"><?php echo L_CONF_TIMEFORMAT; ?></label>
-                  <input class="form-control" name="timeformat" id="cfg_timeformat" maxlength="50" value="<?php echo pnadmin_escape($pnconfig['timeformat']); ?>" required aria-describedby="cfg_timeformat_help">
+                  <input class="form-control" name="timeformat" id="cfg_timeformat" maxlength="<?php echo ConfigData::FORMAT_MAX_LENGTH; ?>" value="<?php echo pnadmin_escape($pnconfig['timeformat']); ?>" required aria-describedby="cfg_timeformat_help">
                   <div id="cfg_timeformat_help" class="form-text"><?php echo L_CONF_TIMEFORMAT_DESC; ?></div>
               </div>
           </div>

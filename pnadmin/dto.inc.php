@@ -182,6 +182,9 @@ class ConfigData
     /** Gültige Werte der ENUM-Spalten smilies/bbcode/html in pn_config. */
     public const AREAS = ['NO', 'Comments', 'Comments/News', 'News'];
 
+    /** Länge der Spalten dateformat und timeformat in pn_config (varchar(50)). */
+    public const FORMAT_MAX_LENGTH = 50;
+
     public function __construct(
         public readonly string $categories = 'NO',
         public readonly string $categorypics = 'NO',
@@ -231,8 +234,8 @@ class ConfigData
             smilies: $choice('smilies', self::AREAS, 'NO'),
             bbcode: $choice('bbcode', self::AREAS, 'NO'),
             html: $choice('html', self::AREAS, 'NO'),
-            dateformat: pn_post_string('dateformat', 20),
-            timeformat: pn_post_string('timeformat', 20),
+            dateformat: pn_post_string('dateformat', self::FORMAT_MAX_LENGTH),
+            timeformat: pn_post_string('timeformat', self::FORMAT_MAX_LENGTH),
             template: pn_post_id('template'),
             url: pn_validate_url($_POST['url'] ?? null),
             email: pn_validate_email($_POST['email'] ?? null),
@@ -242,6 +245,23 @@ class ConfigData
             relatedlinks: pn_validate_yesno($_POST['relatedlinks'] ?? null),
             relatedlinks_num: pn_validate_int_range($_POST['relatedlinks_num'] ?? null, 1, 20, pn_validate_int_range($current['relatedlinks_num'] ?? null, 1, 20, 3)),
         );
+    }
+
+    /**
+     * Ist ein eingegebenes Datums- oder Zeitformat länger als die Spalte? Dann wird nicht
+     * gespeichert, statt still zu kürzen.
+     */
+    public static function formatTooLong(): bool
+    {
+        foreach (['dateformat', 'timeformat'] as $key) {
+            $value = is_string($_POST[$key] ?? null) ? trim($_POST[$key]) : '';
+
+            if (mb_strlen($value, 'UTF-8') > self::FORMAT_MAX_LENGTH) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

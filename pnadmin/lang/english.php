@@ -102,6 +102,7 @@ define('L_CONF_RELATEDLINKS_NUM_DESC', 'How many related links do you want to us
 define('L_CONF_TIMEFORMAT', 'Time format');
 define('L_CONF_TIMEFORMAT_DESC', 'How to format the time? (<a href="index.php?page=other&amp;subpage=help#help-configuration-dateformat">Help</a>)');
 define('L_CONF_EDITFAILED', 'Editing configuration failed!');
+define('L_CONF_FORMATTOOLONG', 'Date and time format may be at most %d characters long. Nothing was saved.');
 
 /* Menu */
 define('L_MENU_TEMPLATES', 'Templates');
