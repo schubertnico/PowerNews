@@ -15,7 +15,7 @@ declare(strict_types=1);
 /* Users */
 define('L_USR_WRONGEMAIL', 'Your e-mail address seems to be incorrect!');
 define('L_USR_USRALREADYEXISTS', 'This username or email already exists!');
-define('L_USR_REGISTERED', 'You registered successfully. A mail with your userdata is on the way.');
+define('L_USR_REGISTERED', 'You registered successfully and can now log in with your nickname and password.');
 define('L_USR_LOGGEDIN', 'You logged in successfully!');
 define('L_USR_WRONGPASSWORD', 'Your password is incorrect!');
 define('L_USR_NOUSR', 'No existing user with this nickname!');
@@ -29,7 +29,8 @@ define('L_USR_NOTLOGGEDIN', 'You are not logged in!');
 define('L_USR_CANNOTLOGOUT', 'You can not log out, if you are not logged in!');
 define('L_USR_PROFILEEDITED', 'Your profile was edited. If you changed your password, you have to log in again!');
 define('L_USR_ALREADYLOGGEDIN', 'You are already logged in.');
-define('L_USR_RESETMAIL_BODY', "Hello {NICKNAME},\n\na new password was requested for your PowerNews account at {URL}. Use the following link within {VALIDMINUTES} minutes to choose a new password:\n\n{RESETLINK}\n\nIf you did not request a new password, simply ignore this e-mail. Your current password stays valid.\n\nPlease do not reply to this automatically generated e-mail!");
+define('L_USR_RESETMAIL_BODY', "Hello {NICKNAME},\n\na new password was requested for your account at {SITE}. Use the following link within {VALIDMINUTES} minutes to choose a new password:\n\n{RESETLINK}\n\nIf you did not request a new password, simply ignore this e-mail. Your current password stays valid.\n\nPlease do not reply to this automatically generated e-mail!");
+define('L_USR_REGISTERMAIL_BODY', "Hello {NICKNAME},\n\nwelcome to {SITE}! Your registration is complete. You can log in right away with your nickname \"{NICKNAME}\" and the password you chose during registration:\n\n{LOGINLINK}\n\nPlease do not reply to this automatically generated e-mail!");
 define('L_USR_RESETTITLE', 'Choose a new password');
 define('L_USR_RESETINTRO', 'Hello %s, please enter your new password twice. It must be at least 8 characters long.');
 define('L_USR_NEWPASSWORD', 'New password');
@@ -37,6 +38,9 @@ define('L_USR_REPEATNEWPASSWORD', 'Repeat new password');
 define('L_USR_SAVEPASSWORD', 'Save password');
 define('L_USR_RESETINVALID', 'The link to choose a new password is invalid or has expired. Please request a new link.');
 define('L_USR_PASSWORDRESET', 'Your new password has been saved. You can now log in with it.');
+define('L_USR_INVITETITLE', 'Choose the password for your account');
+define('L_USR_INVITEINTRO', 'Welcome, %1$s! An account has been set up for you. Choose your password now and enter it a second time to confirm. Afterwards you log in with the nickname "%1$s" and this password.');
+define('L_USR_INVITEDONE', 'Your password has been saved and your account is ready. You can now log in with your nickname and the new password.');
 define('L_USR_INVALIDREGISTRATION', 'Invalid input. The nickname must be 3 to 30 characters long (letters, digits, dot, underscore, hyphen) and the e-mail address must be valid.');
 define('L_USR_REGISTRATIONFAILED', 'Registration failed. Please try again later.');
 define('L_USR_TOOMANYATTEMPTS', 'Too many failed attempts. Please try again in 15 minutes.');
@@ -45,6 +49,10 @@ define('L_USR_DATAREQUESTSENT', 'If an account with these details exists, an e-m
 define('L_USR_TOOMANYREQUESTS', 'Too many requests. Please try again later.');
 define('L_USR_INVALIDPROFILE', 'Invalid input. Please check nickname, e-mail address and homepage.');
 define('L_USR_PASSWORDTOOSHORT', 'The password must be at least 8 characters long.');
+define('L_USR_PASSWORDTOOLONG', 'The password must not be longer than 72 characters (umlauts and special characters count double).');
+define('L_USR_PASSWORDLABEL', 'Password');
+define('L_USR_PASSWORDREPEATLABEL', 'Repeat password');
+define('L_USR_PASSWORDHINT', 'At least 8 characters.');
 
 /* News */
 define('L_NEWS_NONEWS', 'No news');
@@ -80,7 +88,8 @@ define('L_NEWS_COMMENTTOOLONG', 'The comment is too long (at most %d characters)
 define('L_NEWS_NEWSNOTFOUND', 'The news entry was not found.');
 
 /* E-Mail */
-define('L_EMAIL_TITLE', 'PowerNews notification');
+define('L_EMAIL_SUBJECT_REGISTER', 'Welcome to %s');
+define('L_EMAIL_SUBJECT_RESET', 'New password for %s');
 define('L_EMAIL_AUTHOR', 'PowerNews');
 
 /* Templates */

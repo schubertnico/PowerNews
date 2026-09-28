@@ -15,7 +15,7 @@ declare(strict_types=1);
 /* Users */
 define('L_USR_WRONGEMAIL', 'Die angegebene E-Mail-Adresse scheint nicht korrekt zu sein!');
 define('L_USR_USRALREADYEXISTS', 'Es existiert bereits ein Benutzer mit diesem Nickname oder dieser E-Mail-Adresse!');
-define('L_USR_REGISTERED', 'Sie haben sich erfolgreich registriert und sollten in einigen Momenten eine E-Mail mit Ihren Benutzerdaten erhalten');
+define('L_USR_REGISTERED', 'Sie haben sich erfolgreich registriert und können sich jetzt mit Ihrem Nickname und Passwort einloggen.');
 define('L_USR_LOGGEDIN', 'Sie haben sich erfolgreich eingeloggt!');
 define('L_USR_WRONGPASSWORD', 'Das angegebene Passwort ist nicht korrekt!');
 define('L_USR_NOUSR', 'Es existiert kein Benutzer mit diesem Nickname!');
@@ -29,7 +29,8 @@ define('L_USR_NOTLOGGEDIN', 'Sie sind nicht eingeloggt!');
 define('L_USR_CANNOTLOGOUT', 'Sie können sich nicht ausloggen, wenn Sie nicht eingeloggt sind!');
 define('L_USR_PROFILEEDITED', 'Ihr Profil wurde erfolgreich editiert. Sollten Sie Ihr Passwort geändert haben, so müssen Sie sich erneut einloggen!');
 define('L_USR_ALREADYLOGGEDIN', 'Sie sind bereits eingeloggt.');
-define('L_USR_RESETMAIL_BODY', "Hallo {NICKNAME},\n\nfür Ihr Konto bei PowerNews auf {URL} wurde ein neues Passwort angefordert. Über den folgenden Link können Sie innerhalb von {VALIDMINUTES} Minuten ein neues Passwort festlegen:\n\n{RESETLINK}\n\nWenn Sie kein neues Passwort angefordert haben, ignorieren Sie diese E-Mail. Ihr bisheriges Passwort bleibt gültig.\n\nBitte nicht auf diese automatisch generierte E-Mail antworten!");
+define('L_USR_RESETMAIL_BODY', "Hallo {NICKNAME},\n\nfür Ihr Konto auf {SITE} wurde ein neues Passwort angefordert. Über den folgenden Link können Sie innerhalb von {VALIDMINUTES} Minuten ein neues Passwort festlegen:\n\n{RESETLINK}\n\nWenn Sie kein neues Passwort angefordert haben, ignorieren Sie diese E-Mail. Ihr bisheriges Passwort bleibt gültig.\n\nBitte nicht auf diese automatisch generierte E-Mail antworten!");
+define('L_USR_REGISTERMAIL_BODY', "Hallo {NICKNAME},\n\nwillkommen bei {SITE}! Ihre Registrierung ist abgeschlossen. Sie können sich ab sofort mit Ihrem Nickname „{NICKNAME}“ und dem Passwort anmelden, das Sie bei der Registrierung gewählt haben:\n\n{LOGINLINK}\n\nBitte nicht auf diese automatisch generierte E-Mail antworten!");
 define('L_USR_RESETTITLE', 'Neues Passwort festlegen');
 define('L_USR_RESETINTRO', 'Hallo %s, bitte geben Sie Ihr neues Passwort zweimal ein. Es muss mindestens 8 Zeichen lang sein.');
 define('L_USR_NEWPASSWORD', 'Neues Passwort');
@@ -37,6 +38,9 @@ define('L_USR_REPEATNEWPASSWORD', 'Neues Passwort wiederholen');
 define('L_USR_SAVEPASSWORD', 'Passwort speichern');
 define('L_USR_RESETINVALID', 'Der Link zum Festlegen eines neuen Passworts ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen Link an.');
 define('L_USR_PASSWORDRESET', 'Ihr neues Passwort ist gespeichert. Sie können sich jetzt damit einloggen.');
+define('L_USR_INVITETITLE', 'Passwort für Ihren Zugang festlegen');
+define('L_USR_INVITEINTRO', 'Willkommen, %1$s! Für Sie wurde ein Zugang eingerichtet. Legen Sie jetzt Ihr Passwort fest und geben Sie es zur Bestätigung ein zweites Mal ein. Danach melden Sie sich mit dem Nickname „%1$s“ und diesem Passwort an.');
+define('L_USR_INVITEDONE', 'Ihr Passwort ist gespeichert, der Zugang ist eingerichtet. Sie können sich jetzt mit Ihrem Nickname und dem neuen Passwort einloggen.');
 define('L_USR_INVALIDREGISTRATION', 'Ungültige Eingabe. Der Nickname muss 3 bis 30 Zeichen lang sein (Buchstaben, Ziffern, Punkt, Unterstrich, Bindestrich), und die E-Mail-Adresse muss gültig sein.');
 define('L_USR_REGISTRATIONFAILED', 'Die Registrierung ist fehlgeschlagen. Bitte versuchen Sie es später erneut.');
 define('L_USR_TOOMANYATTEMPTS', 'Zu viele Fehlversuche. Bitte versuchen Sie es in 15 Minuten erneut.');
@@ -45,6 +49,10 @@ define('L_USR_DATAREQUESTSENT', 'Falls ein Konto mit diesen Daten existiert, wur
 define('L_USR_TOOMANYREQUESTS', 'Zu viele Anfragen. Bitte versuchen Sie es später erneut.');
 define('L_USR_INVALIDPROFILE', 'Ungültige Eingabe. Bitte prüfen Sie Nickname, E-Mail-Adresse und Homepage.');
 define('L_USR_PASSWORDTOOSHORT', 'Das Passwort muss mindestens 8 Zeichen lang sein.');
+define('L_USR_PASSWORDTOOLONG', 'Das Passwort darf höchstens 72 Zeichen lang sein (Umlaute und Sonderzeichen zählen doppelt).');
+define('L_USR_PASSWORDLABEL', 'Passwort');
+define('L_USR_PASSWORDREPEATLABEL', 'Passwort wiederholen');
+define('L_USR_PASSWORDHINT', 'Mindestens 8 Zeichen.');
 
 /* News */
 define('L_NEWS_NONEWS', 'Keine News vorhanden');
@@ -80,7 +88,8 @@ define('L_NEWS_COMMENTTOOLONG', 'Der Kommentar ist zu lang (höchstens %d Zeiche
 define('L_NEWS_NEWSNOTFOUND', 'Die News wurde nicht gefunden.');
 
 /* E-Mail */
-define('L_EMAIL_TITLE', 'PowerNews-Benachrichtigung');
+define('L_EMAIL_SUBJECT_REGISTER', 'Willkommen bei %s');
+define('L_EMAIL_SUBJECT_RESET', 'Neues Passwort für %s');
 define('L_EMAIL_AUTHOR', 'PowerNews');
 
 /* Templates */

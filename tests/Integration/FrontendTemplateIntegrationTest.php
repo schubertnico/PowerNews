@@ -271,27 +271,28 @@ class FrontendTemplateIntegrationTest extends DatabaseTestCase
     #[Test]
     public function registeremail_returns_string_with_placeholders_replaced(): void
     {
-        $result = $this->template->registeremail('nick123', 'nick@test.com', 'secret99');
+        $result = $this->template->registeremail('nick123', 'nick@test.com');
 
         $this->assertIsString($result);
         $this->assertStringContainsString('nick123', $result);
         $this->assertStringContainsString('nick@test.com', $result);
-        $this->assertStringContainsString('secret99', $result);
         $this->assertStringNotContainsString('{NICKNAME}', $result);
         $this->assertStringNotContainsString('{EMAIL}', $result);
         $this->assertStringNotContainsString('{PASSWORD}', $result);
+        $this->assertStringNotContainsString('Passwort:', $result, 'Die Bestätigung enthält kein Passwort.');
     }
 
     #[Test]
-    public function registeremail_contains_url_from_config(): void
+    public function registeremail_contains_login_link_from_config(): void
     {
         global $pnconfig;
 
-        $result = $this->template->registeremail('user', 'u@t.com', 'pw');
+        $result = $this->template->registeremail('user', 'u@t.com');
 
         $this->assertIsString($result);
-        $this->assertStringContainsString($pnconfig['url'], $result);
-        $this->assertStringNotContainsString('{URL}', $result);
+        $this->assertStringContainsString(rtrim($pnconfig['url'], '/') . '/user.php?page=login', $result);
+        $this->assertStringNotContainsString('{LOGINLINK}', $result);
+        $this->assertStringNotContainsString('{SITE}', $result);
     }
 
     // ── dataemail ──
@@ -311,15 +312,14 @@ class FrontendTemplateIntegrationTest extends DatabaseTestCase
     }
 
     #[Test]
-    public function dataemail_contains_url_from_config(): void
+    public function dataemail_contains_the_site_from_config(): void
     {
-        global $pnconfig;
-
         $result = $this->template->dataemail('u', 'u@t.com', 'pw');
 
         $this->assertIsString($result);
-        $this->assertStringContainsString($pnconfig['url'], $result);
+        $this->assertStringContainsString(pn_site_name(), $result);
         $this->assertStringNotContainsString('{URL}', $result);
+        $this->assertStringNotContainsString('{SITE}', $result);
     }
 
     // ── profileform ──

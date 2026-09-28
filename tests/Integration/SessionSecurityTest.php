@@ -157,9 +157,12 @@ class SessionSecurityTest extends DatabaseTestCase
         $this->assertSame('', (new \profile())->edit('pw_wechsel', 'pw_wechsel@example.com', 'NO', 'neues-passwort', 'neues-passwort', $userId));
         $this->assertSame(0, $this->sessionCount($userId));
 
+        // Ein Admin verschickt nur einen Link; erst das neue Passwort beendet die Sitzungen.
         pn_session_create($pn_handler, $userId, 'frontend');
         @(new \user())->edituser('pw_wechsel', 'pw_wechsel@example.com', 'NO', 'YES', 'Activated', 'NO', $userId, '');
-        $this->assertSame(0, $this->sessionCount($userId), 'Neues Passwort durch einen Admin beendet Sitzungen.');
+        $this->assertSame(1, $this->sessionCount($userId), 'Das bisherige Passwort gilt noch.');
+        pn_password_reset_complete($pn_handler, pn_test_setup_config(), $userId, 'vom-benutzer-gewaehlt');
+        $this->assertSame(0, $this->sessionCount($userId), 'Neues Passwort über den Link beendet Sitzungen.');
 
         pn_session_create($pn_handler, $userId, 'frontend');
         (new \user())->edituser('pw_wechsel', 'pw_wechsel@example.com', 'NO', 'NO', 'Deactivated', 'NO', $userId, '');

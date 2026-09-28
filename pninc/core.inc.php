@@ -367,6 +367,135 @@ function pn_session_cookie(string $name, string $value, int $expires): void
 /** Gültigkeit eines Links zum Festlegen eines neuen Passworts in Sekunden (60 Minuten). */
 const PN_RESET_LIFETIME = 3600;
 
+/** Gültigkeit einer Einladung (vom Admin angelegtes Konto) in Sekunden (48 Stunden). */
+const PN_INVITE_LIFETIME = 172800;
+
+/**
+ * Inhalt der Passwortspalte eines Kontos, dessen Passwort noch nicht festgelegt ist
+ * (Einladung durch einen Admin). Mit „!“ beginnende Werte passen zu keinem Passwort.
+ */
+const PN_PASSWORD_UNSET = '!unset';
+
+/** Mindestlänge eines Passworts in Zeichen (wie im Web-Installer). */
+const PN_PASSWORD_MIN = 8;
+
+/** Höchstlänge eines Passworts in Byte; bcrypt wertet nur 72 Byte aus. */
+const PN_PASSWORD_MAX_BYTES = 72;
+
+/**
+ * Hat das Konto ein nutzbares Passwort? Leere Werte und PN_PASSWORD_UNSET nie – sonst
+ * ließe sich ein leeres Passwort als Base64-Altpasswort anmelden.
+ */
+function pn_password_is_set(string $storedHash): bool
+{
+    return $storedHash !== '' && !str_starts_with($storedHash, '!');
+}
+
+/**
+ * Prüft ein neues Passwort und seine Wiederholung nach denselben Regeln wie der
+ * Web-Installer. Rückgabe: '' (in Ordnung), 'mismatch', 'short' oder 'long'.
+ */
+function pn_password_problem(#[SensitiveParameter] string $password, #[SensitiveParameter] string $repeat): string
+{
+    if ($password !== $repeat) {
+        return 'mismatch';
+    }
+
+    if (!mb_check_encoding($password, 'UTF-8') || mb_strlen($password, 'UTF-8') < PN_PASSWORD_MIN) {
+        return 'short';
+    }
+
+    return strlen($password) > PN_PASSWORD_MAX_BYTES ? 'long' : '';
+}
+
+/**
+ * Absoluter Link auf die Benutzerseite (user.php) mit Abfrage, z. B. „page=login“. Basis ist
+ * die konfigurierte URL, nie der Host-Header der Anfrage (sonst ließen sich Links in Mails auf
+ * fremde Server umbiegen).
+ */
+function pn_user_link(string $query): string
+{
+    global $pn_config, $pnconfig;
+
+    $link = rtrim((string) ($pnconfig['url'] ?? ''), '/') . '/' . (string) ($pn_config['userfile'] ?? 'user.php');
+
+    return $query === '' ? $link : $link . '?' . $query;
+}
+
+/**
+ * Link zum Festlegen eines Passworts (Einladung und „Passwort vergessen“).
+ */
+function pn_password_link(string $token): string
+{
+    return pn_user_link('page=resetpassword&token=' . $token);
+}
+
+/**
+ * Kurzname der Website für Betreffzeilen und den Platzhalter {SITE}: Hostname aus der
+ * konfigurierten URL ohne „www.“, ersatzweise „PowerNews“.
+ */
+function pn_site_name(): string
+{
+    global $pnconfig;
+
+    $host = (string) parse_url((string) ($pnconfig['url'] ?? ''), PHP_URL_HOST);
+    $host = (string) preg_replace('/^www\./i', '', $host);
+
+    return $host !== '' ? $host : 'PowerNews';
+}
+
+/**
+ * Inhalt eines Felds des aktiven Templates oder null, wenn das Template fehlt.
+ */
+function pn_template_text(string $field): ?string
+{
+    global $pn_config, $pnconfig, $pn_handler;
+
+    if (!in_array($field, ['addemail', 'editemail', 'registeremail', 'dataemail'], true)) {
+        return null;
+    }
+
+    $templateId = (int) ($pnconfig['template'] ?? 0);
+    $stmt = mysqli_prepare($pn_handler, 'SELECT `' . $field . '` FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
+    mysqli_stmt_bind_param($stmt, 'i', $templateId);
+    mysqli_stmt_execute($stmt);
+    $row = mysqli_fetch_row(mysqli_stmt_get_result($stmt));
+
+    return is_array($row) ? (string) $row[0] : null;
+}
+
+/**
+ * Text einer Mail aus einem Template-Feld. Fehlt dem Feld der Platzhalter $required oder
+ * enthält es den veralteten Platzhalter $outdated (Vorlagen bis 3.11 oder eigene Anpassungen),
+ * gilt $fallback aus der Sprachdatei. Zeilen mit {PASSWORD} entfallen immer, es wird nie ein
+ * Passwort verschickt. {URL}, {SITE} und {LOGINLINK} werden immer ersetzt.
+ *
+ * @param array<string, string|int> $values
+ */
+function pn_mail_from_template(string $field, string $required, string $outdated, string $fallback, array $values): ?string
+{
+    global $pnconfig;
+
+    $text = pn_template_text($field);
+
+    if ($text === null) {
+        return null;
+    }
+
+    $missing = $required !== '' && !str_contains($text, '{' . $required . '}');
+
+    if ($missing || ($outdated !== '' && str_contains($text, '{' . $outdated . '}'))) {
+        $text = $fallback;
+    }
+
+    return pn_mail_text($text, array_merge($values, [
+        'PASSWORD' => '',
+        'URL' => (string) ($pnconfig['url'] ?? ''),
+        'SITE' => pn_site_name(),
+        'LOGINLINK' => pn_user_link('page=login'),
+    ]));
+}
+
 /** Höchstzahl an „Passwort vergessen“-Anfragen je IP-Adresse und Stunde. */
 const PN_RESET_MAX_PER_IP = 5;
 
@@ -425,14 +554,28 @@ function pn_password_reset_recent(mysqli $db, int $userId): bool
 /**
  * Speichert eine Reset-Anfrage. Gespeichert wird nur der Hash des Tokens.
  */
-function pn_password_reset_store(mysqli $db, int $userId, string $token, string $ip): void
+function pn_password_reset_store(mysqli $db, int $userId, string $token, string $ip, int $lifetime = PN_RESET_LIFETIME): void
 {
     $tokenHash = hash('sha256', $token);
     $now = time();
-    $expires = $now + PN_RESET_LIFETIME;
+    $expires = $now + $lifetime;
     $stmt = mysqli_prepare($db, 'INSERT INTO pn_password_resets (userid, token_hash, created, expires, ip) VALUES (?, ?, ?, ?, ?)');
     mysqli_stmt_bind_param($stmt, 'isiis', $userId, $tokenHash, $now, $expires, $ip);
     mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Legt ein Einmal-Token zum Festlegen des Passworts an, das ein Admin auslöst (Einladung oder
+ * neues Passwort), und liefert es im Klartext für den Link. Ohne IP-Adresse, damit es nicht
+ * in die Bremse für „Passwort vergessen“ des Admins zählt.
+ */
+function pn_password_token_issue(mysqli $db, int $userId, int $lifetime): string
+{
+    pn_password_resets_prepare($db);
+    $token = bin2hex(random_bytes(32));
+    pn_password_reset_store($db, $userId, $token, '', $lifetime);
+
+    return $token;
 }
 
 /**

@@ -18,36 +18,6 @@ class AdminUserClassIntegrationTest extends DatabaseTestCase
         $this->user = new \user();
     }
 
-    // ── generate_password ──
-
-    #[Test]
-    public function generate_password_returns_eight_character_string(): void
-    {
-        $password = $this->user->generate_password();
-
-        $this->assertSame(8, strlen($password));
-    }
-
-    #[Test]
-    public function generate_password_returns_alphanumeric_characters_only(): void
-    {
-        $password = $this->user->generate_password();
-
-        $this->assertMatchesRegularExpression('/^[a-zA-Z0-9]{8}$/', $password);
-    }
-
-    #[Test]
-    public function generate_password_returns_different_values_on_successive_calls(): void
-    {
-        $passwords = [];
-        for ($i = 0; $i < 10; ++$i) {
-            $passwords[] = $this->user->generate_password();
-        }
-
-        // At least 2 distinct passwords out of 10 calls
-        $this->assertGreaterThan(1, count(array_unique($passwords)));
-    }
-
     // ── adduser ──
 
     #[Test]
@@ -308,17 +278,18 @@ class AdminUserClassIntegrationTest extends DatabaseTestCase
     }
 
     #[Test]
-    public function edituser_with_new_password_generates_new_password(): void
+    public function edituser_with_new_password_sends_a_link_and_keeps_the_old_password(): void
     {
         $userId = $this->insertTestUser('editme', 'editme@example.com', 'oldpass');
 
         $dataBefore = $this->user->getuserdata($userId);
         $oldHash = $dataBefore['password'];
 
-        $this->user->edituser('editme', 'editme@example.com', 'NO', 'YES', 'Activated', 'NO', $userId, '');
+        @$this->user->edituser('editme', 'editme@example.com', 'NO', 'YES', 'Activated', 'NO', $userId, '');
 
         $dataAfter = $this->user->getuserdata($userId);
-        $this->assertNotSame($oldHash, $dataAfter['password']);
+        $this->assertSame($oldHash, $dataAfter['password'], 'Kein Zufallspasswort mehr, das bisherige gilt bis zum Festlegen.');
+        $this->assertStringContainsString('page=resetpassword&token=', $this->user->passwordlink);
     }
 
     #[Test]

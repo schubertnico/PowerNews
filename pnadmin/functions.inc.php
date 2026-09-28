@@ -152,6 +152,11 @@ function pnadmin_verify_password(string $password, string $storedHash, ?int $use
 {
     global $pn_config, $pn_handler;
 
+    // Konten ohne festgelegtes Passwort (Einladung) lassen sich nie anmelden.
+    if (!pn_password_is_set($storedHash)) {
+        return false;
+    }
+
     if (pnadmin_is_legacy_password($storedHash)) {
         if (base64_encode($password) === $storedHash) {
             if ($userId !== null) {
@@ -329,55 +334,50 @@ class login
 
 class template
 {
-    public function addemail(string $nickname, string $email, string $password): string|false
+    /**
+     * Einladung für ein vom Admin angelegtes Konto: Link zum Festlegen des Passworts, nie ein
+     * Passwort. Vorlagen ohne {INVITELINK} (bis 3.12 mit Zufallspasswort) ersetzt der
+     * Standardtext aus der Sprachdatei.
+     */
+    public function addemail(string $nickname, string $email, string $invitelink): string|false
     {
-        global $pnconfig, $pn_config, $pn_handler;
+        $text = pn_mail_from_template('addemail', 'INVITELINK', '', L_USR_INVITEMAIL_BODY, [
+            'NICKNAME' => $nickname,
+            'EMAIL' => $email,
+            'INVITELINK' => $invitelink,
+            'VALIDHOURS' => intdiv(PN_INVITE_LIFETIME, 3600),
+        ]);
 
-        $templateId = (int) $pnconfig['template'];
-        $stmt = mysqli_prepare($pn_handler, 'SELECT addemail FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $templateId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
-
-        if ($num == 1) {
-            [$addemail] = mysqli_fetch_array($result);
-
-            return pn_mail_text((string) $addemail, [
-                'NICKNAME' => $nickname,
-                'EMAIL' => $email,
-                'PASSWORD' => $password,
-                'URL' => (string) $pnconfig['url'],
-            ]);
-        }
-
-        return false;
+        return $text ?? false;
     }
 
-    public function editemail(string $nickname, string $email, string $password): string|false
+    /**
+     * Mitteilung über geänderte Kontodaten. Eine Passwortzeile alter Vorlagen entfällt (B21).
+     */
+    public function editemail(string $nickname, string $email): string|false
     {
-        global $pnconfig, $pn_config, $pn_handler;
+        $text = pn_mail_from_template('editemail', '', '', '', [
+            'NICKNAME' => $nickname,
+            'EMAIL' => $email,
+        ]);
 
-        $templateId = (int) $pnconfig['template'];
-        $stmt = mysqli_prepare($pn_handler, 'SELECT editemail FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $templateId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
+        return $text ?? false;
+    }
 
-        if ($num == 1) {
-            [$editemail] = mysqli_fetch_array($result);
+    /**
+     * Link zum Festlegen eines neuen Passworts, vom Admin ausgelöst. Gleicher Text wie bei
+     * „Passwort vergessen“ (Template-Feld dataemail).
+     */
+    public function resetemail(string $nickname, string $email, string $resetlink): string|false
+    {
+        $text = pn_mail_from_template('dataemail', 'RESETLINK', '', L_USR_RESETMAIL_BODY, [
+            'NICKNAME' => $nickname,
+            'EMAIL' => $email,
+            'RESETLINK' => $resetlink,
+            'VALIDMINUTES' => intdiv(PN_RESET_LIFETIME, 60),
+        ]);
 
-            // Ohne neues Passwort entfällt die Passwortzeile (B21).
-            return pn_mail_text((string) $editemail, [
-                'NICKNAME' => $nickname,
-                'EMAIL' => $email,
-                'PASSWORD' => $password,
-                'URL' => (string) $pnconfig['url'],
-            ]);
-        }
-
-        return false;
+        return $text ?? false;
     }
 
     public function addtemplate(): void
@@ -606,30 +606,39 @@ class template
 
 class email
 {
-    public function addemail(string $nickname, string $email, string $password): bool
+    public function addemail(string $nickname, string $email, string $invitelink): bool
     {
-        global $pnconfig;
         $template = new template();
-        $addemail = $template->addemail($nickname, $email, $password);
 
-        if ($addemail) {
-            return pn_send_mail($email, L_EMAIL_SUBJECT, $addemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
-        }
-
-        return false;
+        return $this->send($email, L_EMAIL_SUBJECT_INVITE, $template->addemail($nickname, $email, $invitelink));
     }
 
-    public function editemail(string $nickname, string $email, string $password): bool
+    public function editemail(string $nickname, string $email): bool
+    {
+        $template = new template();
+
+        return $this->send($email, L_EMAIL_SUBJECT_EDIT, $template->editemail($nickname, $email));
+    }
+
+    public function resetemail(string $nickname, string $email, string $resetlink): bool
+    {
+        $template = new template();
+
+        return $this->send($email, L_EMAIL_SUBJECT_RESET, $template->resetemail($nickname, $email, $resetlink));
+    }
+
+    /**
+     * Verschickt einen Mailtext; der Betreff aus der Sprachdatei enthält den Namen der Website.
+     */
+    private function send(string $email, string $subject, string|false $text): bool
     {
         global $pnconfig;
-        $template = new template();
-        $editemail = $template->editemail($nickname, $email, $password);
 
-        if ($editemail) {
-            return pn_send_mail($email, L_EMAIL_SUBJECT, $editemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
+        if ($text === false || $text === '') {
+            return false;
         }
 
-        return false;
+        return pn_send_mail($email, sprintf($subject, pn_site_name()), $text, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
     }
 }
 
@@ -765,24 +774,27 @@ class user
         'canreadcomments', 'canwritecomments',
     ];
 
-    public function generate_password(): string
-    {
-        $pwarray = array_merge(range('a', 'z'), range('A', 'Z'), range('0', '9'));
-        $pwacount = count($pwarray);
-        $password = '';
+    /**
+     * Link zum Festlegen des Passworts aus dem letzten adduser()/edituser(): Einladung oder
+     * neues Passwort. Leer, wenn keiner erzeugt wurde.
+     */
+    public string $passwordlink = '';
 
-        for ($i = 0; $i < 8; ++$i) {
-            $letter = random_int(0, $pwacount - 1);
-            $password .= $pwarray[$letter];
-        }
+    /** Wurde die Mail mit $passwordlink verschickt? */
+    public bool $linksent = false;
 
-        return $password;
-    }
-
+    /**
+     * Legt ein Konto an. Statt eines Zufallspassworts gibt es eine Einladung: einen Einmal-Link
+     * (PN_INVITE_LIFETIME), über den der Benutzer sein Passwort selbst festlegt. Bis dahin hat
+     * das Konto kein nutzbares Passwort. Mit $sendemail = 'YES' geht die Einladung per Mail
+     * raus; sonst (oder wenn der Versand scheitert) zeigt die Seite den Link einmal an.
+     */
     public function adduser(string $nickname, string $email, string $showemail, string $sendemail): string
     {
         global $pn_config, $pn_handler;
-        $error = '';
+
+        $this->passwordlink = '';
+        $this->linksent = false;
 
         // Dieselben Regeln wie bei der Registrierung im Frontend (B45).
         if (pn_validate_nickname($nickname) === '') {
@@ -796,31 +808,30 @@ class user
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['usertable'] . ' WHERE nickname = ? OR email = ?');
         mysqli_stmt_bind_param($stmt, 'ss', $nickname, $email);
         mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
 
-        if ($num == 0) {
-            $password = $this->generate_password();
-            $hashedPassword = pnadmin_hash_password($password);
-            $showemail = pn_validate_yesno($showemail, 'NO');
-            $now = time();
-            $status = 'Activated';
-            $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail, status) VALUES(?, ?, ?, ?, ?, ?)');
-            mysqli_stmt_bind_param($stmt, 'sssiss', $nickname, $email, $hashedPassword, $now, $showemail, $status);
-
-            if (!pnadmin_execute($stmt)) {
-                return L_USR_SAVEFAILED;
-            }
-
-            if ($sendemail === 'YES') {
-                $emailObj = new email();
-                $emailObj->addemail($nickname, $email, $password);
-            }
-        } else {
-            $error = L_USR_USRALREADYEXISTS;
+        if (mysqli_num_rows(mysqli_stmt_get_result($stmt)) !== 0) {
+            return L_USR_USRALREADYEXISTS;
         }
 
-        return $error;
+        $unset = PN_PASSWORD_UNSET;
+        $showemail = pn_validate_yesno($showemail, 'NO');
+        $now = time();
+        $status = 'Activated';
+        $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail, status) VALUES(?, ?, ?, ?, ?, ?)');
+        mysqli_stmt_bind_param($stmt, 'sssiss', $nickname, $email, $unset, $now, $showemail, $status);
+
+        if (!pnadmin_execute($stmt)) {
+            return L_USR_SAVEFAILED;
+        }
+
+        $this->passwordlink = pn_password_link(pn_password_token_issue($pn_handler, (int) mysqli_insert_id($pn_handler), PN_INVITE_LIFETIME));
+
+        if ($sendemail === 'YES') {
+            $mailer = new email();
+            $this->linksent = $mailer->addemail($nickname, $email, $this->passwordlink);
+        }
+
+        return '';
     }
 
     public function listpages(): void
@@ -982,10 +993,18 @@ class user
         return null;
     }
 
+    /**
+     * Speichert ein Konto. $newpassword = 'YES' setzt kein Passwort mehr, sondern schickt einen
+     * Einmal-Link: Hat das Konto ein Passwort, den Link aus „Passwort vergessen“ (das bisherige
+     * gilt bis zum Festlegen weiter), sonst die Einladung erneut. $sendemail = 'YES' meldet die
+     * geänderten Daten per Mail (ohne Passwort). $password wird nicht mehr ausgewertet.
+     */
     public function edituser(string $nickname, string $email, string $showemail, string $newpassword, string $status, string $sendemail, int $userid, string $password): string
     {
         global $pn_config, $pn_handler;
         $error = '';
+        $this->passwordlink = '';
+        $this->linksent = false;
 
         if (!$nickname || !$email) {
             $error = L_USR_INSERTNICKNAMEANDEMAIL;
@@ -1000,18 +1019,6 @@ class user
 
             if ($num == 0) {
                 if (pn_validate_email($email) !== '') {
-                    // Das Formular sendet kein Passwort; nur ein neu erzeugtes wird verschickt.
-                    $password = '';
-
-                    if ($newpassword === 'YES') {
-                        $password = $this->generate_password();
-                        $hashedPassword = pnadmin_hash_password($password);
-                        $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET password = ? WHERE id = ?');
-                        mysqli_stmt_bind_param($stmt, 'si', $hashedPassword, $userid);
-                        mysqli_stmt_execute($stmt);
-                        pn_sessions_delete_for_user($pn_handler, $userid);
-                    }
-
                     $showemail = pn_validate_yesno($showemail, 'NO');
                     $status = (string) pn_validate_whitelist($status, ['Activated', 'Deactivated'], 'Activated');
                     $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['usertable'] . ' SET nickname = ?, email = ?, showemail = ?, status = ? WHERE id = ?');
@@ -1025,10 +1032,13 @@ class user
                         pn_sessions_delete_for_user($pn_handler, $userid);
                     }
 
-                    // Ein neues Passwort muss den Benutzer erreichen, deshalb geht die Mail dann immer raus.
-                    if ($sendemail === 'YES' || $password !== '') {
-                        $emailObj = new email();
-                        $emailObj->editemail($nickname, $email, $password);
+                    if ($sendemail === 'YES') {
+                        $mailer = new email();
+                        $mailer->editemail($nickname, $email);
+                    }
+
+                    if ($newpassword === 'YES' && $status === 'Activated') {
+                        $this->sendpasswordlink($userid, $nickname, $email);
                     }
                 } else {
                     $error = L_USR_WRONGEMAIL;
@@ -1039,6 +1049,24 @@ class user
         }
 
         return $error;
+    }
+
+    /**
+     * Schickt einem Konto einen Einmal-Link zum Festlegen des Passworts: die Einladung, wenn es
+     * noch kein Passwort hat, sonst den Link wie bei „Passwort vergessen“.
+     */
+    public function sendpasswordlink(int $userid, string $nickname, string $email): void
+    {
+        global $pn_handler;
+
+        $data = $this->getuserdata($userid);
+        $invite = !pn_password_is_set((string) ($data['password'] ?? ''));
+        $token = pn_password_token_issue($pn_handler, $userid, $invite ? PN_INVITE_LIFETIME : PN_RESET_LIFETIME);
+        $this->passwordlink = pn_password_link($token);
+        $mailer = new email();
+        $this->linksent = $invite
+            ? $mailer->addemail($nickname, $email, $this->passwordlink)
+            : $mailer->resetemail($nickname, $email, $this->passwordlink);
     }
 
     public function listsearchpages(string $searchin, string $searchstring): void
@@ -1159,14 +1187,17 @@ class profile
         if ($num == 1) {
             // Passwort nur prüfen, wenn eines eingegeben wurde
             $changePassword = ($password !== '' || $password2 !== '');
+            $problem = $changePassword ? pn_password_problem($password, $password2) : '';
             $showemail = pn_validate_yesno($showemail, 'NO');
 
             if (pn_validate_nickname($nickname) === '') {
                 $error = L_USR_INVALIDNICKNAME;
-            } elseif ($changePassword && $password !== $password2) {
-                $error = L_USR_PWNOTCONFIRMED;
-            } elseif ($changePassword && strlen($password) < 8) {
-                $error = L_USR_PASSWORDTOOSHORT;
+            } elseif ($problem !== '') {
+                $error = match ($problem) {
+                    'mismatch' => L_USR_PWNOTCONFIRMED,
+                    'long' => L_USR_PASSWORDTOOLONG,
+                    default => L_USR_PASSWORDTOOSHORT,
+                };
             } elseif (pn_validate_email($email) === '') {
                 $error = L_USR_WRONGEMAIL;
             } else {

@@ -37,11 +37,25 @@ if ($pnadmin['canwriteusers'] == 'YES') {
                 </div>
                 <?php
             } else {
+                $validHours = intdiv(PN_INVITE_LIFETIME, 3600);
                 ?>
-                <div class="alert alert-success" role="alert">
-                    <?php echo L_USR_USRADDED; ?>
-                    <div class="mt-2"><a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-success"><?php echo L_USR_ADDMORE; ?></a></div>
+                <div class="alert alert-success" role="alert" id="pn_useradded">
+                    <p class="mb-0"><?php echo L_USR_USRADDED; ?></p>
+<?php if ($user->linksent) { ?>
+                    <p class="mb-0 mt-2" id="pn_invitesent"><?php echo sprintf(L_USR_INVITESENT, pnadmin_escape($email), $validHours); ?></p>
+<?php } ?>
                 </div>
+<?php if (!$user->linksent) { ?>
+<?php if ($sendemail === 'YES') { ?>
+                <div class="alert alert-warning" role="alert" id="pn_invitemailfailed"><?php echo L_USR_INVITEMAILFAILED; ?></div>
+<?php } ?>
+                <div class="mb-3">
+                    <label for="pn_invitelink" class="form-label fw-bold"><?php echo L_USR_INVITELINK; ?></label>
+                    <input type="text" class="form-control font-monospace" id="pn_invitelink" value="<?php echo pnadmin_escape($user->passwordlink); ?>" readonly aria-describedby="pn_invitelink_help">
+                    <div id="pn_invitelink_help" class="form-text"><?php echo sprintf(L_USR_INVITELINK_DESC, $validHours); ?></div>
+                </div>
+<?php } ?>
+                <a href="index.php?page=users&amp;subpage=add" class="btn btn-sm btn-success"><?php echo L_USR_ADDMORE; ?></a>
                 <?php
             }
         }
@@ -72,8 +86,8 @@ if ($pnadmin['canwriteusers'] == 'YES') {
 
               <div class="form-check mb-3">
                   <input class="form-check-input" type="checkbox" name="sendemail" value="YES" id="pn_sendemail" checked aria-describedby="pn_sendemail_help">
-                  <label class="form-check-label fw-bold" for="pn_sendemail"><?php echo L_USR_SENDMAIL; ?></label>
-                  <div id="pn_sendemail_help" class="form-text"><?php echo L_USR_SENDMAIL_DESC; ?></div>
+                  <label class="form-check-label fw-bold" for="pn_sendemail"><?php echo L_USR_SENDINVITE; ?></label>
+                  <div id="pn_sendemail_help" class="form-text"><?php echo sprintf(L_USR_SENDINVITE_DESC, intdiv(PN_INVITE_LIFETIME, 3600)); ?></div>
               </div>
 
               <button type="submit" class="btn btn-primary"><?php echo L_USR_ADDUSR; ?></button>

@@ -393,7 +393,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
         $this->insertTestUser('existinguser', 'existing@example.com', 'pass');
 
         $this->setGet(['pndata' => ['send' => 'YES']]);
-        $this->setPost(['pndata' => ['nickname' => 'existinguser', 'email' => 'new@example.com']]);
+        $this->setPost(['pndata' => ['nickname' => 'existinguser', 'email' => 'new@example.com', 'password' => 'Sonnenblume-26', 'password2' => 'Sonnenblume-26']]);
 
         $user = new \pn_user();
         $output = $this->captureOutput(fn() => $user->register());
@@ -405,7 +405,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
     public function register_valid_data_outputs_registered(): void
     {
         $this->setGet(['pndata' => ['send' => 'YES']]);
-        $this->setPost(['pndata' => ['nickname' => 'newuser', 'email' => 'new@example.com']]);
+        $this->setPost(['pndata' => ['nickname' => 'newuser', 'email' => 'new@example.com', 'password' => 'Sonnenblume-26', 'password2' => 'Sonnenblume-26']]);
 
         $user = new \pn_user();
         $output = $this->captureOutput(fn() => @$user->register());
@@ -599,7 +599,7 @@ class AdditionalCoverageTest extends DatabaseTestCase
     public function registeremail_returns_bool(): void
     {
         $email = new \pn_email();
-        $result = @$email->registeremail('testuser', 'test@example.com', 'password123');
+        $result = @$email->registeremail('testuser', 'test@example.com');
 
         $this->assertIsBool($result);
     }

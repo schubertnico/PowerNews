@@ -160,25 +160,25 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_addemail" class="form-label fw-bold"><?php echo L_TEMPL_USERADDEDMAIL; ?></label>
                       <textarea class="form-control font-monospace small" name="addemail" id="pn_t_addemail" rows="6"><?php echo pnadmin_escape($data['addemail']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_USERADDEDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{PASSWORD}</code></div>
+                      <div class="form-text"><?php echo L_TEMPL_USERADDEDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SITE}</code> <code>{URL}</code> <code>{INVITELINK}</code> <code>{VALIDHOURS}</code> <code>{LOGINLINK}</code></div>
                   </div>
 
                   <div class="mb-3">
                       <label for="pn_t_editemail" class="form-label fw-bold"><?php echo L_TEMPL_USEREDITEDMAIL; ?></label>
                       <textarea class="form-control font-monospace small" name="editemail" id="pn_t_editemail" rows="6"><?php echo pnadmin_escape($data['editemail']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_USEREDITEDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{PASSWORD}</code></div>
+                      <div class="form-text"><?php echo L_TEMPL_USEREDITEDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SITE}</code> <code>{URL}</code> <code>{LOGINLINK}</code></div>
                   </div>
 
                   <div class="mb-3">
                       <label for="pn_t_registeremail" class="form-label fw-bold"><?php echo L_TEMPL_USERREGISTEREDMAIL; ?></label>
                       <textarea class="form-control font-monospace small" name="registeremail" id="pn_t_registeremail" rows="6"><?php echo pnadmin_escape($data['registeremail']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_USERREGISTEREDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{PASSWORD}</code></div>
+                      <div class="form-text"><?php echo L_TEMPL_USERREGISTEREDMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SITE}</code> <code>{URL}</code> <code>{LOGINLINK}</code></div>
                   </div>
 
                   <div class="mb-3">
                       <label for="pn_t_dataemail" class="form-label fw-bold"><?php echo L_TEMPL_DATAMAIL; ?></label>
                       <textarea class="form-control font-monospace small" name="dataemail" id="pn_t_dataemail" rows="6"><?php echo pnadmin_escape($data['dataemail']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_DATAMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{URL}</code> <code>{EMAIL}</code> <code>{RESETLINK}</code> <code>{VALIDMINUTES}</code></div>
+                      <div class="form-text"><?php echo L_TEMPL_DATAMAIL_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SITE}</code> <code>{URL}</code> <code>{RESETLINK}</code> <code>{VALIDMINUTES}</code> <code>{LOGINLINK}</code></div>
                   </div>
 
                   <div class="d-flex gap-2">

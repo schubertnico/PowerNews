@@ -140,6 +140,25 @@ class DefaultTemplateTest extends DatabaseTestCase
     }
 
     #[Test]
+    public function powernews_sql_contains_the_same_default_template(): void
+    {
+        global $pn_handler;
+
+        require_once __DIR__ . '/../../pninc/installer/autoload.php';
+        $statements = \PowerNews\Installer\Schema::fromFile(__DIR__ . '/../../powernews.sql');
+        $inserts = array_values(array_filter($statements, static fn (string $statement): bool => \PowerNews\Installer\Schema::insertedTable($statement) === 'pn_templates'));
+        $this->assertCount(1, $inserts);
+
+        mysqli_query($pn_handler, 'DROP TABLE IF EXISTS pn_templates_sqlcheck');
+        mysqli_query($pn_handler, 'CREATE TABLE pn_templates_sqlcheck LIKE pn_templates');
+        mysqli_query($pn_handler, str_replace('INSERT INTO `pn_templates`', 'INSERT INTO `pn_templates_sqlcheck`', $inserts[0]));
+        $row = (array) mysqli_fetch_assoc(mysqli_query($pn_handler, 'SELECT * FROM pn_templates_sqlcheck WHERE id = 1'));
+        mysqli_query($pn_handler, 'DROP TABLE pn_templates_sqlcheck');
+
+        $this->assertSame(pn_default_template(), array_intersect_key($row, pn_default_template()));
+    }
+
+    #[Test]
     public function profile_keeps_icq_when_the_template_has_no_field(): void
     {
         global $pn_handler, $pn_config;

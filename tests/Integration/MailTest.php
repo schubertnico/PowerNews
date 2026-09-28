@@ -120,7 +120,7 @@ class MailTest extends DatabaseTestCase
         $pnconfig['template'] = (int) mysqli_insert_id($pn_handler);
         $pnconfig['url'] = 'https://news.example.org';
 
-        $mail = (new \template())->editemail('max', 'max@example.org', '');
+        $mail = (new \template())->editemail('max', 'max@example.org');
 
         $this->assertIsString($mail);
         $this->assertStringNotContainsString('Passwort', $mail);

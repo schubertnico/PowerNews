@@ -54,8 +54,18 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                     ?>
                     <div class="alert alert-success" role="alert">
                         <?php echo L_USR_USREDITED; ?>
+<?php if ($edituser->linksent) { ?>
+                        <p class="mb-0 mt-2" id="pn_passwordlinksent"><?php echo sprintf(L_USR_PASSWORDLINKSENT, pnadmin_escape(pn_post_string('email', 250))); ?></p>
+<?php } ?>
                         <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-success"><?php echo L_ALL_BACKTOLIST; ?></a></div>
                     </div>
+<?php if ($edituser->passwordlink !== '' && !$edituser->linksent) { ?>
+                    <div class="alert alert-warning" role="alert" id="pn_passwordlinkfailed">
+                        <p><?php echo L_USR_PASSWORDLINKFAILED; ?></p>
+                        <label for="pn_passwordlink" class="form-label fw-bold"><?php echo L_USR_PASSWORDLINK; ?></label>
+                        <input type="text" class="form-control font-monospace" id="pn_passwordlink" value="<?php echo pnadmin_escape($edituser->passwordlink); ?>" readonly>
+                    </div>
+<?php } ?>
                     <?php
                 }
             } else {

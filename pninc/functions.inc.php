@@ -118,6 +118,11 @@ function pn_verify_password(string $password, string $storedHash, ?int $userId =
 {
     global $pn_config, $pn_handler;
 
+    // Konten ohne festgelegtes Passwort (Einladung) lassen sich nie anmelden.
+    if (!pn_password_is_set($storedHash)) {
+        return false;
+    }
+
     if (pn_is_legacy_password($storedHash)) {
         // Legacy base64 password - verify and upgrade
         if (base64_encode($password) === $storedHash) {
@@ -715,27 +720,22 @@ class pn_user
         return null;
     }
 
-    // Generate password
-    public function generate_password(): string
+    /**
+     * Meldung zu einem Ergebnis von pn_password_problem().
+     */
+    public static function passwordmessage(string $problem): string
     {
-        $pwarray = array_merge(
-            range('a', 'z'),
-            range('A', 'Z'),
-            range('0', '9'),
-        );
-
-        $pwacount = count($pwarray);
-        $password = '';
-
-        for ($i = 0; $i < 8; ++$i) {
-            $letter = random_int(0, $pwacount - 1);
-            $password .= $pwarray[$letter];
-        }
-
-        return $password;
+        return match ($problem) {
+            'mismatch' => L_USR_PASSNOTEQUAL,
+            'long' => L_USR_PASSWORDTOOLONG,
+            default => L_USR_PASSWORDTOOSHORT,
+        };
     }
 
-    // Register new user
+    /**
+     * Registrierung: Der Besucher wählt sein Passwort selbst (zweimal eingegeben, Regeln wie im
+     * Installer). Die Bestätigungsmail enthält kein Passwort, nur Begrüßung und Anmeldelink.
+     */
     public function register(): void
     {
         global $pn_config, $pn_handler;
@@ -761,9 +761,19 @@ class pn_user
         $nickname = pn_validate_nickname($_POST['pndata']['nickname'] ?? '');
         $email = pn_validate_email($_POST['pndata']['email'] ?? '');
         $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
+        $password = is_string($_POST['pndata']['password'] ?? null) ? $_POST['pndata']['password'] : '';
+        $password2 = is_string($_POST['pndata']['password2'] ?? null) ? $_POST['pndata']['password2'] : '';
 
         if ($nickname === '' || $email === '') {
             $template->message(L_USR_INVALIDREGISTRATION, $registerUrl, 'danger');
+
+            return;
+        }
+
+        $problem = pn_password_problem($password, $password2);
+
+        if ($problem !== '') {
+            $template->message(self::passwordmessage($problem), $registerUrl, 'danger');
 
             return;
         }
@@ -779,29 +789,29 @@ class pn_user
             return;
         }
 
-        $password = $this->generate_password();
         $hashedPassword = pn_hash_password($password);
         $now = time();
-
-        mysqli_begin_transaction($pn_handler);
+        $status = 'Activated';
 
         try {
-            $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail) VALUES(?, ?, ?, ?, ?)');
-            mysqli_stmt_bind_param($stmt, 'sssis', $nickname, $email, $hashedPassword, $now, $showemail);
+            $stmt = mysqli_prepare($pn_handler, 'INSERT INTO ' . $pn_config['usertable'] . ' (nickname, email, password, registered, showemail, status) VALUES(?, ?, ?, ?, ?, ?)');
+            mysqli_stmt_bind_param($stmt, 'sssiss', $nickname, $email, $hashedPassword, $now, $showemail, $status);
             mysqli_stmt_execute($stmt);
-
-            $pemail = new pn_email();
-
-            if (!$pemail->registeremail($nickname, $email, $password)) {
-                throw new RuntimeException('mail send failed');
-            }
-            mysqli_commit($pn_handler);
-            $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login', 'success');
-        } catch (Throwable $e) {
-            mysqli_rollback($pn_handler);
+        } catch (mysqli_sql_exception $e) {
             error_log('[register] ' . $e->getMessage());
             $template->message(L_USR_REGISTRATIONFAILED, $registerUrl, 'danger');
+
+            return;
         }
+
+        // Die Bestätigung ist nur eine Begrüßung: Das Konto funktioniert auch ohne sie.
+        $mailer = new pn_email();
+
+        if (!$mailer->registeremail($nickname, $email)) {
+            error_log('[register] Bestätigungsmail an ' . $email . ' konnte nicht versendet werden.');
+        }
+
+        $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login', 'success');
     }
 
     // Set cookie for user
@@ -1015,13 +1025,13 @@ class pn_user
      */
     public function resetlink(string $token): string
     {
-        global $pn_config, $pnconfig;
-
-        return rtrim((string) ($pnconfig['url'] ?? ''), '/') . '/' . $pn_config['userfile'] . '?page=resetpassword&token=' . $token;
+        return pn_password_link($token);
     }
 
     /**
-     * Seite „Neues Passwort festlegen“ hinter dem Link aus der Reset-Mail (B22).
+     * Seite „Passwort festlegen“ hinter dem Link aus der Reset-Mail (B22) bzw. der Einladung
+     * eines Admins. Einladung heißt: Das Konto hat noch kein Passwort; Überschrift, Einleitung
+     * und Erfolgsmeldung begrüßen dann statt vom Zurücksetzen zu sprechen.
      */
     public function resetpassword(): void
     {
@@ -1039,35 +1049,32 @@ class pn_user
             return;
         }
 
+        $invite = !pn_password_is_set((string) $user['password']);
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-            $this->resetform($user, $token, '');
+            $this->resetform($user, $token, '', $invite);
 
             return;
         }
 
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $this->resetform($user, $token, L_ALL_CSRFINVALID);
+            $this->resetform($user, $token, L_ALL_CSRFINVALID, $invite);
 
             return;
         }
 
-        $password = (string) ($_POST['pndata']['password'] ?? '');
-        $password2 = (string) ($_POST['pndata']['password2'] ?? '');
+        $password = is_string($_POST['pndata']['password'] ?? null) ? $_POST['pndata']['password'] : '';
+        $password2 = is_string($_POST['pndata']['password2'] ?? null) ? $_POST['pndata']['password2'] : '';
+        $problem = pn_password_problem($password, $password2);
 
-        if ($password !== $password2) {
-            $this->resetform($user, $token, L_USR_PASSNOTEQUAL);
-
-            return;
-        }
-
-        if (strlen($password) < 8) {
-            $this->resetform($user, $token, L_USR_PASSWORDTOOSHORT);
+        if ($problem !== '') {
+            $this->resetform($user, $token, self::passwordmessage($problem), $invite);
 
             return;
         }
 
         pn_password_reset_complete($pn_handler, $pn_config, (int) $user['id'], $password);
-        $template->message(L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login', 'success');
+        $template->message($invite ? L_USR_INVITEDONE : L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login', 'success');
     }
 
     // Print out usermenu
@@ -1138,14 +1145,10 @@ class pn_user
         $hashedPassword = '';
 
         if ($password !== '' || $password2 !== '') {
-            if ($password !== $password2) {
-                $template->message(L_USR_PASSNOTEQUAL, $profileUrl, 'danger');
+            $problem = pn_password_problem($password, $password2);
 
-                return;
-            }
-
-            if (strlen($password) < 8) {
-                $template->message(L_USR_PASSWORDTOOSHORT, $profileUrl, 'danger');
+            if ($problem !== '') {
+                $template->message(self::passwordmessage($problem), $profileUrl, 'danger');
 
                 return;
             }
@@ -1219,30 +1222,32 @@ class pn_user
     }
 
     /**
-     * Formular für das neue Passwort.
+     * Formular für das neue Passwort (Einladung oder Zurücksetzen).
      *
      * @param array<string, mixed> $user
      */
-    private function resetform(array $user, string $token, string $error): void
+    private function resetform(array $user, string $token, string $error, bool $invite): void
     {
         global $pn_config;
 
         $action = pn_escape($pn_config['userfile']) . '?page=resetpassword';
+        $nickname = pn_escape((string) $user['nickname']);
         ?>
-<form accept-charset="UTF-8" action="<?php echo $action; ?>" method="post" class="card mb-4">
-    <h2 class="card-header h6 mb-0"><?php echo L_USR_RESETTITLE; ?></h2>
+<form accept-charset="UTF-8" action="<?php echo $action; ?>" method="post" class="card mb-4" id="pn_passwordform" data-purpose="<?php echo $invite ? 'invite' : 'reset'; ?>">
+    <h2 class="card-header h6 mb-0"><?php echo $invite ? L_USR_INVITETITLE : L_USR_RESETTITLE; ?></h2>
     <div class="card-body">
 <?php if ($error !== '') { ?>
         <div class="alert alert-danger" role="alert"><?php echo $error; ?></div>
 <?php } ?>
-        <p><?php echo sprintf(L_USR_RESETINTRO, pn_escape((string) $user['nickname'])); ?></p>
+        <p><?php echo sprintf($invite ? L_USR_INVITEINTRO : L_USR_RESETINTRO, $nickname); ?></p>
         <div class="mb-3">
-            <label for="pn_newpassword" class="form-label fw-bold"><?php echo L_USR_NEWPASSWORD; ?></label>
-            <input type="password" class="form-control" name="pndata[password]" id="pn_newpassword" minlength="8" maxlength="128" autocomplete="new-password" required>
+            <label for="pn_newpassword" class="form-label fw-bold"><?php echo $invite ? L_USR_PASSWORDLABEL : L_USR_NEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password]" id="pn_newpassword" minlength="8" maxlength="72" autocomplete="new-password" required aria-describedby="pn_newpassword_help">
+            <div id="pn_newpassword_help" class="form-text"><?php echo L_USR_PASSWORDHINT; ?></div>
         </div>
         <div class="mb-3">
-            <label for="pn_newpassword2" class="form-label fw-bold"><?php echo L_USR_REPEATNEWPASSWORD; ?></label>
-            <input type="password" class="form-control" name="pndata[password2]" id="pn_newpassword2" minlength="8" maxlength="128" autocomplete="new-password" required>
+            <label for="pn_newpassword2" class="form-label fw-bold"><?php echo $invite ? L_USR_PASSWORDREPEATLABEL : L_USR_REPEATNEWPASSWORD; ?></label>
+            <input type="password" class="form-control" name="pndata[password2]" id="pn_newpassword2" minlength="8" maxlength="72" autocomplete="new-password" required>
         </div>
         <button type="submit" class="btn btn-primary"><?php echo L_USR_SAVEPASSWORD; ?></button>
         <input type="hidden" name="pndata[token]" value="<?php echo pn_escape($token); ?>">
@@ -1258,15 +1263,15 @@ class pn_user
 // E-Mail class
 class pn_email
 {
-    // Sending register-E-Mail
-    public function registeremail(string $nickname, string $email, string $password): bool
+    // Bestätigung der Registrierung: Begrüßung und Anmeldelink, nie ein Passwort
+    public function registeremail(string $nickname, string $email): bool
     {
         global $pnconfig;
         $template = new pn_template();
-        $registeremail = $template->registeremail($nickname, $email, $password);
+        $registeremail = $template->registeremail($nickname, $email);
 
         if ($registeremail) {
-            return pn_send_mail($email, L_EMAIL_TITLE, $registeremail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
+            return pn_send_mail($email, sprintf(L_EMAIL_SUBJECT_REGISTER, pn_site_name()), $registeremail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -1280,7 +1285,7 @@ class pn_email
         $dataemail = $template->dataemail($nickname, $email, $resetlink);
 
         if ($dataemail) {
-            return pn_send_mail($email, L_EMAIL_TITLE, $dataemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
+            return pn_send_mail($email, sprintf(L_EMAIL_SUBJECT_RESET, pn_site_name()), $dataemail, L_EMAIL_AUTHOR, (string) $pnconfig['email']);
         }
 
         return false;
@@ -1675,7 +1680,7 @@ class pn_template
 
         if ($num == 1) {
             [$registerform] = mysqli_fetch_array($result);
-            echo pn_template_fill((string) $registerform, ['CSRF' => pn_csrf_token()]);
+            echo pn_template_fill(self::withpasswordfields((string) $registerform), ['CSRF' => pn_csrf_token()]);
 
             return true;
         }
@@ -1683,30 +1688,46 @@ class pn_template
         return false;
     }
 
-    // Get template for register-E-Mail
-    public function registeremail(string $nickname, string $email, string $password): string|false
+    /**
+     * Registrierungsformulare bis 3.12 (und eigene Anpassungen davon) haben keine Passwortfelder;
+     * seit 3.12 wählt der Besucher sein Passwort selbst. Fehlen die Felder, werden sie vor der
+     * ersten Absende-Schaltfläche (sonst vor </form>) eingefügt.
+     */
+    public static function withpasswordfields(string $form): string
     {
-        global $pnconfig, $pn_config, $pn_handler;
-
-        $templateId = (int) $pnconfig['template'];
-        $stmt = mysqli_prepare($pn_handler, 'SELECT registeremail FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $templateId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
-
-        if ($num == 1) {
-            [$registeremail] = mysqli_fetch_array($result);
-
-            return pn_mail_text((string) $registeremail, [
-                'NICKNAME' => $nickname,
-                'EMAIL' => $email,
-                'PASSWORD' => $password,
-                'URL' => (string) $pnconfig['url'],
-            ]);
+        if (str_contains($form, 'pndata[password]')) {
+            return $form;
         }
 
-        return false;
+        $fields = '<div class="row g-2 mb-3"><div class="col-12 col-md-6"><label for="pn_password" class="form-label fw-bold">' . L_USR_PASSWORDLABEL . '</label>'
+            . '<input type="password" class="form-control" name="pndata[password]" id="pn_password" minlength="8" maxlength="72" autocomplete="new-password" required aria-describedby="pn_password_help"></div>'
+            . '<div class="col-12 col-md-6"><label for="pn_password2" class="form-label fw-bold">' . L_USR_PASSWORDREPEATLABEL . '</label>'
+            . '<input type="password" class="form-control" name="pndata[password2]" id="pn_password2" minlength="8" maxlength="72" autocomplete="new-password" required></div>'
+            . '<div id="pn_password_help" class="form-text">' . L_USR_PASSWORDHINT . '</div></div>';
+
+        foreach (['<button type="submit"', '<input type="submit"', '</form>'] as $anchor) {
+            $position = stripos($form, $anchor);
+
+            if ($position !== false) {
+                return substr($form, 0, $position) . $fields . substr($form, $position);
+            }
+        }
+
+        return $form . $fields;
+    }
+
+    /**
+     * Text der Bestätigungsmail nach der Registrierung. Vorlagen, die noch ein Passwort
+     * verschicken wollten ({PASSWORD}), ersetzt der Standardtext aus der Sprachdatei.
+     */
+    public function registeremail(string $nickname, string $email): string|false
+    {
+        $text = pn_mail_from_template('registeremail', '', 'PASSWORD', L_USR_REGISTERMAIL_BODY, [
+            'NICKNAME' => $nickname,
+            'EMAIL' => $email,
+        ]);
+
+        return $text ?? false;
     }
 
     // Get template for login form
@@ -1760,34 +1781,14 @@ class pn_template
      */
     public function dataemail(string $nickname, string $email, string $resetlink): string|false
     {
-        global $pnconfig, $pn_config, $pn_handler;
+        $text = pn_mail_from_template('dataemail', 'RESETLINK', '', L_USR_RESETMAIL_BODY, [
+            'NICKNAME' => $nickname,
+            'EMAIL' => $email,
+            'RESETLINK' => $resetlink,
+            'VALIDMINUTES' => intdiv(PN_RESET_LIFETIME, 60),
+        ]);
 
-        $templateId = (int) $pnconfig['template'];
-        $stmt = mysqli_prepare($pn_handler, 'SELECT dataemail FROM ' . $pn_config['templatetable'] . ' WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $templateId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $num = mysqli_num_rows($result);
-
-        if ($num == 1) {
-            [$dataemail] = mysqli_fetch_array($result);
-            $dataemail = (string) $dataemail;
-
-            if (!str_contains($dataemail, '{RESETLINK}')) {
-                $dataemail = L_USR_RESETMAIL_BODY;
-            }
-
-            return pn_template_fill($dataemail, [
-                'NICKNAME' => $nickname,
-                'EMAIL' => $email,
-                'PASSWORD' => '',
-                'RESETLINK' => $resetlink,
-                'VALIDMINUTES' => intdiv(PN_RESET_LIFETIME, 60),
-                'URL' => (string) $pnconfig['url'],
-            ]);
-        }
-
-        return false;
+        return $text ?? false;
     }
 
     // Get template for usermenu

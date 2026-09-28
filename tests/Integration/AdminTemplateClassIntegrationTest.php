@@ -41,26 +41,31 @@ class AdminTemplateClassIntegrationTest extends DatabaseTestCase
     }
 
     #[Test]
-    public function addemail_replaces_password_placeholder(): void
+    public function addemail_contains_the_invitation_link_but_no_password(): void
     {
-        $result = $this->template->addemail('user', 'user@example.com', 'mypassword');
+        $link = 'https://news.example.org/user.php?page=resetpassword&token=' . str_repeat('c', 64);
+        $result = $this->template->addemail('user', 'user@example.com', $link);
 
         $this->assertIsString($result);
-        $this->assertStringContainsString('mypassword', $result);
+        $this->assertStringContainsString($link, $result);
+        $this->assertStringContainsString('48', $result, 'Gültigkeit in Stunden');
+        $this->assertStringNotContainsString('{INVITELINK}', $result);
         $this->assertStringNotContainsString('{PASSWORD}', $result);
+        $this->assertStringNotContainsString('Passwort:', $result);
     }
 
     #[Test]
-    public function addemail_replaces_url_placeholder(): void
+    public function addemail_replaces_site_and_login_link(): void
     {
         global $pnconfig;
 
-        $result = $this->template->addemail('user', 'user@example.com', 'pass');
+        $result = $this->template->addemail('user', 'user@example.com', 'https://x.example/link');
 
         $this->assertIsString($result);
-        $this->assertStringNotContainsString('{URL}', $result);
+        $this->assertStringNotContainsString('{SITE}', $result);
+        $this->assertStringNotContainsString('{LOGINLINK}', $result);
         if (!empty($pnconfig['url'])) {
-            $this->assertStringContainsString($pnconfig['url'], $result);
+            $this->assertStringContainsString(rtrim($pnconfig['url'], '/') . '/user.php?page=login', $result);
         }
     }
 
@@ -69,12 +74,12 @@ class AdminTemplateClassIntegrationTest extends DatabaseTestCase
     #[Test]
     public function editemail_replaces_all_placeholders(): void
     {
-        $result = $this->template->editemail('EditUser', 'edit@example.com', 'editpass');
+        $result = $this->template->editemail('EditUser', 'edit@example.com');
 
         $this->assertIsString($result);
         $this->assertStringContainsString('EditUser', $result);
         $this->assertStringContainsString('edit@example.com', $result);
-        $this->assertStringContainsString('editpass', $result);
+        $this->assertStringNotContainsString('Passwort:', $result);
         $this->assertStringNotContainsString('{NICKNAME}', $result);
         $this->assertStringNotContainsString('{EMAIL}', $result);
         $this->assertStringNotContainsString('{PASSWORD}', $result);

@@ -51,36 +51,6 @@ class FrontendUserIntegrationTest extends DatabaseTestCase
         $this->assertSame('seeduser', $result['nickname']);
     }
 
-    // ── generate_password ──
-
-    #[Test]
-    public function generate_password_returns_eight_characters(): void
-    {
-        $password = $this->user->generate_password();
-
-        $this->assertSame(8, strlen($password));
-    }
-
-    #[Test]
-    public function generate_password_contains_only_alphanumeric(): void
-    {
-        $password = $this->user->generate_password();
-
-        $this->assertMatchesRegularExpression('/^[a-zA-Z0-9]{8}$/', $password);
-    }
-
-    #[Test]
-    public function generate_password_produces_different_results(): void
-    {
-        $passwords = [];
-        for ($i = 0; $i < 10; $i++) {
-            $passwords[] = $this->user->generate_password();
-        }
-
-        $unique = array_unique($passwords);
-        $this->assertGreaterThan(1, count($unique));
-    }
-
     // ── checkcookie ──
 
     #[Test]
