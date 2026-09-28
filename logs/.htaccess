@@ -1,1 +1,3 @@
+# PowerNews – Fehlerprotokolle und ggf. die Sperrdatei install.lock des
+# Installers, niemals per HTTP ausliefern.
 Require all denied

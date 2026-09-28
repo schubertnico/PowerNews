@@ -25,7 +25,13 @@
       <file>pninc/functions.inc.php</file>
       <file>pnadmin/dto.inc.php</file>
       <file>pnadmin/functions.inc.php</file>
+      <file>pninc/localconfig.inc.php</file>
+      <directory suffix=".php">pninc/installer</directory>
     </include>
+    <exclude>
+      <directory>pninc/installer/templates</directory>
+      <file>pninc/installer/autoload.php</file>
+    </exclude>
   </source>
   <php>
     <env name="PN_DB_HOST" value="db"/>

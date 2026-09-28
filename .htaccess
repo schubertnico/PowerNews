@@ -41,6 +41,9 @@ RedirectMatch 404 /\.(git|idea|docker|phpunit|phpunit\.cache|claude|cursor|copil
 # ------------------------------------------------------------------
 # 4) Sensible Verzeichnisse projektweit sperren
 # ------------------------------------------------------------------
+# Diese Regeln greifen nur, wenn PowerNews direkt im Web-Root liegt. In
+# einem Unterverzeichnis schützen die eigenen .htaccess-Dateien in pninc/,
+# logs/ und pnadmin/lang/; tests/, docs/ usw. sind nicht im Release-Archiv.
 RedirectMatch 404 ^/(tests|docs|todos|vendor|node_modules|logs|src|database|config|bin|scripts)(/|$)
 RedirectMatch 404 ^/pninc(/|$)
 
@@ -59,8 +62,11 @@ RedirectMatch 404 ^/pnadmin/gnulicense\.txt$
 
 # ------------------------------------------------------------------
 # 6) Sensible Einzeldateien / Datei-Endungen
+#    FilesMatch wirkt – anders als RedirectMatch in Abschnitt 4 – auch,
+#    wenn PowerNews in einem Unterverzeichnis liegt. config.local.php
+#    (Zugangsdaten) ist zusätzlich durch pninc/.htaccess gesperrt.
 # ------------------------------------------------------------------
-<FilesMatch "(?i)^(composer\.(json|lock|phar)|package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|phpstan\.neon|phpmd\.xml|psalm\.xml|rector\.php|infection\.json5|phpunit\.xml|phpunit\.dist\.xml|phpmd_report\.txt|phpinfo\.php|README\.md|CHANGELOG\.md|CHANGELOG|LICENSE|LICENSE\.md|Makefile|Dockerfile|docker-compose\.ya?ml|\.gitignore|\.gitattributes|\.editorconfig|\.env|\.env\..*|Thumbs\.db|\.DS_Store|desktop\.ini|nul|NUL)$">
+<FilesMatch "(?i)^(config\.local\.php|install\.lock|composer\.(json|lock|phar)|package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|phpstan\.neon|phpmd\.xml|psalm\.xml|rector\.php|infection\.json5|phpunit\.xml|phpunit\.dist\.xml|phpmd_report\.txt|phpinfo\.php|README\.md|CHANGELOG\.md|CHANGELOG|LICENSE|LICENSE\.md|Makefile|Dockerfile|docker-compose\.ya?ml|\.gitignore|\.gitattributes|\.editorconfig|\.env|\.env\..*|Thumbs\.db|\.DS_Store|desktop\.ini|nul|NUL)$">
     Require all denied
 </FilesMatch>
 

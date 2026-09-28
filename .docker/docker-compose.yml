@@ -37,6 +37,8 @@ services:
     volumes:
       - powernews_db_data:/var/lib/mysql
       - ../powernews.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      # Nur Entwicklung: Admin „admin“ / „powernews-dev“, URL und Absender des Stacks
+      - ./dev-seed.sql:/docker-entrypoint-initdb.d/02-dev-seed.sql:ro
     networks:
       - powernews_network
     healthcheck:

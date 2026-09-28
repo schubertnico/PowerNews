@@ -98,10 +98,13 @@ todos/
 # --------------------------------------------------------------
 pninc/install.lock
 pninc/*.lock
+logs/install.lock
 
 # --------------------------------------------------------------
 # Lokale Konfiguration und Secrets (niemals committen!)
 # --------------------------------------------------------------
+# Vom Web-Installer geschriebene Zugangsdaten
+pninc/config.local.php
 # Alle Varianten: .env, .env.local, production.env, secrets.env, ...
 *.env
 .env
@@ -140,10 +143,11 @@ phpinfo.php
 # --------------------------------------------------------------
 # Lokale Datenbank-Dumps / Backups
 # --------------------------------------------------------------
-# Alle SQL-Dumps standardmäßig ignorieren, nur die beiden offiziellen freigeben.
+# Alle SQL-Dumps standardmäßig ignorieren, nur die offiziellen freigeben:
+# das Schema und die Entwicklungsdaten des Docker-Stacks.
 *.sql
 !powernews.sql
-!pn_update.sql
+!.docker/dev-seed.sql
 *.sqlite
 *.sqlite3
 *.db
