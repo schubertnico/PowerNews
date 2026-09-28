@@ -523,6 +523,40 @@ function pn_relatedlink_url_allowed(string $url, bool $allowRelative): bool
 }
 
 /**
+ * Zieladresse eines BB-Codes [url]…[/url] oder [url=…]. Der Text ist bereits HTML-maskiert.
+ * Erlaubt sind nur http(s)-Adressen; ohne Schema (www.example.org) gilt https://. Andere
+ * Schemata (javascript:, data:, ftp: …) ergeben null, der BB-Code bleibt dann als Text stehen.
+ * Umlaute und Leerzeichen werden prozentkodiert. Rückgabe: maskiert für href="…".
+ */
+function pn_bbcode_url(string $escaped): ?string
+{
+    $url = trim(html_entity_decode($escaped, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+    if (strlen($url) > 2 && ($url[0] === '"' || $url[0] === "'") && $url[-1] === $url[0]) {
+        $url = trim(substr($url, 1, -1));
+    }
+
+    if ($url === '' || preg_match('/[\x00-\x20\x7F\\\\<>"]/', $url) === 1) {
+        return null;
+    }
+
+    if (str_starts_with($url, '//')) {
+        $url = 'https:' . $url;
+    } elseif (preg_match('#^[a-z][a-z0-9+.\-]*:(?!\d)#i', $url) !== 1) {
+        // Kein Schema; ein Doppelpunkt vor einer Ziffer ist ein Port (example.org:8080).
+        $url = 'https://' . $url;
+    }
+
+    $url = (string) preg_replace_callback('/[^\x21-\x7E]/u', static fn (array $char): string => rawurlencode($char[0]), $url);
+
+    if (preg_match('#^https?://#i', $url) !== 1 || filter_var($url, FILTER_VALIDATE_URL) === false) {
+        return null;
+    }
+
+    return htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+}
+
+/**
  * Liest gespeicherte weiterführende Links (B28). Einheitliches Format ist JSON
  * ([{"title":…,"url":…,"target":…}]); das zeilenweise Format bis 3.11
  * („Titel!@!@!URL!@!@!Ziel“) wird weiterhin erkannt.

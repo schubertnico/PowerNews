@@ -289,7 +289,7 @@ class HelperFunctionsTest extends TestCase
     public function bbreplaceConvertsUrlWithoutHttp(): void
     {
         $result = $this->template->bbreplace('[url]example.com[/url]');
-        $this->assertStringContainsString('href="http://example.com"', $result);
+        $this->assertStringContainsString('href="https://example.com"', $result);
         $this->assertStringContainsString('>example.com</a>', $result);
     }
 

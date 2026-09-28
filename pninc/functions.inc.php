@@ -1361,8 +1361,14 @@ class pn_template
         $text = preg_replace("!\[/(?i)u\]!", '</u>', (string) $text);
         $text = preg_replace("!\[(?i)i\]!", '<i>', (string) $text);
         $text = preg_replace("!\[/(?i)i\]!", '</i>', (string) $text);
-        $text = preg_replace("!\[(?i)url\](http://|ftp://)([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="\\1\\2" target="_blank" rel="noopener noreferrer">\\1\\2</a>', (string) $text);
-        $text = preg_replace("!\[(?i)url\]([a-zA-Z0-9:/\?\[\]=.@-]+)\[/(?i)url\]+!", '<a href="http://\\1" target="_blank" rel="noopener noreferrer">\\1</a>', (string) $text);
+        // [url=Adresse]Text[/url] und [url]Adresse[/url]: nur http(s), ohne Schema gilt https://.
+        $link = static function (string $address, string $label, string $original): string {
+            $href = pn_bbcode_url($address);
+
+            return $href === null ? $original : '<a href="' . $href . '" target="_blank" rel="noopener noreferrer">' . $label . '</a>';
+        };
+        $text = preg_replace_callback('!\[url=([^\]]+)\](.+?)\[/url\]!i', static fn (array $m): string => $link($m[1], $m[2], $m[0]), (string) $text);
+        $text = preg_replace_callback('!\[url\]([^\[]+?)\[/url\]!i', static fn (array $m): string => $link($m[1], $m[1], $m[0]), (string) $text);
         $text = preg_replace("!\[(?i)email\]([a-zA-Z0-9-._]+@[a-zA-Z0-9-.]+)\[/(?i)email\]!", '<a href="mailto:\\1">\\1</a>', (string) $text);
 
         // Whitelist [img] to own host only (BUG-048)
