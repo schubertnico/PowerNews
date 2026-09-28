@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 /** Versionsnummer von PowerNews. */
-const PN_VERSION = '3.11';
+const PN_VERSION = '3.12';
 
 /** Jahre der Copyright-Angabe. */
 const PN_COPYRIGHT_YEARS = '2001-2026';

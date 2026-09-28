@@ -48,11 +48,47 @@ class VersionAndLayoutTest extends DatabaseTestCase
     #[Test]
     public function no_gpl_headers_remain_in_application_files(): void
     {
-        $files = array_merge(glob(__DIR__ . '/../../pninc/*.php') ?: [], glob(__DIR__ . '/../../pninc/lang/*.php') ?: [], glob(__DIR__ . '/../../pnadmin/*.php') ?: [], glob(__DIR__ . '/../../pnadmin/lang/*.php') ?: []);
+        $root = __DIR__ . '/../..';
+        $files = array_merge(
+            glob($root . '/*.php') ?: [],
+            glob($root . '/pninc/*.php') ?: [],
+            glob($root . '/pninc/lang/*.php') ?: [],
+            glob($root . '/pninc/installer/*.php') ?: [],
+            glob($root . '/pninc/installer/templates/*.php') ?: [],
+            glob($root . '/pnadmin/*.php') ?: [],
+            glob($root . '/pnadmin/*.css') ?: [],
+            glob($root . '/pnadmin/lang/*.php') ?: [],
+        );
 
+        $this->assertContains(realpath($root . '/install.php'), array_map('realpath', $files));
         foreach ($files as $file) {
-            $this->assertStringNotContainsString('GNU General Public License', (string) file_get_contents($file), basename($file));
+            $content = (string) file_get_contents($file);
+            $this->assertStringNotContainsString('GNU General Public License', $content, basename($file));
+            $this->assertStringNotContainsString('Vorraussetzung', $content, basename($file));
         }
+        $this->assertStringContainsString('MIT License', $this->source('install.php'));
+        $this->assertStringContainsString('MIT License', $this->source('update.php'));
+        $this->assertStringContainsString('MIT License', $this->source('pnadmin/poweradmin.css'));
+    }
+
+    #[Test]
+    public function documents_and_update_name_the_version_from_the_constant(): void
+    {
+        $this->assertStringStartsWith('# PowerNews ' . PN_VERSION . "\n", $this->source('README.md'));
+        $this->assertStringStartsWith('# PowerNews ' . PN_VERSION . ' – Installation und Update', $this->source('INSTALLATION.md'));
+        $this->assertMatchesRegularExpression('/^## ' . preg_quote(PN_VERSION, '/') . ' – \d{2}\.\d{2}\.\d{4}$/m', $this->source('CHANGELOG.md'));
+
+        $readme = $this->source('README.html');
+        $this->assertStringContainsString('<title>PowerNews ' . PN_VERSION . ' – Dokumentation</title>', $readme);
+        $this->assertStringContainsString('<h1>PowerNews ' . PN_VERSION . '</h1>', $readme);
+        // docs/ ist nicht im Release-Archiv, LICENSE sperrt die .htaccess – keine toten Verweise.
+        $this->assertStringNotContainsString('docs/', $readme);
+        $this->assertStringNotContainsString('href="LICENSE"', $readme);
+        $this->assertStringContainsString('https://www.powerscripts.org/projects-1.html', $readme);
+
+        $this->assertStringContainsString("\$pn_config['version'] = PN_VERSION;", $this->source('pninc/config.inc.php'));
+        $this->assertStringContainsString("'version' => PN_VERSION,", $this->source('update.php'));
+        $this->assertStringContainsString('PN_VERSION', $this->source('pninc/installer/templates/layout.php'));
     }
 
     #[Test]
