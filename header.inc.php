@@ -66,6 +66,10 @@ include __DIR__ . '/pninc/head.inc.php';
   .pn-news-card .card-header {
     font-weight: 600;
   }
+  .pn-catpic {
+    max-width: 120px;
+    height: auto;
+  }
 </style>
 </head>
 <body>

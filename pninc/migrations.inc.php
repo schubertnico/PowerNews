@@ -8,6 +8,8 @@ declare(strict_types=1);
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
 
+require_once __DIR__ . '/default_template.inc.php';
+
 /*
  * Datenbank-Migrationen für Updates bestehender Installationen.
  *
@@ -32,6 +34,7 @@ function pn_migrations(): array
         '3.12-purge-legacy-admin-sessions' => 'pn_migration_purge_legacy_sessions',
         '3.12-password-resets' => 'pn_migration_password_resets',
         '3.12-relatedlinks-json' => 'pn_migration_relatedlinks_json',
+        '3.12-default-template' => 'pn_migration_default_template',
     ];
 }
 
@@ -208,4 +211,49 @@ function pn_migration_relatedlinks_json(mysqli $db, array $pn_config): string
     }
 
     return sprintf('%d News mit weiterführenden Links ins JSON-Format überführt.', $changed);
+}
+
+/**
+ * B15/B21/B22/B29/B44/B48: Template-Felder, die noch dem Auslieferungsstand 3.11 entsprechen,
+ * erhalten den Inhalt des Default-Templates 3.12. Angepasste Felder bleiben unverändert.
+ *
+ * @param array<string, mixed> $pn_config
+ */
+function pn_migration_default_template(mysqli $db, array $pn_config): string
+{
+    $table = (string) ($pn_config['templatetable'] ?? 'pn_templates');
+    $current = pn_default_template();
+    $legacy = pn_default_template_legacy_hashes();
+    $result = mysqli_query($db, 'SELECT * FROM `' . $table . '`');
+    $updated = 0;
+
+    if (!$result instanceof mysqli_result) {
+        return 'Keine Templates gefunden.';
+    }
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $changes = [];
+
+        foreach ($legacy as $field => $hash) {
+            $value = (string) ($row[$field] ?? '');
+
+            if (sha1(pn_template_normalize($value)) === $hash && $value !== $current[$field]) {
+                $changes[$field] = $current[$field];
+            }
+        }
+
+        if ($changes === []) {
+            continue;
+        }
+
+        $set = implode(', ', array_map(static fn (string $field): string => '`' . $field . '` = ?', array_keys($changes)));
+        $stmt = mysqli_prepare($db, 'UPDATE `' . $table . '` SET ' . $set . ' WHERE id = ?');
+        $params = array_values($changes);
+        $params[] = (int) $row['id'];
+        mysqli_stmt_bind_param($stmt, str_repeat('s', count($changes)) . 'i', ...$params);
+        mysqli_stmt_execute($stmt);
+        $updated += count($changes);
+    }
+
+    return sprintf('%d Template-Felder auf den Stand 3.12 gebracht.', $updated);
 }

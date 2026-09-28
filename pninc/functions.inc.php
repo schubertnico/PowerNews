@@ -389,21 +389,21 @@ class pn_news
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message(L_ALL_CSRFINVALID, $backToNews);
+            $template->message(L_ALL_CSRFINVALID, $backToNews, 'danger');
             return;
         }
 
         $text = trim($text);
 
         if ($text === '' || $text === '0') {
-            $template->message(L_ALL_FILLALL, $backToNews);
+            $template->message(L_ALL_FILLALL, $backToNews, 'danger');
             return;
         }
 
         // Length limit (BUG-038)
         $maxLen = 5000;
         if (mb_strlen($text) > $maxLen) {
-            $template->message(sprintf(L_NEWS_COMMENTTOOLONG, $maxLen), $backToNews);
+            $template->message(sprintf(L_NEWS_COMMENTTOOLONG, $maxLen), $backToNews, 'danger');
             return;
         }
 
@@ -437,12 +437,12 @@ class pn_news
                 $sp_time = $pnconfig['spamprotection'];
                 $sp_unit = L_NEWS_SECONDS;
             }
-            $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", $backToNews);
+            $template->message(L_NEWS_TIMEBETWEEN2COMMENTS . " ({$sp_time} {$sp_unit})", $backToNews, 'warning');
             return;
         }
 
         if (($pnconfig['commentwriting'] ?? '') === 'Registered' && (($pnuser['loggedin'] ?? 'NO') !== 'YES')) {
-            $template->message(L_NEWS_CANNOTPOSTCOMMENTS, $pn_config['userfile'] . '?page=login');
+            $template->message(L_NEWS_CANNOTPOSTCOMMENTS, $pn_config['userfile'] . '?page=login', 'warning');
             return;
         }
 
@@ -451,7 +451,7 @@ class pn_news
         mysqli_stmt_bind_param($stmt, 'iiiss', $newsid, $userId, $now, $text, $remoteAddr);
         mysqli_stmt_execute($stmt);
 
-        $template->message(L_NEWS_COMMENTPOSTED, $pn_config['detailfile'] . "?newsid={$newsid}&showcomments=YES");
+        $template->message(L_NEWS_COMMENTPOSTED, $pn_config['detailfile'] . "?newsid={$newsid}&showcomments=YES", 'success');
     }
 
     // print archive
@@ -540,6 +540,9 @@ class pn_news
                             die('<div class="alert alert-danger" role="alert">' . L_TEMPL_CANNOTLOADTEMPL . '</div>');
                         }
                     }
+                } else {
+                    // Leerer Monat: Hinweis statt nur des Formulars (B13).
+                    $template->message(L_NEWS_NONEWSINMONTH, $pn_config['archivefile']);
                 }
                 break;
         }
@@ -549,7 +552,7 @@ class pn_news
     {
         global $pn_config, $pn_handler;
 
-        $yearselect = "<select name=\"pndata[showyear]\" size=\"1\">\n";
+        $yearselect = "<select class=\"form-select\" name=\"pndata[showyear]\" id=\"pn_showyear\">\n";
         $now = time();
         $thisyear = (int) date('Y', $now);
 
@@ -592,7 +595,7 @@ class pn_news
                 $catnum = mysqli_num_rows($catresult);
 
                 if ($catnum > 0) {
-                    $catselect = "<select name=\"pndata[catid]\" size=\"1\">\n";
+                    $catselect = "<select class=\"form-select\" name=\"pndata[catid]\" id=\"pn_catid\">\n";
                     $catselect .= '<option value="">' . L_NEWS_CHOOSECAT . "</option>\n";
 
                     while ($catrow = mysqli_fetch_array($catresult)) {
@@ -611,7 +614,7 @@ class pn_news
             $catid = 0;
 
             if (isset($_POST['pndata'])) {
-                $title = pn_validate_string($_POST['pndata']['title'] ?? '', 250);
+                $title = pn_validate_string($_POST['pndata']['title'] ?? '', 150);
                 $text = pn_validate_string($_POST['pndata']['text'] ?? '', 65000);
                 $moretext = pn_validate_string($_POST['pndata']['moretext'] ?? '', 65000);
                 $catid = (int) ($_POST['pndata']['catid'] ?? 0);
@@ -630,26 +633,26 @@ class pn_news
 
             // Check who can send news
             if (($pnconfig['newssending'] ?? 'Registered') === 'Registered' && (($pnuser['loggedin'] ?? 'NO') !== 'YES')) {
-                $template->message(L_NEWS_CANNOTSENDNEWS, $pn_config['userfile'] . '?page=login');
+                $template->message(L_NEWS_CANNOTSENDNEWS, $pn_config['userfile'] . '?page=login', 'warning');
             } elseif ($noCategoriesAvailable) {
                 // Show error message when categories are required but none exist
-                $template->message(L_NEWS_NOCATS_CANNOT_SEND, $pn_config['newsfile']);
+                $template->message(L_NEWS_NOCATS_CANNOT_SEND, $pn_config['newsfile'], 'warning');
             } else {
                 $sendFlag = $_GET['pndata']['send'] ?? '';
 
                 if ($sendFlag == 'YES') {
                     // CSRF-Token pruefen (IMP-003)
                     if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-                        $template->message(L_ALL_CSRFINVALID, $pn_config['sendnewsfile']);
+                        $template->message(L_ALL_CSRFINVALID, $pn_config['sendnewsfile'], 'danger');
                         return;
                     }
 
                     if (!trim($title) || !trim($text) || ($pnconfig['categories'] == 'YES' && !$catid)) {
                         // Specific error message for missing category
                         if ($pnconfig['categories'] == 'YES' && !$catid && trim($title) && trim($text)) {
-                            $template->message(L_NEWS_SELECTCAT_ERROR, $pn_config['sendnewsfile']);
+                            $template->message(L_NEWS_SELECTCAT_ERROR, $pn_config['sendnewsfile'], 'danger');
                         } else {
-                            $template->message(L_ALL_FILLALL, $pn_config['sendnewsfile']);
+                            $template->message(L_ALL_FILLALL, $pn_config['sendnewsfile'], 'danger');
                         }
                     } else {
                         $now = time();
@@ -660,7 +663,7 @@ class pn_news
                         mysqli_stmt_bind_param($stmt, 'iiisssss', $userId, $now, $catid, $title, $text, $moretext, $status, $relatedlinks);
                         mysqli_stmt_execute($stmt);
 
-                        $template->message(L_NEWS_NEWSSENTIN, $pn_config['newsfile']);
+                        $template->message(L_NEWS_NEWSSENTIN, $pn_config['newsfile'], 'success');
                     }
                 } else {
                     if ($pnuser['loggedin'] == 'YES') {
@@ -672,7 +675,7 @@ class pn_news
                 }
             }
         } else {
-            $template->message(L_NEWS_NONEWSSENDIN, $pn_config['newsfile']);
+            $template->message(L_NEWS_NONEWSSENDIN, $pn_config['newsfile'], 'warning');
         }
     }
 }
@@ -737,7 +740,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message(L_ALL_CSRFINVALID, $registerUrl);
+            $template->message(L_ALL_CSRFINVALID, $registerUrl, 'danger');
             return;
         }
 
@@ -746,7 +749,7 @@ class pn_user
         $showemail = pn_validate_yesno($_POST['pndata']['showemail'] ?? 'NO', 'NO');
 
         if ($nickname === '' || $email === '') {
-            $template->message(L_USR_INVALIDREGISTRATION, $registerUrl);
+            $template->message(L_USR_INVALIDREGISTRATION, $registerUrl, 'danger');
             return;
         }
 
@@ -756,7 +759,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
 
         if (mysqli_num_rows($result) !== 0) {
-            $template->message(L_USR_USRALREADYEXISTS, $registerUrl);
+            $template->message(L_USR_USRALREADYEXISTS, $registerUrl, 'danger');
             return;
         }
 
@@ -775,11 +778,11 @@ class pn_user
                 throw new RuntimeException('mail send failed');
             }
             mysqli_commit($pn_handler);
-            $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login');
+            $template->message(L_USR_REGISTERED, $pn_config['userfile'] . '?page=login', 'success');
         } catch (Throwable $e) {
             mysqli_rollback($pn_handler);
             error_log('[register] ' . $e->getMessage());
-            $template->message(L_USR_REGISTRATIONFAILED, $registerUrl);
+            $template->message(L_USR_REGISTRATIONFAILED, $registerUrl, 'danger');
         }
     }
 
@@ -872,7 +875,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message(L_ALL_CSRFINVALID, $loginUrl);
+            $template->message(L_ALL_CSRFINVALID, $loginUrl, 'danger');
             return;
         }
 
@@ -881,14 +884,14 @@ class pn_user
         $ip = pn_client_ip();
 
         if ($nickname === '' || $password === '') {
-            $template->message(L_ALL_FILLALL, $loginUrl);
+            $template->message(L_ALL_FILLALL, $loginUrl, 'danger');
             return;
         }
 
         // Fehlversuchsbremse nur je IP-Adresse (B40): Fehlversuche gegen einen fremden
         // Nickname sperren dessen Inhaber nicht aus.
         if (pn_login_throttled($pn_handler, $ip)) {
-            $template->message(L_USR_TOOMANYATTEMPTS, $loginUrl);
+            $template->message(L_USR_TOOMANYATTEMPTS, $loginUrl, 'danger');
             return;
         }
 
@@ -913,10 +916,10 @@ class pn_user
         pn_login_record($pn_handler, $ip, $nickname, $valid);
 
         if ($valid) {
-            $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile');
+            $template->message(L_USR_LOGGEDIN, $pn_config['userfile'] . '?page=profile', 'success');
         } else {
             // Unified message (BUG-010)
-            $template->message(L_USR_LOGINFAILED, $loginUrl);
+            $template->message(L_USR_LOGINFAILED, $loginUrl, 'danger');
         }
     }
 
@@ -938,7 +941,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message(L_ALL_CSRFINVALID, $senddataUrl);
+            $template->message(L_ALL_CSRFINVALID, $senddataUrl, 'danger');
             return;
         }
 
@@ -948,7 +951,7 @@ class pn_user
         $ip = pn_client_ip();
 
         if (pn_password_reset_requests($pn_handler, $ip) >= PN_RESET_MAX_PER_IP) {
-            $template->message(L_USR_TOOMANYREQUESTS, $senddataUrl);
+            $template->message(L_USR_TOOMANYREQUESTS, $senddataUrl, 'danger');
             return;
         }
 
@@ -974,7 +977,7 @@ class pn_user
         }
 
         // Always reply generic (BUG-021)
-        $template->message($genericMsg, $pn_config['userfile'] . '?page=login');
+        $template->message($genericMsg, $pn_config['userfile'] . '?page=login', 'success');
     }
 
     /**
@@ -1002,7 +1005,7 @@ class pn_user
         $user = pn_password_reset_user($pn_handler, $pn_config, $token);
 
         if ($user === null) {
-            $template->message(L_USR_RESETINVALID, $pn_config['userfile'] . '?page=senddata');
+            $template->message(L_USR_RESETINVALID, $pn_config['userfile'] . '?page=senddata', 'danger');
             return;
         }
 
@@ -1030,7 +1033,7 @@ class pn_user
         }
 
         pn_password_reset_complete($pn_handler, $pn_config, (int) $user['id'], $password);
-        $template->message(L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login');
+        $template->message(L_USR_PASSWORDRESET, $pn_config['userfile'] . '?page=login', 'success');
     }
 
     /**
@@ -1088,7 +1091,7 @@ class pn_user
         $template = new pn_template();
 
         if (!isset($pnuser) || ($pnuser['loggedin'] ?? 'NO') !== 'YES') {
-            $template->message(L_USR_NOTLOGGEDIN, $pn_config['userfile'] . '?page=login');
+            $template->message(L_USR_NOTLOGGEDIN, $pn_config['userfile'] . '?page=login', 'warning');
             return;
         }
 
@@ -1103,7 +1106,7 @@ class pn_user
 
         // CSRF-Token pruefen (IMP-003)
         if (!pn_csrf_verify($_POST['csrf_token'] ?? null)) {
-            $template->message(L_ALL_CSRFINVALID, $profileUrl);
+            $template->message(L_ALL_CSRFINVALID, $profileUrl, 'danger');
             return;
         }
 
@@ -1117,10 +1120,12 @@ class pn_user
         $age = pn_validate_int_range($_POST['pndata']['age'] ?? 0, 0, 150, 0);
         $homepage = pn_validate_url($_POST['pndata']['homepage'] ?? '');
         $homepageInput = trim((string) ($_POST['pndata']['homepage'] ?? ''));
-        $icq = pn_validate_int_range($_POST['pndata']['icq'] ?? 0, 0, 2147483647, 0);
+        $icq = isset($_POST['pndata']['icq'])
+            ? pn_validate_int_range($_POST['pndata']['icq'], 0, 2147483647, 0)
+            : (int) ($pnuser['icq'] ?? 0);
 
         if ($nickname === '' || $email === '' || ($homepageInput !== '' && $homepage === '')) {
-            $template->message(L_USR_INVALIDPROFILE, $profileUrl);
+            $template->message(L_USR_INVALIDPROFILE, $profileUrl, 'danger');
             return;
         }
 
@@ -1129,11 +1134,11 @@ class pn_user
         $hashedPassword = '';
         if ($password !== '' || $password2 !== '') {
             if ($password !== $password2) {
-                $template->message(L_USR_PASSNOTEQUAL, $profileUrl);
+                $template->message(L_USR_PASSNOTEQUAL, $profileUrl, 'danger');
                 return;
             }
             if (strlen($password) < 8) {
-                $template->message(L_USR_PASSWORDTOOSHORT, $profileUrl);
+                $template->message(L_USR_PASSWORDTOOSHORT, $profileUrl, 'danger');
                 return;
             }
             $hashedPassword = pn_hash_password($password);
@@ -1147,7 +1152,7 @@ class pn_user
         $result = mysqli_stmt_get_result($stmt);
 
         if (mysqli_num_rows($result) !== 0) {
-            $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, $profileUrl);
+            $template->message(L_USR_NICKNAMEOREMAILALREADYUSED, $profileUrl, 'danger');
             return;
         }
 
@@ -1169,7 +1174,7 @@ class pn_user
             pn_sessions_delete_for_user($pn_handler, $userId);
         }
 
-        $template->message(L_USR_PROFILEEDITED, $pn_config['userfile'] . '?page=profile');
+        $template->message(L_USR_PROFILEEDITED, $pn_config['userfile'] . '?page=profile', 'success');
     }
 
     // Logout
@@ -1181,7 +1186,7 @@ class pn_user
         if (isset($pnuser) && is_array($pnuser) && ($pnuser['loggedin'] ?? 'NO') === 'YES') {
             $template->logout($pnuser);
         } else {
-            $template->message(L_USR_CANNOTLOGOUT, $pn_config['userfile'] . '?page=login');
+            $template->message(L_USR_CANNOTLOGOUT, $pn_config['userfile'] . '?page=login', 'warning');
         }
     }
 
@@ -1248,8 +1253,12 @@ class pn_email
 // Template class
 class pn_template
 {
-    // Get template for standard message
-    public function message(string $text, string $link): bool
+    /**
+     * Gibt eine Meldung über das Template „message“ aus (B29). $type steuert Farbe und
+     * Überschrift: success, danger, warning oder info. Der Rücklink erscheint als eigene
+     * Schaltfläche ({LINK}, {LINKTEXT}), nicht mehr als verlinkter Meldungstext.
+     */
+    public function message(string $text, string $link, string $type = 'info'): bool
     {
         global $pn_config, $pnconfig, $pn_handler;
 
@@ -1263,7 +1272,16 @@ class pn_template
         if ($num == 1) {
             [$message] = mysqli_fetch_array($result);
 
-            echo pn_template_fill((string) $message, ['MESSAGE' => $text, 'LINK' => $link]);
+            $headings = ['success' => L_MSG_SUCCESS, 'danger' => L_MSG_DANGER, 'warning' => L_MSG_WARNING, 'info' => L_MSG_INFO];
+            $type = isset($headings[$type]) ? $type : 'info';
+
+            echo pn_template_fill((string) $message, [
+                'MESSAGE' => $text,
+                'LINK' => pn_escape($link),
+                'TYPE' => $type,
+                'HEADING' => $headings[$type],
+                'LINKTEXT' => L_MSG_CONTINUE,
+            ]);
 
             return true;
         }
@@ -1290,7 +1308,7 @@ class pn_template
             return '';
         }
 
-        return '<img src="./pngfx/categories/' . pn_escape($picture) . '" class="pn-catpic" alt="' . pn_escape((string) ($category['name'] ?? '')) . '">';
+        return '<img src="./pngfx/categories/' . pn_escape($picture) . '" class="pn-catpic float-end ms-3 mb-2" alt="' . pn_escape((string) ($category['name'] ?? '')) . '">';
     }
 
     // BB replacements
@@ -1465,6 +1483,14 @@ class pn_template
             // wenn keine Links generiert wurden. So bleibt die Sidebar im Template
             // gestaltbar, verschwindet aber automatisch bei leerem Inhalt.
             $newsStr = $news;
+
+            // <!--COMMENTS_START-->…<!--COMMENTS_END--> nur zeigen, wenn Kommentare aktiv sind (B48).
+            if (($pnconfig['comments'] ?? 'NO') === 'YES') {
+                $newsStr = (string) preg_replace('/<!--\s*COMMENTS_(START|END)\s*-->/', '', $newsStr);
+            } else {
+                $newsStr = (string) preg_replace('/<!--\s*COMMENTS_START\s*-->.*?<!--\s*COMMENTS_END\s*-->/s', '', $newsStr);
+            }
+
             if ($rlinks === '') {
                 $newsStr = (string) preg_replace('/<!--\s*RELATEDLINKS_START\s*-->.*?<!--\s*RELATEDLINKS_END\s*-->/s', '', $newsStr);
             } else {
@@ -1836,16 +1862,16 @@ class pn_template
         if ($num == 1) {
             [$archive] = mysqli_fetch_array($result);
 
-            $monthselect = "<select name=\"pndata[showmonth]\" size=\"1\">\n";
+            $monthNames = [
+                1 => L_TEMPL_JANUARY, 2 => L_TEMPL_FEBRUARY, 3 => L_TEMPL_MARCH, 4 => L_TEMPL_APRIL,
+                5 => L_TEMPL_MAY, 6 => L_TEMPL_JUNE, 7 => L_TEMPL_JULY, 8 => L_TEMPL_AUGUST,
+                9 => L_TEMPL_SEPTEMBER, 10 => L_TEMPL_OCTOBER, 11 => L_TEMPL_NOVEMBER, 12 => L_TEMPL_DECEMBER,
+            ];
+            $selectedMonth = (int) ($pndata['showmonth'] ?? 0);
+            $monthselect = "<select class=\"form-select\" name=\"pndata[showmonth]\" id=\"pn_showmonth\">\n";
 
-            for ($month = 1; $month < 13; ++$month) {
-                $datetime = new DateTime();
-                $thisyear = $_POST['pndata']['thisyear'] ?? date('Y');
-                $datetime->setDate((int) $thisyear, $month, 1);
-                $datetime->setTime(0, 0, 0);
-                $monthname = $datetime->format('F');
-                $selectedMonth = $pndata['showmonth'] ?? '';
-                $monthselect .= $selectedMonth == $month ? '<option value="' . $month . '" selected>' . pn_escape($monthname) . '</option>' : '<option value="' . $month . '">' . pn_escape($monthname) . '</option>';
+            foreach ($monthNames as $month => $monthname) {
+                $monthselect .= '<option value="' . $month . '"' . ($selectedMonth === $month ? ' selected' : '') . '>' . pn_escape($monthname) . "</option>\n";
             }
             $monthselect .= "</select>\n";
 

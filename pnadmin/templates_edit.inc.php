@@ -66,7 +66,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_message" class="form-label fw-bold"><?php echo L_TEMPL_MESSAGE; ?></label>
                       <textarea class="form-control font-monospace small" name="message" id="pn_t_message" rows="6" aria-describedby="pn_t_message_help"><?php echo pnadmin_escape($data['message']); ?></textarea>
-                      <div id="pn_t_message_help" class="form-text"><?php echo L_TEMPL_MESSAGE_DESC; ?> <code>{LINK}</code> <code>{MESSAGE}</code></div>
+                      <div id="pn_t_message_help" class="form-text"><?php echo L_TEMPL_MESSAGE_DESC; ?> <code>{LINK}</code> <code>{MESSAGE}</code> <code>{TYPE}</code> <code>{HEADING}</code> <code>{LINKTEXT}</code></div>
                   </div>
 
                   <div class="mb-3">
@@ -78,7 +78,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_news" class="form-label fw-bold"><?php echo L_TEMPL_NEWS; ?></label>
                       <textarea class="form-control font-monospace small" name="news" id="pn_t_news" rows="8" aria-describedby="pn_t_news_help"><?php echo pnadmin_escape($data['news']); ?></textarea>
-                      <div id="pn_t_news_help" class="form-text"><?php echo L_TEMPL_NEWS_DESC; ?> <code>{ID}</code> <code>{DATE}</code> <code>{TIME}</code> <code>{CATEGORY}</code> <code>{TITLE}</code> <code>{CATPIC}</code> <code>{CATID}</code> <code>{AUTHOR}</code> <code>{TEXT}</code> <code>{COMMENTS}</code> <code>{RELATEDLINKS}</code> <code>{MORE}</code></div>
+                      <div id="pn_t_news_help" class="form-text"><?php echo L_TEMPL_NEWS_DESC; ?> <code>{ID}</code> <code>{DATE}</code> <code>{TIME}</code> <code>{CATEGORY}</code> <code>{TITLE}</code> <code>{CATPIC}</code> <code>{CATID}</code> <code>{AUTHOR}</code> <code>{TEXT}</code> <code>{COMMENTS}</code> <code>{RELATEDLINKS}</code> <code>{MORE}</code> <code>&lt;!--COMMENTS_START--&gt;…&lt;!--COMMENTS_END--&gt;</code></div>
                   </div>
 
                   <div class="mb-3">
@@ -140,7 +140,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_profileform" class="form-label fw-bold"><?php echo L_TEMPL_PROFILEFORM; ?></label>
                       <textarea class="form-control font-monospace small" name="profileform" id="pn_t_profileform" rows="10"><?php echo pnadmin_escape($data['profileform']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_PROFILEFORM_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SHOWEMAIL}</code> <code>{PASSWORD}</code> <em><?php echo L_TEMPL_FORMTARGET; ?>:</em> <?php echo pnadmin_escape($pn_config['userfile']); ?>?page=profile&amp;pndata[send]=YES</div>
+                      <div class="form-text"><?php echo L_TEMPL_PROFILEFORM_DESC; ?> <code>{NICKNAME}</code> <code>{EMAIL}</code> <code>{SHOWEMAIL}</code> <code>{PASSWORD}</code> <code>{REALNAME}</code> <code>{CITY}</code> <code>{AGE}</code> <code>{HOMEPAGE}</code> <em><?php echo L_TEMPL_FORMTARGET; ?>:</em> <?php echo pnadmin_escape($pn_config['userfile']); ?>?page=profile&amp;pndata[send]=YES</div>
                   </div>
 
                   <div class="mb-3">

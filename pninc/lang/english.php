@@ -87,6 +87,7 @@ define('L_NEWS_RL_TITLE', 'Title');
 define('L_NEWS_RL_URL', 'URL');
 define('L_NEWS_RL_TARGET', 'Target');
 define('L_NEWS_RELATEDLINKS', 'Related links');
+define('L_NEWS_NONEWSINMONTH', 'No news were published in this month.');
 define('L_NEWS_COMMENTTOOLONG', 'The comment is too long (at most %d characters).');
 define('L_NEWS_NEWSNOTFOUND', 'The news entry was not found.');
 
@@ -112,3 +113,8 @@ define('L_TEMPL_DECEMBER', 'December');
 /* Other */
 define('L_ALL_FILLALL', 'Please fill in all fields!');
 define('L_ALL_CSRFINVALID', 'The form has expired or is invalid. Please reload the page and try again.');
+define('L_MSG_SUCCESS', 'Done');
+define('L_MSG_DANGER', 'Error');
+define('L_MSG_WARNING', 'Notice');
+define('L_MSG_INFO', 'Information');
+define('L_MSG_CONTINUE', 'Continue');

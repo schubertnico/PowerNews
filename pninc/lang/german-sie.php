@@ -87,6 +87,7 @@ define('L_NEWS_RL_TITLE', 'Titel');
 define('L_NEWS_RL_URL', 'URL');
 define('L_NEWS_RL_TARGET', 'Ziel');
 define('L_NEWS_RELATEDLINKS', 'Weiterführende Links');
+define('L_NEWS_NONEWSINMONTH', 'In diesem Monat sind keine News erschienen.');
 define('L_NEWS_COMMENTTOOLONG', 'Der Kommentar ist zu lang (höchstens %d Zeichen).');
 define('L_NEWS_NEWSNOTFOUND', 'Die News wurde nicht gefunden.');
 
@@ -112,3 +113,8 @@ define('L_TEMPL_DECEMBER', 'Dezember');
 /* Other */
 define('L_ALL_FILLALL', 'Sie müssen alle Felder ausfüllen!');
 define('L_ALL_CSRFINVALID', 'Das Formular ist abgelaufen oder ungültig. Bitte laden Sie die Seite neu und versuchen Sie es erneut.');
+define('L_MSG_SUCCESS', 'Erledigt');
+define('L_MSG_DANGER', 'Fehler');
+define('L_MSG_WARNING', 'Hinweis');
+define('L_MSG_INFO', 'Information');
+define('L_MSG_CONTINUE', 'Weiter');
