@@ -23,6 +23,13 @@ if ($pnadmin['canreadusers'] == 'YES' && $pnadmin['canwriteusers'] == 'YES') {
                 <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
             </div>
             <?php
+        } elseif (!$edituser->caneditaccount($pnadmin, (int) ($pnuser['id'] ?? 0), $userid)) {
+            ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo L_USR_NOTALLOWEDTOEDIT; ?>
+                <div class="mt-2"><a href="index.php?page=users&amp;subpage=show" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOLIST; ?></a></div>
+            </div>
+            <?php
         } else {
             if ($edit === 'YES') {
                 $error = $edituser->edituser(

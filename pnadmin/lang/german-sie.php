@@ -36,7 +36,7 @@ define('L_CAT_TITLEDESC', "Der Titel unter dem die Kategorie erscheinen soll (Ke
 define('L_CAT_DESCRIPTION', 'Beschreibung');
 define('L_CAT_DESCRIPTIONDESC', 'Kurze Beschreibung der Kategorie (höchstens 255 Zeichen, Umlaute zählen doppelt; HTML wird nicht ausgewertet)');
 define('L_CAT_PIC', 'Bild');
-define('L_CAT_PICDESC', 'Bild für die neue Kategorie');
+define('L_CAT_PICDESC', 'Bild für die Kategorie (GIF, JPG oder PNG, höchstens 2 MB). Der Dateiname wird beim Speichern neu vergeben.');
 define('L_CAT_ADDNEWCAT', 'Neue Kategorie hinzufügen');
 define('L_CAT_OTHERCATWITHTITLEEXISTS', 'Es existiert bereits eine Kategorie mit diesem Titel!');
 define('L_CAT_WRONGCATTITLE', 'Ungültiger Kategorietitel');
@@ -47,7 +47,7 @@ define('L_CAT_CATSAREDEACTIVATED', 'Kategorien sind deaktiviert!');
 define('L_CAT_EDITED', 'Die Kategorie wurde erfolgreich editiert!');
 define('L_CAT_EDITCAT', 'Kategorie editieren');
 define('L_CAT_UPLOADPIC', 'Bild hochladen');
-define('L_CAT_UPLOADPICDESC', 'Klicken Sie hier wenn ein <b>neues</b> Bild hochgeladen werden soll!');
+define('L_CAT_UPLOADPICDESC', 'Anhaken, wenn ein <b>neues</b> Bild hochgeladen werden soll');
 define('L_CAT_CURRENTPIC', 'Aktuelles Bild');
 define('L_CAT_STATUS', 'Status');
 define('L_CAT_STATUSDESC', 'Der Status der Kategorie');
@@ -59,7 +59,7 @@ define('L_CAT_CATEDITERROR', 'Die Kategorie konnte nicht editiert werden!');
 define('L_CAT_CLICKFORDETAILS', 'Per Klick auf den Titel einer Kategorie kann diese editiert werden!');
 define('L_CAT_DESCRIPTIONTOOLONG', 'Die Beschreibung ist zu lang: höchstens 255 Zeichen (Umlaute und Sonderzeichen zählen doppelt).');
 define('L_CAT_ADDMORE', 'Weitere Kategorie anlegen');
-define('L_CAT_PICSONLYINTHISFORMAT', 'Bilder dürfen nur im GIF/JPG/JPEG/PNG Format hochgeladen werden!');
+define('L_CAT_PICSONLYINTHISFORMAT', 'Bilder dürfen nur im Format GIF, JPG oder PNG und höchstens 2 MB groß hochgeladen werden!');
 
 /* Configuration */
 define('L_TITLE_CONFIGURATION', 'Konfiguration');
@@ -196,6 +196,7 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'Sie müssen Nickname und E-Mail-Adresse 
 define('L_USR_NOUSRFOUND', 'Es wurde kein Benutzer gefunden!');
 define('L_USR_PWNOTCONFIRMED', 'Das Passwort wurde nicht korrekt bestätigt!');
 define('L_USR_HELLO', 'Hallo');
+define('L_USR_NOTALLOWEDTOEDIT', 'Dieses Konto hat Administrationsrechte, die Sie selbst nicht besitzt. Bearbeiten darf es nur, wer mindestens dieselben Rechte oder das Recht „Berechtigungen schreiben“ hat.');
 define('L_USR_LOGINFAILED', 'Die Anmeldung ist fehlgeschlagen. Bitte prüfen Sie Nickname und Passwort. Anmelden können sich nur freigeschaltete Konten mit Administrationsrechten.');
 define('L_USR_TOOMANYATTEMPTS', 'Zu viele Fehlversuche. Bitte versuchen Sie es in 15 Minuten erneut.');
 define('L_USR_INVALIDNICKNAME', 'Ungültiger Nickname: erlaubt sind 3 bis 30 Zeichen (Buchstaben, Ziffern, Punkt, Unterstrich, Bindestrich), keine Leerzeichen.');
@@ -384,6 +385,7 @@ define('L_NEWS_OCTOBER', 'Oktober');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'Dezember');
 define('L_NEWS_NOCOMMENTTEXT', 'Bei einem oder mehreren Kommentaren fehlt der Text!');
+define('L_NEWS_COMMENTS', 'Kommentare');
 define('L_NEWS_INVALIDDATE', 'Der Erscheinungstermin ist ungültig (z. B. 31. Februar). Bitte wählen Sie ein gültiges Datum.');
 define('L_NEWS_BBCODE', 'BB-Code');
 define('L_NEWS_WRITEMORE', 'Weitere News schreiben');

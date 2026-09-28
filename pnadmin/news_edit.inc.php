@@ -26,7 +26,10 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
             <?php
         } else {
             if ($edit === 'YES') {
-                if ($editcomments === 'YES') {
+                if ($editcomments === 'YES' && $pnadmin['canwritecomments'] !== 'YES') {
+                    // Kommentare ändern oder löschen nur mit „Kommentare schreiben“ (B39).
+                    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
+                } elseif ($editcomments === 'YES') {
                     $error = $editnews->checkcomment($_POST['commentid'] ?? [], $_POST['commenttext'] ?? []);
 
                     if ($error !== '' && $error !== '0') {
@@ -234,7 +237,16 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
               </fieldset>
           </form>
           <?php
-          if ($pnconfig['comments'] == 'YES' && $pnadmin['canreadcomments'] == 'YES') {
+          if ($pnconfig['comments'] == 'YES' && $pnadmin['canreadcomments'] == 'YES' && $pnadmin['canwritecomments'] !== 'YES') {
+              ?>
+            <section class="mt-4">
+                <h2 class="h6"><?php echo L_NEWS_COMMENTS; ?></h2>
+<?php
+                $editnews->getcomments($newsid, false);
+?>
+            </section>
+            <?php
+          } elseif ($pnconfig['comments'] == 'YES' && $pnadmin['canreadcomments'] == 'YES') {
               ?>
             <form action="index.php?page=news&amp;subpage=edit&amp;edit=YES&amp;newsid=<?php echo pn_int($newsid); ?>&amp;editcomments=YES" method="post" class="mt-4" novalidate><?php echo pnadmin_csrf_field(); ?>
                 <fieldset>

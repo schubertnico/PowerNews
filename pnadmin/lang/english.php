@@ -36,7 +36,7 @@ define('L_CAT_TITLEDESC', "Name of the category (No ./\:*?&lt;&gt;|\")");
 define('L_CAT_DESCRIPTION', 'Description');
 define('L_CAT_DESCRIPTIONDESC', 'Short description of the category (at most 255 bytes; HTML is not interpreted)');
 define('L_CAT_PIC', 'Picture');
-define('L_CAT_PICDESC', 'Picture for the new category');
+define('L_CAT_PICDESC', 'Picture for the category (GIF, JPG or PNG, at most 2 MB). The file is renamed when it is stored.');
 define('L_CAT_ADDNEWCAT', 'Add new category');
 define('L_CAT_OTHERCATWITHTITLEEXISTS', 'Category with this title already exists!');
 define('L_CAT_WRONGCATTITLE', 'Invalid title!');
@@ -59,7 +59,7 @@ define('L_CAT_CATEDITERROR', 'Editing category failed!');
 define('L_CAT_CLICKFORDETAILS', 'Please click on the title of a category for edit!');
 define('L_CAT_DESCRIPTIONTOOLONG', 'The description is too long: at most 255 bytes (non-ASCII characters count double).');
 define('L_CAT_ADDMORE', 'Add another category');
-define('L_CAT_PICSONLYINTHISFORMAT', 'Pictures may only be uploaded in GIF/JPG/JPEG/PNG format!');
+define('L_CAT_PICSONLYINTHISFORMAT', 'Pictures may only be uploaded as GIF, JPG or PNG with at most 2 MB!');
 
 /* Configuration */
 define('L_TITLE_CONFIGURATION', 'Configuration');
@@ -196,6 +196,7 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'You have to insert nickname and E-Mail!'
 define('L_USR_NOUSRFOUND', 'No users found!');
 define('L_USR_PWNOTCONFIRMED', 'Password confirmation failed!');
 define('L_USR_HELLO', 'Hello');
+define('L_USR_NOTALLOWEDTOEDIT', 'This account has administration rights that you do not have yourself. Only admins with at least the same rights or the right "write permissions" may edit it.');
 define('L_USR_LOGINFAILED', 'Login failed. Please check nickname and password. Only activated accounts with administration rights can log in here.');
 define('L_USR_TOOMANYATTEMPTS', 'Too many failed attempts. Please try again in 15 minutes.');
 define('L_USR_INVALIDNICKNAME', 'Invalid nickname: 3 to 30 characters (letters, digits, dot, underscore, hyphen), no spaces.');
@@ -384,6 +385,7 @@ define('L_NEWS_OCTOBER', 'October');
 define('L_NEWS_NOVEMBER', 'November');
 define('L_NEWS_DECEMBER', 'December');
 define('L_NEWS_NOCOMMENTTEXT', 'One or more comments are missing the text!');
+define('L_NEWS_COMMENTS', 'Comments');
 define('L_NEWS_INVALIDDATE', 'The publication date is invalid (e.g. 31 February). Please choose a valid date.');
 define('L_NEWS_BBCODE', 'BB code');
 define('L_NEWS_WRITEMORE', 'Write more news');

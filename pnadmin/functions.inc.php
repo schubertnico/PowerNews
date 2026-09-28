@@ -904,6 +904,49 @@ class user
         }
     }
 
+    /** Alle Rechte-Spalten aus pn_permissions. */
+    public const PERMISSION_FIELDS = [
+        'canreadtemplates', 'canwritetemplates', 'canreadconfig', 'canwriteconfig',
+        'canreadusers', 'canwriteusers', 'canreadpermissions', 'canwritepermissions',
+        'canreadcategories', 'canwritecategories', 'canreadnews', 'canwritenews',
+        'canreadcomments', 'canwritecomments',
+    ];
+
+    /**
+     * Darf der angemeldete Admin dieses Konto bearbeiten (B24)? Konten ohne Admin-Rechte
+     * und das eigene Konto immer; Konten mit Rechten nur, wenn der Bearbeiter
+     * „Berechtigungen schreiben“ hat oder mindestens alle Rechte des Zielkontos besitzt.
+     * Sonst könnte „Benutzer schreiben“ Admin-Konten per neuer Adresse und neuem Passwort
+     * übernehmen.
+     *
+     * @param array<string, mixed> $editorPermissions
+     */
+    public function caneditaccount(array $editorPermissions, int $editorId, int $targetId): bool
+    {
+        global $pn_config, $pn_handler;
+
+        if ($targetId === $editorId) {
+            return true;
+        }
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $targetId);
+        mysqli_stmt_execute($stmt);
+        $target = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+        if (!is_array($target) || ($editorPermissions['canwritepermissions'] ?? 'NO') === 'YES') {
+            return true;
+        }
+
+        foreach (self::PERMISSION_FIELDS as $field) {
+            if (($target[$field] ?? 'NO') === 'YES' && ($editorPermissions[$field] ?? 'NO') !== 'YES') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function checkuser(int $userid): string
     {
         global $pn_config, $pn_handler;
@@ -1326,7 +1369,9 @@ class permissions
                     </tr>
                     <?php
                 } else {
-                    $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['permissionstable'] . ' WHERE userid = ?');
+                    // Verwaiste Rechtezeile (Benutzer existiert nicht mehr) über ihre eigene ID
+                    // löschen, nicht über userid (B38).
+                    $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['permissionstable'] . ' WHERE id = ?');
                     $rowId = (int) $row['id'];
                     mysqli_stmt_bind_param($stmt, 'i', $rowId);
                     mysqli_stmt_execute($stmt);
@@ -1522,6 +1567,89 @@ class category
     /** pn_categories.description ist ein TINYTEXT (255 Byte, Umlaute zählen doppelt). */
     public const DESCRIPTION_MAX_BYTES = 255;
 
+    /** Höchstgröße eines Kategoriebilds in Byte. */
+    public const PICTURE_MAX_BYTES = 2097152;
+
+    /** Erlaubte Bildtypen: IMAGETYPE_* => [MIME-Typ, Dateiendung]. */
+    private const PICTURE_TYPES = [
+        IMAGETYPE_GIF => ['image/gif', 'gif'],
+        IMAGETYPE_JPEG => ['image/jpeg', 'jpg'],
+        IMAGETYPE_PNG => ['image/png', 'png'],
+    ];
+
+    /**
+     * Zielordner der Kategoriebilder.
+     */
+    public static function picturedir(): string
+    {
+        return dirname(__DIR__) . '/pngfx/categories';
+    }
+
+    /**
+     * Prüft ein hochgeladenes Kategoriebild (B08): Endung gif/jpg/jpeg/png, echter Bildinhalt
+     * laut getimagesize() und finfo, passende Endung und Größe. Liefert die Endung für den
+     * gespeicherten Namen oder null.
+     */
+    public function validatepicture(string $path, string $originalName): ?string
+    {
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, ['gif', 'jpg', 'jpeg', 'png'], true) || !is_file($path)) {
+            return null;
+        }
+
+        $size = filesize($path);
+
+        if ($size === false || $size === 0 || $size > self::PICTURE_MAX_BYTES) {
+            return null;
+        }
+
+        $info = @getimagesize($path);
+
+        if ($info === false || !isset(self::PICTURE_TYPES[$info[2]])) {
+            return null;
+        }
+
+        [$mime, $canonical] = self::PICTURE_TYPES[$info[2]];
+        $detected = (new finfo(FILEINFO_MIME_TYPE))->file($path);
+
+        if ($detected !== $mime || ($extension === 'jpeg' ? 'jpg' : $extension) !== $canonical) {
+            return null;
+        }
+
+        return $canonical;
+    }
+
+    /**
+     * Speichert ein hochgeladenes Kategoriebild unter einem zufälligen Namen
+     * (cat_<16 Hex>.<gif|jpg|png>). Der Name des Besuchers wird nie übernommen.
+     * Liefert den Dateinamen oder einen Leerstring.
+     *
+     * @param array<string, mixed> $picture Eintrag aus $_FILES
+     */
+    public function storepicture(array $picture): string
+    {
+        $tmp = (string) ($picture['tmp_name'] ?? '');
+
+        if (($picture['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($tmp)) {
+            return '';
+        }
+
+        $extension = $this->validatepicture($tmp, (string) ($picture['name'] ?? ''));
+
+        if ($extension === null) {
+            return '';
+        }
+
+        $filename = 'cat_' . bin2hex(random_bytes(8)) . '.' . $extension;
+
+        if (!move_uploaded_file($tmp, self::picturedir() . '/' . $filename)) {
+            return '';
+        }
+
+        return $filename;
+    }
+
     public function addcat(string $name, string $description, array $picture = []): string
     {
         global $pn_config, $pnconfig, $pn_handler;
@@ -1546,11 +1674,12 @@ class category
                 $pic = '';
 
                 if ($pnconfig['categorypics'] == 'YES' && !empty($picture['name'])) {
-                    $pic = basename((string) $picture['name']);
-                    $targetPath = '../pngfx/categories/' . $pic;
+                    $stored = $this->storepicture($picture);
 
-                    if (!move_uploaded_file($picture['tmp_name'], $targetPath)) {
-                        $error = L_CAT_PICUPLOADERROR;
+                    if ($stored === '') {
+                        $error = L_CAT_PICSONLYINTHISFORMAT;
+                    } else {
+                        $pic = $stored;
                     }
                 }
 
@@ -1668,18 +1797,18 @@ class category
                     $pic = $row['picture'];
 
                     if ($pnconfig['categorypics'] == 'YES' && $uploadpic === 'YES' && !empty($picture['name'])) {
-                        $pic = basename((string) $picture['name']);
+                        $stored = $this->storepicture($picture);
 
-                        if ($row['picture']) {
-                            $oldPicPath = '../pngfx/categories/' . $row['picture'];
+                        if ($stored === '') {
+                            $error = L_CAT_PICSONLYINTHISFORMAT;
+                        } else {
+                            $old = basename((string) $row['picture']);
+                            $oldPicPath = self::picturedir() . '/' . $old;
 
-                            if (is_file($oldPicPath)) {
+                            if ($old !== '' && $old !== '0byte' && is_file($oldPicPath)) {
                                 unlink($oldPicPath);
                             }
-                        }
-
-                        if (!move_uploaded_file($picture['tmp_name'], "../pngfx/categories/{$pic}")) {
-                            $error = L_CAT_PICUPLOADERROR;
+                            $pic = $stored;
                         }
                     }
 
@@ -1879,9 +2008,13 @@ class news
         return null;
     }
 
-    public function getcomments(int $newsid): void
+    /**
+     * Listet die Kommentare einer News. Ohne das Recht „Kommentare schreiben“ ($editable
+     * = false) erscheinen sie nur zum Lesen, ohne Eingabefelder (B39).
+     */
+    public function getcomments(int $newsid, bool $editable = true): void
     {
-        global $pn_config, $pnconfig, $pn_handler;
+        global $pn_config, $pn_handler;
 
         $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? ORDER BY id DESC');
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
@@ -1907,6 +2040,13 @@ class news
                             <?php echo L_NEWS_AT; ?> <?php echo date('H:i', (int) $row['time']); ?>
                             (IP: <?php echo pnadmin_escape($row['ip']); ?>)
                         </div>
+<?php if (!$editable) { ?>
+                        <div class="pn-comment-text"><?php echo nl2br(pnadmin_escape((string) $row['text'])); ?></div>
+                    </div>
+                </div>
+<?php
+                    continue;
+                } ?>
                         <input type="hidden" name="commentid[]" value="<?php echo (int) $row['id']; ?>">
 
                         <div class="mb-3">
