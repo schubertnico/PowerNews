@@ -119,7 +119,7 @@ final class InstallerDatabaseTest extends InstallerDatabaseTestCase
 
         try {
             $login = new \login();
-            $this->assertSame(L_USR_WRONGPW, $login->checklogin('Jörg_Müller', 'falsch'));
+            $this->assertSame(L_USR_LOGINFAILED, $login->checklogin('Jörg_Müller', 'falsch'));
             $this->assertSame('loggedin', @$login->checklogin('Jörg_Müller', self::ADMIN_PASSWORD));
         } finally {
             $pn_handler->close();
