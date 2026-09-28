@@ -140,6 +140,28 @@ class DefaultTemplateTest extends DatabaseTestCase
     }
 
     #[Test]
+    public function default_template_uses_neither_du_nor_sie(): void
+    {
+        // Ein Template für alle Installationen (german-du, german-sie, english): Texte ohne Anrede.
+        foreach (pn_default_template() as $name => $content) {
+            $text = html_entity_decode(strip_tags($content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $this->assertDoesNotMatchRegularExpression('/\b(Du|Dich|Dir|Dein|Deine|Deinen|Deinem|Deiner|Sie|Ihr|Ihre|Ihren|Ihrem|Ihrer|Ihnen|willst|kannst|musst|erhältst)\b/u', $text, $name);
+        }
+
+        $this->assertStringContainsString('Wirklich ausloggen, <strong>{NICKNAME}</strong>?', pn_default_template()['logout']);
+        $this->assertStringContainsString('Ja, ausloggen', pn_default_template()['logout']);
+    }
+
+    #[Test]
+    public function logout_confirmation_addresses_nobody(): void
+    {
+        $output = $this->captureOutput(fn () => (new \pn_template())->logout(['nickname' => 'Sabine']));
+
+        $this->assertStringContainsString('Wirklich ausloggen, <strong>Sabine</strong>?', $output);
+        $this->assertStringNotContainsString('Bist Du sicher', $output);
+    }
+
+    #[Test]
     public function powernews_sql_contains_the_same_default_template(): void
     {
         global $pn_handler;

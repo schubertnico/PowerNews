@@ -128,7 +128,7 @@ if ($pnadmin['canreadtemplates'] == 'YES' && $pnadmin['canwritetemplates'] == 'Y
                   <div class="mb-3">
                       <label for="pn_t_logout" class="form-label fw-bold"><?php echo L_TEMPL_LOGOUTFORM; ?></label>
                       <textarea class="form-control font-monospace small" name="logout" id="pn_t_logout" rows="6"><?php echo pnadmin_escape($data['logout']); ?></textarea>
-                      <div class="form-text"><?php echo L_TEMPL_LOGOUTFORM_DESC; ?> <code>{NICKNAME}</code> <em><?php echo L_TEMPL_LINKTARGET; ?></em> <?php echo pnadmin_escape($pn_config['userfile']); ?>?page=logout&amp;pndata[logout]=YES</div>
+                      <div class="form-text"><?php echo L_TEMPL_LOGOUTFORM_DESC; ?> <code>{NICKNAME}</code> <code>{CSRF}</code> <em><?php echo L_TEMPL_FORMTARGET; ?>:</em> <?php echo pnadmin_escape($pn_config['userfile']); ?>?page=logout (POST)</div>
                   </div>
 
                   <div class="mb-3">

@@ -193,7 +193,7 @@ define('L_USR_INSERTNICKNAMEANDEMAIL', 'Sie müssen Nickname und E-Mail-Adresse 
 define('L_USR_NOUSRFOUND', 'Es wurde kein Benutzer gefunden!');
 define('L_USR_PWNOTCONFIRMED', 'Das Passwort wurde nicht korrekt bestätigt!');
 define('L_USR_HELLO', 'Hallo');
-define('L_USR_NOTALLOWEDTOEDIT', 'Dieses Konto hat Administrationsrechte, die Sie selbst nicht besitzt. Bearbeiten darf es nur, wer mindestens dieselben Rechte oder das Recht „Berechtigungen schreiben“ hat.');
+define('L_USR_NOTALLOWEDTOEDIT', 'Dieses Konto hat Administrationsrechte, die Sie selbst nicht besitzen. Bearbeiten darf es nur, wer mindestens dieselben Rechte oder das Recht „Berechtigungen schreiben“ hat.');
 define('L_USR_LOGINFAILED', 'Die Anmeldung ist fehlgeschlagen. Bitte prüfen Sie Nickname und Passwort. Anmelden können sich nur freigeschaltete Konten mit Administrationsrechten.');
 define('L_USR_TOOMANYATTEMPTS', 'Zu viele Fehlversuche. Bitte versuchen Sie es in 15 Minuten erneut.');
 define('L_USR_INVALIDNICKNAME', 'Ungültiger Nickname: erlaubt sind 3 bis 30 Zeichen (Buchstaben, Ziffern, Punkt, Unterstrich, Bindestrich), keine Leerzeichen.');
@@ -290,7 +290,7 @@ define('L_PERM_USER', 'Benutzer');
 define('L_PERM_CATS', 'Kategorien');
 define('L_PERM_NEWS', 'News');
 define('L_PERM_COMMENTS', 'Kommentare');
-define('L_PERM_CHOOSEADMIN', 'Du musst einen Admin wählen!');
+define('L_PERM_CHOOSEADMIN', 'Sie müssen einen Admin wählen!');
 define('L_PERM_PERMISSIONSDELETED', 'Die Berechtigungen wurden erfolgreich gelöscht!');
 define('L_PERM_PERMISSIONSEDITED', 'Die Berechtigungen wurden erfolgreich editiert!');
 define('L_PERM_EDITPERMISSIONS', 'Berechtigungen editieren');

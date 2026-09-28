@@ -109,9 +109,9 @@ final class UpdaterDatabaseTest extends InstallerDatabaseTestCase
         $this->assertSame([Updater::STEP_TABLES, Updater::STEP_TEMPLATES, Updater::STEP_PERMISSIONS, Updater::STEP_MIGRATIONS, Updater::STEP_LOCK], array_column($results, 'id'));
         $this->assertSame(
             '1 Datensatz von überzähligen Backslashes bereinigt. 1 langlaufende Admin-Sitzung beendet. Tabelle pn_password_resets angelegt. '
-            . '1 News mit weiterführenden Links ins JSON-Format überführt. 14 Template-Felder auf den Stand 3.12 gebracht.',
+            . '1 News mit weiterführenden Links ins JSON-Format überführt. 15 Template-Felder auf den Stand 3.12 gebracht.',
             $results[3]['message'],
-            'Nur die 14 geänderten Felder des Default-Templates; die Testvorlagen sind vorher schon entfernt',
+            'Nur die 15 geänderten Felder des Default-Templates; die Testvorlagen sind vorher schon entfernt',
         );
 
         // Neue Tabelle für „Passwort vergessen“, Migrationen vermerkt
