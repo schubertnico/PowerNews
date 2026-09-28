@@ -81,6 +81,7 @@ Rangfolge: `pninc/config.local.php` (legt der Installer an) > Umgebungsvariablen
 | `PN_DB_USER` | Datenbank-Benutzer | `root` |
 | `PN_DB_PASS` | Datenbank-Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank-Name | `powernews` |
+| `PN_LANGUAGE` | Sprache: `german-du`, `german-sie` oder `english` (eine `config.local.php` hat Vorrang) | `german-du` |
 | `PN_TRUSTED_PROXIES` | Vertrauenswürdige Reverse-Proxys (IPs oder CIDR, kommagetrennt). Nur von dort wird `X-Forwarded-For` ausgewertet; alternativ `$pn_config['trustedproxies']` | (leer) |
 
 ### E-Mail-Versand

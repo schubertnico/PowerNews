@@ -9,7 +9,7 @@ include __DIR__ . '/header.inc.php';
 
 <!--AB HIER WERDEN DIE HEADLINES UND DIE UMLIEGENDE TABELLE ANGEZEIGT-->
 <section class="card mb-4">
-  <h1 class="pn-section-title h6 mb-0">Headlines</h1>
+  <h1 class="pn-section-title h6 mb-0">Schlagzeilen</h1>
   <div class="card-body pn-content">
 <?php
       /*

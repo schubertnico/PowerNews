@@ -87,7 +87,7 @@ include __DIR__ . '/pninc/head.inc.php';
         <div class="card-body">
           <h2 class="h6 fw-bold border-bottom pb-2">News</h2>
           <ul class="list-unstyled mb-3">
-            <li>&raquo; <a href="index.php">Home</a></li>
+            <li>&raquo; <a href="index.php">Startseite</a></li>
             <li>&raquo; <a href="archive.php">Archiv</a></li>
             <li>&raquo; <a href="sendnews.php">News einsenden</a></li>
           </ul>

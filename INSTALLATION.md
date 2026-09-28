@@ -215,6 +215,7 @@ Verschlüsselung „tls“ – erlaubt sind none, starttls und ssl.“
 | `PN_DB_USER` | Benutzer | `root` |
 | `PN_DB_PASS` | Passwort | (leer) |
 | `PN_DB_NAME` | Datenbank | `powernews` |
+| `PN_LANGUAGE` | Sprache: `german-du`, `german-sie`, `english` | `german-du` |
 | `PN_MAIL_TRANSPORT` | Versandart: `mail` oder `smtp` | `mail` |
 | `PN_MAIL_HOST` | SMTP-Server | `localhost` |
 | `PN_MAIL_PORT` | SMTP-Port (`0` = Standard der Verschlüsselung) | `0` |

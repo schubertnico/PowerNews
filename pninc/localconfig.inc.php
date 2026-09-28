@@ -117,16 +117,31 @@ final class LocalConfig
     {
         $db = self::fromEnvironment($getenv);
         $mail = self::mailFromEnvironment($getenv);
+        $language = self::languageFromEnvironment($getenv);
         $source = self::isDefaultDatabase($db) ? self::SOURCE_DEFAULTS : self::SOURCE_ENVIRONMENT;
 
         if (!is_file($localFile)) {
-            return ['db' => $db, 'language' => self::DEFAULT_LANGUAGE, 'mail' => $mail, 'source' => $source];
+            return ['db' => $db, 'language' => $language, 'mail' => $mail, 'source' => $source];
         }
 
-        $settings = self::apply($db, self::DEFAULT_LANGUAGE, require $localFile, $mail);
+        $settings = self::apply($db, $language, require $localFile, $mail);
         $settings['source'] = self::SOURCE_FILE;
 
         return $settings;
+    }
+
+    /**
+     * Sprache aus der Umgebungsvariablen PN_LANGUAGE (german-du, german-sie,
+     * english) - wie PN_DB_* für Docker und Hoster mit SetEnv. Unbekannte oder
+     * leere Werte ergeben die Vorgabe; config.local.php hat weiter Vorrang.
+     *
+     * @param callable(string): (string|false) $getenv
+     */
+    public static function languageFromEnvironment(callable $getenv): string
+    {
+        $raw = $getenv('PN_LANGUAGE');
+
+        return is_string($raw) && isset(self::LANGUAGES[trim($raw)]) ? trim($raw) : self::DEFAULT_LANGUAGE;
     }
 
     /**

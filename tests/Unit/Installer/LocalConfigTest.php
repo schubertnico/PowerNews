@@ -47,6 +47,22 @@ final class LocalConfigTest extends TestCase
     // ── Rangfolge: config.local.php > Umgebungsvariablen > Vorgaben ──
 
     #[Test]
+    public function languageComesFromTheEnvironmentUnlessTheLocalFileSetsIt(): void
+    {
+        $file = $this->dir . '/config.local.php';
+
+        $this->assertSame('german-sie', LocalConfig::load(self::env(['PN_LANGUAGE' => ' german-sie ']), $file)['language']);
+        $this->assertSame('german-du', LocalConfig::load(self::env(['PN_LANGUAGE' => 'klingonisch']), $file)['language'], 'Unbekannt ergibt die Vorgabe');
+        $this->assertSame('german-du', LocalConfig::load(self::env(['PN_LANGUAGE' => '']), $file)['language']);
+
+        file_put_contents($file, "<?php return ['language' => 'english'];");
+        $this->assertSame('english', LocalConfig::load(self::env(['PN_LANGUAGE' => 'german-sie']), $file)['language'], 'Die Datei hat Vorrang');
+
+        file_put_contents($file, "<?php return ['db' => []];");
+        $this->assertSame('german-sie', LocalConfig::load(self::env(['PN_LANGUAGE' => 'german-sie']), $file)['language'], 'Ohne Sprache in der Datei gilt die Umgebung');
+    }
+
+    #[Test]
     public function withoutEnvironmentAndFileTheDefaultsApply(): void
     {
         $settings = LocalConfig::load(self::env([]), $this->dir . '/config.local.php');
