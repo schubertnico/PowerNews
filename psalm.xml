@@ -100,14 +100,6 @@
             </errorLevel>
         </RedundantCast>
 
-        <!-- Loop Invalidation -->
-        <LoopInvalidation>
-            <errorLevel type="suppress">
-                <directory name="pninc"/>
-                <directory name="pnadmin"/>
-            </errorLevel>
-        </LoopInvalidation>
-
         <!-- Return Type Issues -->
         <InvalidReturnType>
             <errorLevel type="suppress">

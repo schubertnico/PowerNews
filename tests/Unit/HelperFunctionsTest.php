@@ -206,100 +206,16 @@ class HelperFunctionsTest extends TestCase
     }
 
     // ===========================
-    // readDump Tests
+    // readDump() entfernt
     // ===========================
 
     #[Test]
-    public function readDumpParsesSimpleSqlFile(): void
+    public function readDumpIsGoneInFavourOfTheInstallerSchemaSplitter(): void
     {
-        $file = $this->tempDir . '/test_dump_simple.sql';
-        file_put_contents($file, "CREATE TABLE test (id INT);\nINSERT INTO test VALUES (1);");
-
-        $result = readDump($file);
-
-        $this->assertIsArray($result);
-        $this->assertGreaterThanOrEqual(2, count($result));
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpStripsHashComments(): void
-    {
-        $file = $this->tempDir . '/test_dump_comments.sql';
-        file_put_contents($file, "# This is a comment\nCREATE TABLE test (id INT);\n# Another comment\nINSERT INTO test VALUES (1);");
-
-        $result = readDump($file);
-
-        foreach ($result as $sql) {
-            $this->assertStringNotContainsString('# This is a comment', $sql);
-            $this->assertStringNotContainsString('# Another comment', $sql);
-        }
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpSplitsBySemicolon(): void
-    {
-        $file = $this->tempDir . '/test_dump_split.sql';
-        file_put_contents($file, "SELECT 1;\nSELECT 2;\nSELECT 3;");
-
-        $result = readDump($file);
-
-        $this->assertGreaterThanOrEqual(3, count($result));
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpHandlesEmptyFile(): void
-    {
-        $file = $this->tempDir . '/test_dump_empty.sql';
-        file_put_contents($file, '');
-
-        $result = readDump($file);
-
-        $this->assertIsArray($result);
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpHandlesFileWithOnlyComments(): void
-    {
-        $file = $this->tempDir . '/test_dump_only_comments.sql';
-        file_put_contents($file, "# Comment 1\n# Comment 2\n# Comment 3\n");
-
-        $result = readDump($file);
-
-        $this->assertIsArray($result);
-        $nonEmpty = array_filter($result, fn($s) => trim($s) !== '');
-        $this->assertCount(0, $nonEmpty);
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpHandlesMultilineStatements(): void
-    {
-        $file = $this->tempDir . '/test_dump_multiline.sql';
-        file_put_contents($file, "CREATE TABLE test (\n  id INT,\n  name VARCHAR(255)\n);\nINSERT INTO test VALUES (1, 'test');");
-
-        $result = readDump($file);
-
-        $this->assertIsArray($result);
-        $this->assertGreaterThanOrEqual(2, count($result));
-        unlink($file);
-    }
-
-    #[Test]
-    public function readDumpHandlesMixedCommentsAndStatements(): void
-    {
-        $file = $this->tempDir . '/test_dump_mixed.sql';
-        file_put_contents($file, "# Header comment\n# Version 1.0\nCREATE TABLE t1 (id INT);\n# Separator\nINSERT INTO t1 VALUES (1);\nINSERT INTO t1 VALUES (2);");
-
-        $result = readDump($file);
-
-        $this->assertIsArray($result);
-        $nonEmpty = array_filter($result, fn($s) => trim($s) !== '');
-        $this->assertGreaterThanOrEqual(3, count($nonEmpty));
-        unlink($file);
+        // readDump() zerschnitt SQL an Semikolons in Zeichenketten (B01). Installer und
+        // update.php zerlegen powernews.sql mit PowerNews\Installer\Schema::split().
+        $this->assertFalse(function_exists('readDump'));
+        $this->assertStringNotContainsString('readDump', (string) file_get_contents(__DIR__ . '/../../pnadmin/functions.inc.php'));
     }
 
     // ===========================

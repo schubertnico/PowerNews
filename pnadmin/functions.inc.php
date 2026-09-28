@@ -2393,38 +2393,3 @@ class news
         }
     }
 }
-
-//###############################################################################################
-
-function readDump(string $dumpFile): array
-{
-    $sql = '';
-    $content = file($dumpFile);
-
-    if ($content === false) {
-        return [];
-    }
-    $counter = count($content);
-
-    for ($i = 0; $i < $counter; ++$i) {
-        if (!preg_match('/^#/', $content[$i])) {
-            $sql .= trim($content[$i]);
-        }
-    }
-
-    $command = [];
-    $sql_len = strlen($sql);
-
-    for ($i = 0; $i < $sql_len; ++$i) {
-        $char = $sql[$i];
-
-        if ($char === ';') {
-            $command[] = substr($sql, 0, $i);
-            $sql = substr($sql, $i + 1, $sql_len);
-            $sql_len = strlen($sql);
-            $i = -1;
-        }
-    }
-
-    return $command;
-}
