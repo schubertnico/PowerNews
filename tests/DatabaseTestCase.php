@@ -68,6 +68,8 @@ abstract class DatabaseTestCase extends BaseTestCase
         $_POST = [];
         $_COOKIE = [];
         $_FILES = [];
+        // Im Archiv gemerkter Monat gilt nur innerhalb eines Tests.
+        unset($_SESSION['pn_archive_month']);
 
         // Tests, die durch CSRF-geschuetzte POST-Pfade laufen, brauchen ein
         // gueltiges Token. Token vorab in $_POST und Session ablegen, damit

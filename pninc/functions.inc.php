@@ -482,14 +482,10 @@ class pn_news
             $_POST['pndata'] = [];
         }
 
-        if (!isset($_POST['pndata']['showyear']) || !$_POST['pndata']['showyear']) {
-            $_POST['pndata']['showyear'] = date('Y', $now);
-        }
+        // Gewählten Monat merken: Die Suche schickt keinen Monat mit, die Auswahl soll danach
+        // nicht auf den laufenden Monat springen.
+        [$_POST['pndata']['showyear'], $_POST['pndata']['showmonth']] = self::archivemonth($_POST['pndata'], $now);
         $_POST['pndata']['yearselect'] = $this->getyearsforarchive();
-
-        if (!isset($_POST['pndata']['showmonth']) || !$_POST['pndata']['showmonth']) {
-            $_POST['pndata']['showmonth'] = date('m', $now);
-        }
         $template->archive($_POST['pndata']);
 
         $searchType = $_POST['pndata']['type'] ?? ($_GET['pndata']['type'] ?? '');
@@ -562,6 +558,32 @@ class pn_news
                 }
                 break;
         }
+    }
+
+    /**
+     * Jahr und Monat für das Archiv: aus dem Formular (und dann in der Sitzung gemerkt), sonst
+     * die zuletzt gewählten, sonst der laufende Monat.
+     *
+     * @param array<string, mixed> $pndata
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function archivemonth(array $pndata, int $now): array
+    {
+        $year = filter_var($pndata['showyear'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1970, 'max_range' => 2100]]);
+        $month = filter_var($pndata['showmonth'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 12]]);
+
+        if ($year !== false && $month !== false) {
+            $_SESSION['pn_archive_month'] = [(string) $year, sprintf('%02d', $month)];
+        }
+
+        $remembered = $_SESSION['pn_archive_month'] ?? null;
+
+        if (is_array($remembered) && count($remembered) === 2) {
+            return [(string) $remembered[0], (string) $remembered[1]];
+        }
+
+        return [date('Y', $now), date('m', $now)];
     }
 
     public function getyearsforarchive(): string
