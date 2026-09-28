@@ -1961,6 +1961,9 @@ class category
 
 class news
 {
+    /** Status, nach denen sich die News-Liste filtern lässt. */
+    public const STATUSES = ['Activated', 'Unchecked', 'Deactivated'];
+
     public function getcatdropdown(int $catid = 0): void
     {
         global $pn_config, $pn_handler;
@@ -2016,12 +2019,52 @@ class news
         return $error;
     }
 
-    public function listpages(): void
+    /**
+     * Anzahl der News, auf Wunsch nur mit einem Status (sonst alle).
+     */
+    public function countnews(string $status = ''): int
     {
         global $pn_config, $pn_handler;
 
-        $result = mysqli_query($pn_handler, 'SELECT id FROM ' . $pn_config['newstable']);
-        $num = mysqli_num_rows($result);
+        if (!in_array($status, self::STATUSES, true)) {
+            $result = mysqli_query($pn_handler, 'SELECT COUNT(*) FROM ' . $pn_config['newstable']);
+            $row = $result instanceof mysqli_result ? mysqli_fetch_row($result) : null;
+
+            return (int) ($row[0] ?? 0);
+        }
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM ' . $pn_config['newstable'] . ' WHERE status = ?');
+        mysqli_stmt_bind_param($stmt, 's', $status);
+        mysqli_stmt_execute($stmt);
+        $row = mysqli_fetch_row(mysqli_stmt_get_result($stmt));
+
+        return (int) ($row[0] ?? 0);
+    }
+
+    /**
+     * Filterknöpfe über der News-Liste: alle, ungeprüft (mit Anzahl), aktiviert, deaktiviert.
+     */
+    public function statusfilter(string $status): void
+    {
+        $filters = [
+            '' => ['pn_filter_all', L_NEWS_FILTER_ALL],
+            'Unchecked' => ['pn_filter_unchecked', L_ALL_UNCHECKED . ' (' . $this->countnews('Unchecked') . ')'],
+            'Activated' => ['pn_filter_activated', L_ALL_ACTIVATED],
+            'Deactivated' => ['pn_filter_deactivated', L_ALL_DEACTIVATED],
+        ];
+        ?><nav id="pn_newsfilter" class="d-flex flex-wrap gap-2 mb-3" aria-label="<?php echo L_NEWS_FILTER; ?>"><?php
+        foreach ($filters as $value => [$id, $label]) {
+            $active = $value === $status;
+            $href = 'index.php?page=news&amp;subpage=show' . ($value !== '' ? '&amp;status=' . $value : '');
+            ?><a class="btn btn-sm <?php echo $active ? 'btn-primary' : 'btn-outline-primary'; ?>" id="<?php echo $id; ?>" href="<?php echo $href; ?>"<?php echo $active ? ' aria-current="page"' : ''; ?>><?php echo $label; ?></a><?php
+        }
+        ?></nav><?php
+    }
+
+    public function listpages(string $status = ''): void
+    {
+        $num = $this->countnews($status);
+        $filter = in_array($status, self::STATUSES, true) ? '&amp;status=' . $status : '';
 
         if ($num == 0) {
             ?><li class="page-item disabled"><span class="page-link">[ <?php echo L_ALL_NOPAGES; ?> ]</span></li><?php
@@ -2033,7 +2076,7 @@ class news
                 $i2 = $i - 1;
                 $current = $i2 * 25;
                 $isActive = $current === $activeCurrent ? ' active' : '';
-                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&subpage=show&current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
+                ?><li class="page-item<?php echo $isActive; ?>"><a class="page-link" href="index.php?page=news&amp;subpage=show<?php echo $filter; ?>&amp;current=<?php echo $current; ?>"><?php echo $i; ?></a></li><?php
             }
         }
     }
@@ -2057,12 +2100,19 @@ class news
         return L_NEWS_BADCAT;
     }
 
-    public function listnews(int $current): void
+    public function listnews(int $current, string $status = ''): void
     {
         global $pn_config, $pnconfig, $pn_handler;
 
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' ORDER BY time DESC LIMIT ?, 25');
-        mysqli_stmt_bind_param($stmt, 'i', $current);
+        $filtered = in_array($status, self::STATUSES, true);
+
+        if ($filtered) {
+            $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' WHERE status = ? ORDER BY time DESC LIMIT ?, 25');
+            mysqli_stmt_bind_param($stmt, 'si', $status, $current);
+        } else {
+            $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['newstable'] . ' ORDER BY time DESC LIMIT ?, 25');
+            mysqli_stmt_bind_param($stmt, 'i', $current);
+        }
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $num = mysqli_num_rows($result);
@@ -2072,7 +2122,7 @@ class news
         if ($num == 0) {
             ?>
             <tr><td colspan="<?php echo $colCount; ?>" class="text-center text-muted">
-            <?php echo L_NEWS_NONEWS; ?>
+            <?php echo $filtered ? L_NEWS_NONEWSWITHSTATUS : L_NEWS_NONEWS; ?>
             </td></tr>
             <?php
         } else {
@@ -2474,7 +2524,7 @@ class news
         } else {
             while ($row = mysqli_fetch_array($result)) {
                 ?>
-                <div class="card mb-3">
+                <div class="card mb-3" id="pn_comment_<?php echo (int) $row['id']; ?>">
                     <div class="card-body">
                         <div class="small text-muted mb-2">
                             <?php echo L_NEWS_WRITTENBY; ?>
@@ -2513,5 +2563,152 @@ class news
                 <?php
             }
         }
+    }
+}
+
+//###############################################################################################
+
+/**
+ * Hinweise auf der Admin-Startseite: ungeprüfte Einsendungen und neue Kommentare.
+ */
+class dashboard
+{
+    /** Zeitraum für „neue Kommentare“ in Tagen. */
+    public const COMMENT_DAYS = 7;
+
+    /** Höchstzahl der verlinkten neuen Kommentare. */
+    public const COMMENT_LIMIT = 5;
+
+    /**
+     * Anzahl der News mit Status „Ungeprüft“ (von Besuchern eingesendet).
+     */
+    public function uncheckedcount(): int
+    {
+        global $pn_config, $pn_handler;
+
+        $result = mysqli_query($pn_handler, 'SELECT COUNT(*) FROM ' . $pn_config['newstable'] . " WHERE status = 'Unchecked'");
+        $row = $result instanceof mysqli_result ? mysqli_fetch_row($result) : null;
+
+        return (int) ($row[0] ?? 0);
+    }
+
+    /**
+     * Anzahl der Kommentare seit $since.
+     */
+    public function commentcount(int $since): int
+    {
+        global $pn_config, $pn_handler;
+
+        $stmt = mysqli_prepare($pn_handler, 'SELECT COUNT(*) FROM ' . $pn_config['commenttable'] . ' WHERE time >= ?');
+        mysqli_stmt_bind_param($stmt, 'i', $since);
+        mysqli_stmt_execute($stmt);
+        $row = mysqli_fetch_row(mysqli_stmt_get_result($stmt));
+
+        return (int) ($row[0] ?? 0);
+    }
+
+    /**
+     * Die neuesten Kommentare seit $since mit Titel der News und Nickname des Autors.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function recentcomments(int $since, int $limit): array
+    {
+        global $pn_config, $pn_handler;
+
+        $stmt = mysqli_prepare(
+            $pn_handler,
+            'SELECT c.id, c.newsid, c.userid, c.time, n.title, u.nickname FROM ' . $pn_config['commenttable'] . ' c'
+            . ' LEFT JOIN ' . $pn_config['newstable'] . ' n ON n.id = c.newsid'
+            . ' LEFT JOIN ' . $pn_config['usertable'] . ' u ON u.id = c.userid'
+            . ' WHERE c.time >= ? ORDER BY c.time DESC, c.id DESC LIMIT ?',
+        );
+        mysqli_stmt_bind_param($stmt, 'ii', $since, $limit);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $rows = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Gibt die Hinweise aus, jeweils nur mit dem passenden Leserecht. Links auf die
+     * Bearbeitung einer News nur mit „News lesen“ und „News schreiben“.
+     *
+     * @param array<string, mixed> $pnadmin
+     */
+    public function render(array $pnadmin): void
+    {
+        $canReadNews = ($pnadmin['canreadnews'] ?? 'NO') === 'YES';
+        $canReadComments = ($pnadmin['canreadcomments'] ?? 'NO') === 'YES';
+
+        if (!$canReadNews && !$canReadComments) {
+            return;
+        }
+
+        echo '<section id="pn_dashboard" class="row g-3 mb-3" aria-label="' . L_DASH_TITLE . '">';
+
+        if ($canReadNews) {
+            $this->renderunchecked($this->uncheckedcount());
+        }
+
+        if ($canReadComments) {
+            $since = time() - self::COMMENT_DAYS * 86400;
+            $this->rendercomments($this->commentcount($since), $this->recentcomments($since, self::COMMENT_LIMIT), $canReadNews && ($pnadmin['canwritenews'] ?? 'NO') === 'YES');
+        }
+
+        echo '</section>';
+    }
+
+    private function renderunchecked(int $count): void
+    {
+        $number = '<strong id="pn_dash_unchecked_count">' . $count . '</strong>';
+        ?>
+        <div class="col-12 col-lg-6">
+            <div class="card h-100" id="pn_dash_unchecked">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold mb-2"><?php echo L_DASH_UNCHECKED_TITLE; ?></h2>
+                    <p class="mb-2" id="pn_dash_unchecked_text"><?php echo sprintf($count === 1 ? L_DASH_UNCHECKED_ONE : L_DASH_UNCHECKED_MANY, $number); ?></p>
+<?php if ($count > 0) { ?>
+                    <a class="btn btn-sm btn-outline-primary" id="pn_dash_unchecked_link" href="index.php?page=news&amp;subpage=show&amp;status=Unchecked"><?php echo L_DASH_UNCHECKED_LINK; ?></a>
+<?php } ?>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * @param list<array<string, mixed>> $comments
+     */
+    private function rendercomments(int $count, array $comments, bool $linkable): void
+    {
+        ?>
+        <div class="col-12 col-lg-6">
+            <div class="card h-100" id="pn_dash_comments">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold mb-2"><?php echo L_DASH_COMMENTS_TITLE; ?></h2>
+                    <p class="mb-2" id="pn_dash_comments_text"><?php echo sprintf(L_DASH_COMMENTS, self::COMMENT_DAYS, '<strong id="pn_dash_comments_count">' . $count . '</strong>'); ?></p>
+<?php if ($comments !== []) { ?>
+                    <ul class="list-unstyled small mb-0" id="pn_dash_commentlist">
+<?php foreach ($comments as $comment) {
+    $title = pnadmin_escape((string) ($comment['title'] ?? L_NEWS_BADNEWS));
+    $author = (int) $comment['userid'] === 0 || $comment['nickname'] === null ? L_NEWS_GUEST : pnadmin_escape((string) $comment['nickname']);
+    $when = date('d.m.Y H:i', (int) $comment['time']);
+    ?>
+                        <li class="mb-1"><?php if ($linkable && $comment['title'] !== null) { ?><a class="pn-dash-comment" href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo (int) $comment['newsid']; ?>#pn_comment_<?php echo (int) $comment['id']; ?>"><?php echo $title; ?></a><?php } else {
+                            echo $title;
+                        } ?> &ndash; <?php echo $author; ?>, <?php echo $when; ?></li>
+<?php } ?>
+                    </ul>
+<?php } ?>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 }

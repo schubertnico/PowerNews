@@ -391,6 +391,10 @@ define('L_NEWS_COMMENTS', 'Kommentare');
 define('L_NEWS_INVALIDDATE', 'Der Erscheinungstermin ist ungültig (z. B. 31. Februar). Bitte wähle ein gültiges Datum.');
 define('L_NEWS_BBCODE', 'BB-Code');
 define('L_NEWS_WRITEMORE', 'Weitere News schreiben');
+define('L_NEWS_FILTER', 'Nach Status filtern');
+define('L_NEWS_FILTER_ALL', 'Alle');
+define('L_NEWS_NONEWSWITHSTATUS', 'Keine News mit diesem Status');
+define('L_NEWS_BADNEWS', 'Gelöschte News');
 
 /* Other */
 define('L_OTHER_HELP', 'Hilfe');
@@ -431,6 +435,13 @@ define('L_QUICKLINKS', 'Schnellzugriff');
 define('L_ALL_PAGECREATEDIN', 'Seite erstellt in');
 define('L_ALL_SECONDSBY', 'Sekunden von');
 define('L_ALL_WELCOME', 'Willkommen in der PowerNews-Administration!<br><br>Gefundene Fehler kannst Du gerne an <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a> melden.');
+define('L_DASH_TITLE', 'Auf einen Blick');
+define('L_DASH_UNCHECKED_TITLE', 'Einsendungen');
+define('L_DASH_UNCHECKED_ONE', 'Zu prüfen: %s Einsendung');
+define('L_DASH_UNCHECKED_MANY', 'Zu prüfen: %s Einsendungen');
+define('L_DASH_UNCHECKED_LINK', 'Einsendungen prüfen');
+define('L_DASH_COMMENTS_TITLE', 'Kommentare');
+define('L_DASH_COMMENTS', 'Neue Kommentare der letzten %1$d Tage: %2$s');
 define('L_ALL_DEFAULTCONFIGWARNING', 'URL und Absenderadresse stehen noch auf den Werkseinstellungen (powerscripts.org). E-Mails würden mit diesem Absender und mit Links auf powerscripts.org verschickt. Bitte passe beides in der <a href="index.php?page=configuration">Konfiguration</a> an.');
 define('L_ALL_CSRFINVALID', 'Die Sicherheitsprüfung ist fehlgeschlagen, deshalb wurde nichts gespeichert. Das Formular war zu lange geöffnet oder stammt nicht aus der Administration. Bitte versuche es erneut.');
 define('L_ALL_CONFIGROWS', 'Die Tabelle %s muss genau eine PowerNews-Konfiguration enthalten. Bitte die Datenbank prüfen.');

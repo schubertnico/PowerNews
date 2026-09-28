@@ -391,6 +391,10 @@ define('L_NEWS_COMMENTS', 'Comments');
 define('L_NEWS_INVALIDDATE', 'The publication date is invalid (e.g. 31 February). Please choose a valid date.');
 define('L_NEWS_BBCODE', 'BB code');
 define('L_NEWS_WRITEMORE', 'Write more news');
+define('L_NEWS_FILTER', 'Filter by status');
+define('L_NEWS_FILTER_ALL', 'All');
+define('L_NEWS_NONEWSWITHSTATUS', 'No news with this status');
+define('L_NEWS_BADNEWS', 'Deleted news');
 
 /* Other */
 define('L_OTHER_HELP', 'Help');
@@ -431,6 +435,13 @@ define('L_QUICKLINKS', 'Quick links');
 define('L_ALL_PAGECREATEDIN', 'Page created in');
 define('L_ALL_SECONDSBY', 'seconds by');
 define('L_ALL_WELCOME', 'Welcome to the PowerNews administration!<br><br>Please report any bugs you find to <a href="mailto:bugs@powerscripts.org?subject=PowerNews%20Bug">bugs@powerscripts.org</a>.');
+define('L_DASH_TITLE', 'At a glance');
+define('L_DASH_UNCHECKED_TITLE', 'Submissions');
+define('L_DASH_UNCHECKED_ONE', 'To review: %s submission');
+define('L_DASH_UNCHECKED_MANY', 'To review: %s submissions');
+define('L_DASH_UNCHECKED_LINK', 'Review submissions');
+define('L_DASH_COMMENTS_TITLE', 'Comments');
+define('L_DASH_COMMENTS', 'New comments in the last %1$d days: %2$s');
 define('L_ALL_DEFAULTCONFIGWARNING', 'URL and sender address are still set to the factory defaults (powerscripts.org). E-mails would be sent with this sender and with links to powerscripts.org. Please change both in the <a href="index.php?page=configuration">configuration</a>.');
 define('L_ALL_CSRFINVALID', 'The security check failed, so nothing was saved. The form was open too long or did not come from the administration. Please try again.');
 define('L_ALL_CONFIGROWS', 'The table %s must contain exactly one PowerNews configuration. Please check the database.');
