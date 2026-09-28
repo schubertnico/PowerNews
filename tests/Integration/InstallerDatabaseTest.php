@@ -69,7 +69,8 @@ final class InstallerDatabaseTest extends InstallerDatabaseTestCase
             commentform, registerform, loginform, logout, senddataform, profileform, archive, sendnewsform, addemail, editemail,
             registeremail, dataemail) FROM pn_templates WHERE id = 1");
         $entities = (int) preg_match_all('/&[a-z]+;/', $templateRow);
-        $this->assertGreaterThan(10, $entities);
+        // Template 3.12: echte Umlaute statt &uuml;, es bleiben &middot;, &raquo; und &nbsp;.
+        $this->assertGreaterThanOrEqual(10, $entities);
         $this->assertSame((int) preg_match_all('/&[a-z]+;/', $templateSql), $entities);
         $this->assertSame('Allgemein', self::value($mysqli, 'SELECT name FROM pn_categories WHERE id = 1'));
 

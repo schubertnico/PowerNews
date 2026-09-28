@@ -144,10 +144,12 @@ phpinfo.php
 # Lokale Datenbank-Dumps / Backups
 # --------------------------------------------------------------
 # Alle SQL-Dumps standardmäßig ignorieren, nur die offiziellen freigeben:
-# das Schema und die Entwicklungsdaten des Docker-Stacks.
+# das Schema, die Entwicklungsdaten des Docker-Stacks und die Testdaten
+# (z. B. die powernews.sql von 3.11 für den Update-Test).
 *.sql
 !powernews.sql
 !.docker/dev-seed.sql
+!tests/Fixtures/*.sql
 *.sqlite
 *.sqlite3
 *.db

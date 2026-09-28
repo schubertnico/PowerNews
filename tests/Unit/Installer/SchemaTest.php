@@ -109,12 +109,12 @@ final class SchemaTest extends TestCase
         $statements = Schema::fromFile(self::SCHEMA_FILE);
 
         $this->assertSame(
-            ['pn_categories', 'pn_comments', 'pn_config', 'pn_news', 'pn_permissions', 'pn_sessions', 'pn_login_attempts', 'pn_templates', 'pn_users'],
+            ['pn_categories', 'pn_comments', 'pn_config', 'pn_news', 'pn_permissions', 'pn_sessions', 'pn_login_attempts', 'pn_password_resets', 'pn_templates', 'pn_users', 'pn_migrations'],
             Schema::tableNames($statements),
         );
 
         $inserts = array_values(array_filter($statements, static fn (string $s): bool => Schema::insertedTable($s) !== null));
-        $this->assertSame(['pn_categories', 'pn_config', 'pn_templates'], array_map(Schema::insertedTable(...), $inserts));
+        $this->assertSame(['pn_categories', 'pn_config', 'pn_templates', 'pn_migrations'], array_map(Schema::insertedTable(...), $inserts));
 
         $templates = array_values(array_filter($inserts, static fn (string $s): bool => Schema::insertedTable($s) === 'pn_templates'));
         $this->assertCount(1, $templates, 'Nur das Standard-Template „Default“ (B18)');
@@ -124,6 +124,31 @@ final class SchemaTest extends TestCase
         foreach (['ftghgf', 'dsfs', 'dfgdfg'] as $junk) {
             $this->assertStringNotContainsString("'" . $junk . "'", implode("\n", $statements));
         }
+    }
+
+    #[Test]
+    public function releaseSchemaShipsTheDefaultTemplate312(): void
+    {
+        $sql = (string) file_get_contents(self::SCHEMA_FILE);
+
+        $this->assertStringContainsString('{CATPIC}', $sql, 'B48: Kategoriebild im Template');
+        $this->assertStringContainsString('Weiterführende Links', $sql);
+        $this->assertStringContainsString('Optionaler ausführlicher Text', $sql);
+        $this->assertStringContainsString('{RESETLINK}', $sql, 'B22: Einmal-Link statt Passwort');
+        foreach (['Related Links', 'ausfuehrlich', 'Daten senden', 'ICQ'] as $old) {
+            $this->assertStringNotContainsString($old, $sql);
+        }
+    }
+
+    #[Test]
+    public function releaseSchemaMarksAllMigrationsAsDone(): void
+    {
+        $statements = Schema::fromFile(self::SCHEMA_FILE);
+        $migrations = array_values(array_filter($statements, static fn (string $s): bool => Schema::insertedTable($s) === 'pn_migrations'));
+
+        $this->assertCount(1, $migrations);
+        preg_match_all("/\\('([0-9a-z.-]+)', 0\\)/", $migrations[0], $names);
+        $this->assertSame(array_keys(\pn_migrations()), $names[1], 'Eine Neuinstallation ist schon auf dem Stand aller Migrationen');
     }
 
     #[Test]

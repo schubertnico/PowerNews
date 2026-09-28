@@ -48,7 +48,7 @@ $csrfToken = pn_csrf_token();
 $message = '';
 
 try {
-    $updater = new Updater($pn_handler, __DIR__, Schema::fromFile(__DIR__ . '/' . Schema::FILENAME));
+    $updater = new Updater($pn_handler, __DIR__, Schema::fromFile(__DIR__ . '/' . Schema::FILENAME), $pn_config);
 } catch (RuntimeException $e) {
     $updater = null;
     $message = $e->getMessage();
@@ -72,7 +72,7 @@ $source = LocalConfig::load(static fn (string $name): string|false => getenv($na
 View::render('update', 'Datenbank aktualisieren', 'Update', 0, 0, [
     'csrf' => $csrfToken,
     'message' => $message,
-    'version' => (string) $pn_config['version'],
+    'version' => PN_VERSION,
     'phpVersion' => PHP_VERSION,
     'server' => $server,
     'configSource' => $source,

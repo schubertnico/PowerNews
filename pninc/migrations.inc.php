@@ -8,16 +8,20 @@ declare(strict_types=1);
 /* MIT License - See LICENSE file for full license text                 */
 /* https://github.com/schubertnico/PowerNews.git                        */
 
+require_once __DIR__ . '/core.inc.php';
 require_once __DIR__ . '/default_template.inc.php';
 
 /*
  * Datenbank-Migrationen für Updates bestehender Installationen.
  *
  * Jede Migration läuft genau einmal. Ausgeführte Migrationen werden in der Tabelle
- * pn_migrations vermerkt, ein erneuter Aufruf ist deshalb gefahrlos. Aufruf aus dem
- * Update-Skript (oder direkt nach einer Neuinstallation):
+ * pn_migrations vermerkt, ein erneuter Aufruf ist deshalb gefahrlos. Aufruf aus
+ * update.php (Schritt „Migrationen ausführen“, PowerNews\Installer\Updater):
  *
  *     $log = pn_run_migrations($pn_handler, $pn_config);
+ *
+ * Eine Neuinstallation aus powernews.sql trägt alle Migrationen bereits als erledigt
+ * in pn_migrations ein – sie ist schon auf dem aktuellen Stand.
  *
  * Rückgabe: Name der Migration => kurzer Bericht (deutsch).
  */
@@ -36,6 +40,39 @@ function pn_migrations(): array
         '3.12-relatedlinks-json' => 'pn_migration_relatedlinks_json',
         '3.12-default-template' => 'pn_migration_default_template',
     ];
+}
+
+/**
+ * „1 Datensatz“ bzw. „3 Datensätze“ für die Berichte der Migrationen.
+ */
+function pn_migration_count(int $count, string $singular, string $plural): string
+{
+    return $count . ' ' . ($count === 1 ? $singular : $plural);
+}
+
+/**
+ * Noch nicht ausgeführte Migrationen, ohne die Datenbank zu verändern. Fehlt die
+ * Tabelle pn_migrations (Installation vor 3.12), sind alle ausstehend.
+ *
+ * @return list<string>
+ */
+function pn_migrations_pending(mysqli $db): array
+{
+    $applied = [];
+
+    try {
+        $result = mysqli_query($db, 'SELECT `name` FROM pn_migrations');
+    } catch (mysqli_sql_exception) {
+        $result = false;
+    }
+
+    if ($result instanceof mysqli_result) {
+        while ($row = mysqli_fetch_row($result)) {
+            $applied[(string) $row[0]] = true;
+        }
+    }
+
+    return array_values(array_filter(array_keys(pn_migrations()), static fn (string $name): bool => !isset($applied[$name])));
 }
 
 /**
@@ -148,7 +185,7 @@ function pn_migration_unslash_content(mysqli $db, array $pn_config): string
         }
     }
 
-    return sprintf('%d Datensätze von überzähligen Backslashes bereinigt.', $changed);
+    return pn_migration_count($changed, 'Datensatz', 'Datensätze') . ' von überzähligen Backslashes bereinigt.';
 }
 
 /**
@@ -166,7 +203,7 @@ function pn_migration_purge_legacy_sessions(mysqli $db, array $pn_config): strin
     $removed = mysqli_stmt_affected_rows($stmt);
     pn_sessions_purge_expired($db);
 
-    return sprintf('%d langlaufende Admin-Sitzungen beendet.', max(0, (int) $removed));
+    return pn_migration_count(max(0, (int) $removed), 'langlaufende Admin-Sitzung', 'langlaufende Admin-Sitzungen') . ' beendet.';
 }
 
 /**
@@ -210,7 +247,7 @@ function pn_migration_relatedlinks_json(mysqli $db, array $pn_config): string
         ++$changed;
     }
 
-    return sprintf('%d News mit weiterführenden Links ins JSON-Format überführt.', $changed);
+    return $changed . ' News mit weiterführenden Links ins JSON-Format überführt.';
 }
 
 /**
@@ -255,5 +292,5 @@ function pn_migration_default_template(mysqli $db, array $pn_config): string
         $updated += count($changes);
     }
 
-    return sprintf('%d Template-Felder auf den Stand 3.12 gebracht.', $updated);
+    return pn_migration_count($updated, 'Template-Feld', 'Template-Felder') . ' auf den Stand 3.12 gebracht.';
 }

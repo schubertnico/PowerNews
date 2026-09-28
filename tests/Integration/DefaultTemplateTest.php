@@ -162,8 +162,8 @@ class DefaultTemplateTest extends DatabaseTestCase
     {
         global $pn_handler, $pn_config;
 
-        // 3.11-Stand des Default-Templates aus powernews.sql in eine eigene Tabelle laden.
-        $dump = str_replace("\r\n", "\n", (string) file_get_contents(__DIR__ . '/../../powernews.sql'));
+        // 3.11-Stand des Default-Templates aus der powernews.sql von 3.11 in eine eigene Tabelle laden.
+        $dump = str_replace("\r\n", "\n", (string) file_get_contents(__DIR__ . '/../Fixtures/powernews-3.11.sql'));
         $this->assertSame(1, preg_match('/^INSERT INTO `pn_templates` VALUES \(1,.*\);$/m', $dump, $match));
         mysqli_query($pn_handler, 'DROP TABLE IF EXISTS pn_templates_legacy');
         mysqli_query($pn_handler, 'CREATE TABLE pn_templates_legacy LIKE pn_templates');

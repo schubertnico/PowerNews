@@ -10,13 +10,16 @@ declare(strict_types=1);
 
 namespace PowerNews\Installer;
 
+require_once dirname(__DIR__) . '/migrations.inc.php';
+
 /**
  * Datenbankseitige Schritte beim Update einer bestehenden 3.x-Installation
  * auf 3.12 (update.php, Befund B34).
  *
  * Jeder Schritt prüft zuerst am Datenbestand, ob er nötig ist, und ist
  * beliebig oft ausführbar. Es gibt keine gespeicherte Versionsnummer, die
- * falsch sein könnte – maßgeblich ist der tatsächliche Zustand.
+ * falsch sein könnte – maßgeblich ist der tatsächliche Zustand bzw. die
+ * Liste der ausgeführten Migrationen in pn_migrations.
  *
  * @phpstan-type StepStatus array{id: string, label: string, detail: string, pending: bool}
  * @phpstan-type StepResult array{id: string, label: string, ok: bool, message: string}
@@ -24,6 +27,8 @@ namespace PowerNews\Installer;
 final readonly class Updater
 {
     public const string STEP_TABLES = 'tables';
+
+    public const string STEP_MIGRATIONS = 'migrations';
 
     public const string STEP_TEMPLATES = 'templates';
 
@@ -38,12 +43,21 @@ final readonly class Updater
     public const array JUNK_TEMPLATES = [2 => 'ftghgf', 3 => 'dsfs', 4 => 'dfgdfg'];
 
     /**
+     * Die Grunddaten dieser Tabelle in powernews.sql beschreiben eine
+     * Neuinstallation (alle Migrationen erledigt). Beim Update wird die Tabelle
+     * leer angelegt, damit die Migrationen laufen.
+     */
+    private const string MIGRATIONS_TABLE = 'pn_migrations';
+
+    /**
      * @param list<string> $statements Anweisungen aus powernews.sql
+     * @param array<string, mixed> $config $pn_config (Tabellennamen für die Migrationen)
      */
     public function __construct(
         private \mysqli $mysqli,
         private string $rootDir,
         private array $statements,
+        private array $config = [],
     ) {
     }
 
@@ -55,6 +69,7 @@ final readonly class Updater
     public function status(): array
     {
         $missing = $this->missingTables();
+        $migrations = \pn_migrations_pending($this->mysqli);
         $junk = $this->junkTemplates();
         $orphans = $this->orphanPermissionCount();
         $lockFile = InstallState::existingLockFile($this->rootDir);
@@ -85,6 +100,16 @@ final readonly class Updater
                 'pending' => $orphans > 0,
             ],
             [
+                'id' => self::STEP_MIGRATIONS,
+                'label' => 'Daten auf den Stand ' . PN_VERSION . ' bringen',
+                'detail' => $migrations === []
+                    ? 'Alle Migrationen sind ausgeführt.'
+                    : 'Ausstehend: ' . implode(', ', $migrations) . '. Entfernt überzählige Backslashes aus 3.11, beendet alte '
+                        . 'Admin-Sitzungen, legt die Tabelle für „Passwort vergessen“ an, stellt weiterführende Links auf JSON um '
+                        . 'und bringt unveränderte Felder des Default-Templates auf den neuen Stand. Eigene Anpassungen bleiben erhalten.',
+                'pending' => $migrations !== [],
+            ],
+            [
                 'id' => self::STEP_LOCK,
                 'label' => 'Web-Installer sperren',
                 'detail' => $lockFile === null
@@ -112,6 +137,7 @@ final readonly class Updater
             try {
                 $message = match ($step['id']) {
                     self::STEP_TABLES => $this->createMissingTables(),
+                    self::STEP_MIGRATIONS => $this->runMigrations(),
                     self::STEP_TEMPLATES => $this->deleteJunkTemplates(),
                     self::STEP_PERMISSIONS => $this->deleteOrphanPermissions(),
                     default => $this->writeLock($timestamp),
@@ -183,7 +209,12 @@ final readonly class Updater
         $missing = $this->missingTables();
 
         foreach ($this->statements as $statement) {
-            $table = Schema::createdTable($statement) ?? Schema::insertedTable($statement);
+            $inserted = Schema::insertedTable($statement);
+            $table = Schema::createdTable($statement) ?? $inserted;
+
+            if ($inserted === self::MIGRATIONS_TABLE) {
+                continue;
+            }
 
             if ($table !== null && in_array($table, $missing, true)) {
                 $this->mysqli->query($statement);
@@ -191,6 +222,16 @@ final readonly class Updater
         }
 
         return 'Angelegt: ' . implode(', ', $missing) . '.';
+    }
+
+    /**
+     * Führt die ausstehenden Migrationen aus pninc/migrations.inc.php aus.
+     */
+    private function runMigrations(): string
+    {
+        $log = \pn_run_migrations($this->mysqli, $this->config);
+
+        return $log === [] ? 'Nichts zu tun.' : implode(' ', $log);
     }
 
     private function deleteJunkTemplates(): string
