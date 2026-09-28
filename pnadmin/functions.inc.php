@@ -95,6 +95,85 @@ function pnadmin_guard_request(): bool
 }
 
 /**
+ * Bereiche des Adminbereichs mit dem Recht, das zum Öffnen nötig ist (null: jedes Admin-Konto).
+ * Seiten ohne Eintrag (Start, Profil) stehen ebenfalls jedem Admin-Konto offen.
+ */
+const PNADMIN_SECTIONS = [
+    'templates' => 'canreadtemplates',
+    'users' => 'canreadusers',
+    'permissions' => 'canreadpermissions',
+    'configuration' => 'canreadconfig',
+    'categories' => 'canreadcategories',
+    'news' => 'canreadnews',
+    'other' => null,
+];
+
+/**
+ * Darf das Konto den Bereich (Übersicht, Navigation) sehen? Maßgeblich ist das Leserecht.
+ *
+ * @param array<string, mixed> $pnadmin
+ */
+function pnadmin_can_read(array $pnadmin, string $section): bool
+{
+    $field = PNADMIN_SECTIONS[$section] ?? null;
+
+    return $field === null || ($pnadmin[$field] ?? 'NO') === 'YES';
+}
+
+/**
+ * Einträge der Hauptnavigation, gefiltert nach Leserecht.
+ *
+ * @param array<string, mixed> $pnadmin
+ */
+function pnadmin_nav(array $pnadmin, string $currentPage): string
+{
+    $labels = [
+        'templates' => L_MENU_TEMPLATES,
+        'users' => L_MENU_USERS,
+        'permissions' => L_MENU_PERMISSIONS,
+        'configuration' => L_MENU_CONFIG,
+        'categories' => L_MENU_CATEGORIES,
+        'news' => L_MENU_NEWS,
+        'other' => L_MENU_OTHER,
+    ];
+    $html = '';
+
+    foreach ($labels as $section => $label) {
+        if (pnadmin_can_read($pnadmin, $section)) {
+            $attributes = $currentPage === $section ? 'class="nav-link active" aria-current="page"' : 'class="nav-link"';
+            $html .= '<li class="nav-item"><a ' . $attributes . ' href="index.php?page=' . $section . '">' . $label . "</a></li>\n";
+        }
+    }
+
+    return $html;
+}
+
+/**
+ * Links im Schnellzugriff (Statusleiste), nur mit passendem Recht.
+ *
+ * @param array<string, mixed> $pnadmin
+ *
+ * @return list<array{0: string, 1: string}> Adresse und Beschriftung
+ */
+function pnadmin_quicklinks(array $pnadmin): array
+{
+    $candidates = [
+        ['canwritenews', 'index.php?page=news&subpage=add', L_NEWS_WRITENEWS],
+        ['canreadnews', 'index.php?page=news&subpage=show', L_NEWS_SHOWNEWS],
+        ['canreadusers', 'index.php?page=users&subpage=search', L_USR_SEARCHUSR],
+    ];
+    $links = [];
+
+    foreach ($candidates as [$field, $href, $label]) {
+        if (($pnadmin[$field] ?? 'NO') === 'YES') {
+            $links[] = [$href, $label];
+        }
+    }
+
+    return $links;
+}
+
+/**
  * Führt ein Prepared Statement aus und fängt Datenbankfehler ab. Statt eines HTTP-500
  * (Fatal Error durch mysqli_sql_exception) erhält der Aufrufer false und kann eine
  * verständliche Meldung anzeigen. Die technische Ursache landet im Fehlerlog.
@@ -705,16 +784,28 @@ class getadmin
 
 class menus
 {
-    public function submenu(string $page): void
+    /**
+     * Unterseiten-Knöpfe eines Bereichs. Mit $permissions (Rechte des Kontos) erscheinen nur
+     * Knöpfe, die das Konto öffnen darf: Anlegen mit Schreib-, Anzeigen und Suchen mit Leserecht.
+     *
+     * @param array<string, mixed>|null $permissions
+     */
+    public function submenu(string $page, ?array $permissions = null): void
     {
         global $pnconfig;
 
         // Aktuelle Subpage fuer aktiven Tab-Style ermitteln.
         $activeSub = isset($_GET['subpage']) ? (string) $_GET['subpage'] : '';
+        $allowed = static fn (string $right): bool => $permissions === null || ($permissions[$right] ?? 'NO') === 'YES';
 
         // Erzeugt einen einzelnen Subpage-Link als Bootstrap-Outline-Button.
         // Die Klasse wechselt zu "btn-primary" (gefüllt), wenn die aktuelle Unterseite in $activeFor steht.
-        $renderItem = static function (string $href, string $label, array $activeFor = [], ?string $target = null) use ($activeSub): void {
+        // Ohne das nötige Recht ($right) entfällt der Knopf.
+        $renderItem = static function (string $href, string $label, array $activeFor = [], ?string $target = null, string $right = '') use ($activeSub, $allowed): void {
+            if ($right !== '' && !$allowed($right)) {
+                return;
+            }
+
             $classes = in_array($activeSub, $activeFor, true) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
             $targetAttr = $target !== null ? ' target="' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '" rel="noopener noreferrer"' : '';
             ?><a class="<?php echo $classes; ?>" href="<?php echo htmlspecialchars($href, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $targetAttr; ?>><?php echo $label; ?></a><?php
@@ -722,33 +813,33 @@ class menus
 
         switch ($page) {
             case 'templates':
-                $renderItem('index.php?page=templates&subpage=add', L_MENU_ADDTEMPLATE, ['add']);
-                $renderItem('index.php?page=templates&subpage=show', L_MENU_SHOWTEMPLATES, ['show', 'edit']);
+                $renderItem('index.php?page=templates&subpage=add', L_MENU_ADDTEMPLATE, ['add'], null, 'canwritetemplates');
+                $renderItem('index.php?page=templates&subpage=show', L_MENU_SHOWTEMPLATES, ['show', 'edit'], null, 'canreadtemplates');
                 break;
             case 'users':
-                $renderItem('index.php?page=users&subpage=add', L_MENU_ADDUSER, ['add']);
-                $renderItem('index.php?page=users&subpage=show', L_MENU_SHOWUSER, ['show', 'edit']);
-                $renderItem('index.php?page=users&subpage=search', L_MENU_SEARCHUSER, ['search']);
+                $renderItem('index.php?page=users&subpage=add', L_MENU_ADDUSER, ['add'], null, 'canwriteusers');
+                $renderItem('index.php?page=users&subpage=show', L_MENU_SHOWUSER, ['show', 'edit'], null, 'canreadusers');
+                $renderItem('index.php?page=users&subpage=search', L_MENU_SEARCHUSER, ['search'], null, 'canreadusers');
                 break;
             case 'permissions':
-                $renderItem('index.php?page=permissions&subpage=add', L_MENU_ADDPERMISSIONS, ['add']);
-                $renderItem('index.php?page=permissions&subpage=show', L_MENU_SHOWPERMISSIONS, ['show', 'edit']);
+                $renderItem('index.php?page=permissions&subpage=add', L_MENU_ADDPERMISSIONS, ['add'], null, 'canwritepermissions');
+                $renderItem('index.php?page=permissions&subpage=show', L_MENU_SHOWPERMISSIONS, ['show', 'edit'], null, 'canreadpermissions');
                 break;
             case 'configuration':
-                $renderItem('index.php?page=configuration', L_MENU_EDITCONFIG, [$activeSub]);
+                $renderItem('index.php?page=configuration', L_MENU_EDITCONFIG, [$activeSub], null, 'canreadconfig');
                 break;
             case 'categories':
                 if ($pnconfig['categories'] == 'YES') {
-                    $renderItem('index.php?page=categories&subpage=add', L_MENU_ADDCAT, ['add']);
-                    $renderItem('index.php?page=categories&subpage=show', L_MENU_SHOWCATS, ['show', 'edit']);
-                } else {
+                    $renderItem('index.php?page=categories&subpage=add', L_MENU_ADDCAT, ['add'], null, 'canwritecategories');
+                    $renderItem('index.php?page=categories&subpage=show', L_MENU_SHOWCATS, ['show', 'edit'], null, 'canreadcategories');
+                } elseif ($allowed('canreadcategories')) {
                     ?><span class="badge text-bg-secondary"><?php echo L_MENU_CATSDEACTIVATED; ?></span><?php
                 }
                 break;
             case 'news':
-                $renderItem('index.php?page=news&subpage=add', L_MENU_ADDNEWS, ['add']);
-                $renderItem('index.php?page=news&subpage=show', L_MENU_SHOWNEWS, ['show', 'edit']);
-                $renderItem('index.php?page=news&subpage=search', L_MENU_SEARCHNEWS, ['search']);
+                $renderItem('index.php?page=news&subpage=add', L_MENU_ADDNEWS, ['add'], null, 'canwritenews');
+                $renderItem('index.php?page=news&subpage=show', L_MENU_SHOWNEWS, ['show', 'edit'], null, 'canreadnews');
+                $renderItem('index.php?page=news&subpage=search', L_MENU_SEARCHNEWS, ['search'], null, 'canreadnews');
                 break;
             case 'other':
                 $renderItem('index.php?page=other&subpage=help', L_MENU_HELP, ['help']);

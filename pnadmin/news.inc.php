@@ -51,6 +51,9 @@ if (isset($_GET['subpage']) && $_GET['subpage']) {
     } else {
         ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_ALL_SUBPAGENOTFOUND; ?></div><?php
     }
+} elseif (!pnadmin_can_read($pnadmin, 'news')) {
+    // Übersicht nur mit Leserecht; Unterseiten prüfen ihre Rechte selbst.
+    ?><div class="alert alert-danger mb-0" role="alert"><?php echo L_ALL_ACCESSDENIED; ?></div><?php
 } else {
     ?>
         <p class="mb-0 text-muted"><?php echo L_ALL_CHOOSESUBPAGE; ?></p>

@@ -163,13 +163,7 @@ $isLoggedIn = ($pnloggedin === 'YES');
             </button>
             <div class="collapse navbar-collapse" id="pnAdminNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'templates' ? ' active' : ''; ?>" href="index.php?page=templates"><?php echo L_MENU_TEMPLATES; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'users' ? ' active' : ''; ?>" href="index.php?page=users"><?php echo L_MENU_USERS; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'permissions' ? ' active' : ''; ?>" href="index.php?page=permissions"><?php echo L_MENU_PERMISSIONS; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'configuration' ? ' active' : ''; ?>" href="index.php?page=configuration"><?php echo L_MENU_CONFIG; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'categories' ? ' active' : ''; ?>" href="index.php?page=categories"><?php echo L_MENU_CATEGORIES; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'news' ? ' active' : ''; ?>" href="index.php?page=news"><?php echo L_MENU_NEWS; ?></a></li>
-                    <li class="nav-item"><a class="nav-link<?php echo $currentPage === 'other' ? ' active' : ''; ?>" href="index.php?page=other"><?php echo L_MENU_OTHER; ?></a></li>
+<?php echo pnadmin_nav($pnadmin, (string) $currentPage); ?>
                 </ul>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
 <?php if (isset($pnuser['nickname'])) { ?>
@@ -188,14 +182,13 @@ $isLoggedIn = ($pnloggedin === 'YES');
         </div>
     </nav>
 
-<?php if ($isLoggedIn) { ?>
+<?php $quicklinks = $isLoggedIn ? pnadmin_quicklinks($pnadmin) : []; ?>
+<?php if ($quicklinks !== []) { ?>
     <div class="pn-admin-status">
         <div class="container-fluid py-2 d-flex flex-wrap justify-content-end align-items-center small">
             <div>
                 <strong><?php echo L_QUICKLINKS; ?>:</strong>
-                <a href="index.php?page=news&amp;subpage=add"><?php echo L_NEWS_WRITENEWS; ?></a> |
-                <a href="index.php?page=news&amp;subpage=show"><?php echo L_NEWS_SHOWNEWS; ?></a> |
-                <a href="index.php?page=users&amp;subpage=search"><?php echo L_USR_SEARCHUSR; ?></a>
+                <?php echo implode(' | ', array_map(static fn (array $link): string => '<a href="' . pnadmin_escape($link[0]) . '">' . $link[1] . '</a>', $quicklinks)); ?>
             </div>
         </div>
     </div>
@@ -243,12 +236,20 @@ $isLoggedIn = ($pnloggedin === 'YES');
             </ol>
         </nav>
 
-<?php if (isset($individualmenus)) { ?>
+<?php
+    // Unterseiten-Knöpfe nur mit passendem Recht; ohne sichtbaren Knopf entfällt die Leiste.
+    $submenuHtml = '';
+
+    if (isset($individualmenus)) {
+        ob_start();
+        $individualmenus->submenu($sectionKey, $pnadmin);
+        $submenuHtml = (string) ob_get_clean();
+    }
+    ?>
+<?php if (trim($submenuHtml) !== '') { ?>
         <nav aria-label="<?php echo L_QUICKLINKS; ?>" class="card mb-3">
             <div class="card-body py-2 d-flex flex-wrap gap-2 align-items-center">
-<?php
-                    $individualmenus->submenu($sectionKey);
-    ?>
+<?php echo $submenuHtml; ?>
             </div>
         </nav>
 <?php } ?>
