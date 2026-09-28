@@ -53,8 +53,68 @@ final class LocalConfigTest extends TestCase
 
         $this->assertSame(LocalConfig::DEFAULT_DB, $settings['db']);
         $this->assertSame('german-du', $settings['language']);
+        $this->assertSame(LocalConfig::DEFAULT_MAIL, $settings['mail']);
+        $this->assertSame('mail', $settings['mail']['transport'], 'Bestandsinstallationen senden weiter mit mail()');
         $this->assertSame(LocalConfig::SOURCE_DEFAULTS, $settings['source']);
         $this->assertTrue(LocalConfig::isDefaultDatabase($settings['db']));
+    }
+
+    // ── Mailversand: config.local.php > PN_MAIL_* > Vorgaben ──
+
+    #[Test]
+    public function mailEnvironmentVariablesOverrideTheDefaults(): void
+    {
+        $settings = LocalConfig::load(self::env([
+            'PN_MAIL_TRANSPORT' => ' SMTP ',
+            'PN_MAIL_HOST' => 'smtp.example.org',
+            'PN_MAIL_PORT' => '2525',
+            'PN_MAIL_ENCRYPTION' => 'STARTTLS',
+            'PN_MAIL_USER' => 'news@example.org',
+            'PN_MAIL_PASS' => ' mit Leerzeichen ',
+        ]), $this->dir . '/config.local.php');
+
+        $this->assertSame(
+            ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 2525, 'encryption' => 'starttls', 'user' => 'news@example.org', 'password' => ' mit Leerzeichen '],
+            $settings['mail'],
+            'Das Passwort wird nicht getrimmt',
+        );
+        $this->assertSame(LocalConfig::SOURCE_DEFAULTS, $settings['source'], 'Die Herkunft bezieht sich auf die Datenbank');
+    }
+
+    #[Test]
+    public function emptyOrInvalidMailEnvironmentValuesFallBackToDefaults(): void
+    {
+        $mail = LocalConfig::mailFromEnvironment(self::env(['PN_MAIL_TRANSPORT' => '', 'PN_MAIL_HOST' => '  ', 'PN_MAIL_PORT' => '70000']));
+
+        $this->assertSame(LocalConfig::DEFAULT_MAIL, $mail);
+    }
+
+    #[Test]
+    public function localMailSettingsOverrideTheEnvironmentKeyByKey(): void
+    {
+        $file = $this->dir . '/config.local.php';
+        file_put_contents($file, "<?php\nreturn ['mail' => ['transport' => 'smtp', 'port' => 465, 'encryption' => 'ssl', 'user' => 42]];\n");
+
+        $settings = LocalConfig::load(self::env(['PN_MAIL_HOST' => 'mailpit', 'PN_MAIL_USER' => 'env-user', 'PN_MAIL_PASS' => 'env-pass']), $file);
+
+        $this->assertSame(
+            ['transport' => 'smtp', 'host' => 'mailpit', 'port' => 465, 'encryption' => 'ssl', 'user' => 'env-user', 'password' => 'env-pass'],
+            $settings['mail'],
+            'Fehlende oder falsch typisierte Werte kommen aus der Umgebung',
+        );
+        $this->assertSame(LocalConfig::DEFAULT_MAIL, LocalConfig::applyMail(LocalConfig::DEFAULT_MAIL, 'kein Array'));
+    }
+
+    #[Test]
+    public function localFileWithoutMailSectionKeepsTheEnvironment(): void
+    {
+        $file = $this->dir . '/config.local.php';
+        file_put_contents($file, "<?php\nreturn ['language' => 'english'];\n");
+
+        $settings = LocalConfig::load(self::env(['PN_MAIL_TRANSPORT' => 'smtp', 'PN_MAIL_HOST' => 'mailpit']), $file);
+
+        $this->assertSame('smtp', $settings['mail']['transport']);
+        $this->assertSame('mailpit', $settings['mail']['host']);
     }
 
     #[Test]
@@ -142,6 +202,22 @@ final class LocalConfigTest extends TestCase
 
     #[Test]
     #[DataProvider('specialPasswords')]
+    public function renderedFileReturnsTheSmtpPasswordUnchanged(string $password): void
+    {
+        $mail = ['transport' => 'smtp', 'host' => 'smtp.example.org', 'port' => 587, 'encryption' => 'starttls', 'user' => "news'user@example.org", 'password' => $password];
+        $file = $this->dir . '/config.local.php';
+        file_put_contents($file, LocalConfig::render(LocalConfig::DEFAULT_DB, 'german-du', '2026-09-28 10:00:00', $mail));
+
+        $this->assertSame('', $this->lint($file), 'Die erzeugte Datei muss gültiges PHP sein');
+
+        $loaded = require $file;
+        $this->assertIsArray($loaded);
+        $this->assertSame($mail, $loaded['mail']);
+        $this->assertSame($mail, LocalConfig::load(self::env([]), $file)['mail']);
+    }
+
+    #[Test]
+    #[DataProvider('specialPasswords')]
     public function renderedFileReturnsThePasswordUnchanged(string $password): void
     {
         $db = ['host' => 'sql.example.org', 'port' => 3306, 'user' => "news'user", 'password' => $password, 'database' => 'news_db'];
@@ -163,6 +239,7 @@ final class LocalConfigTest extends TestCase
 
         $this->assertStringStartsWith("<?php\n\ndeclare(strict_types=1);", $source);
         $this->assertStringContainsString("'language' => 'german-du'", $source, 'Unbekannte Sprache wird zur Vorgabe');
+        $this->assertStringContainsString("'transport' => 'mail'", $source, 'Ohne Angabe: Versand mit mail()');
         $this->assertStringNotContainsString("echo 'x'", $source);
         $this->assertStringNotContainsString('$', $source, 'Keine Variablen, nur return [...]');
         $this->assertStringNotContainsString('?>', $source);
@@ -196,6 +273,8 @@ final class LocalConfigTest extends TestCase
         $this->assertStringContainsString('PowerNews\LocalConfig::load(', $configInc);
         $this->assertStringContainsString("\$pn_config['mysqlport']", $configInc);
         $this->assertStringContainsString("\$pn_config['language'] = \$pn_local['language'];", $configInc);
+        $this->assertStringContainsString("\$pn_config['mail'] = \$pn_local['mail'];", $configInc);
+        $this->assertStringContainsString("\$pn_config['version'] = PN_VERSION;", $configInc, 'Eine Quelle für die Version');
     }
 
     private function lint(string $file): string

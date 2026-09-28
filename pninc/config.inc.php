@@ -11,13 +11,18 @@ declare(strict_types=1);
 /*
  * Configuration file for PowerNews
  *
- * Zugangsdaten zur Datenbank bitte NICHT hier eintragen – diese Datei wird
- * bei jedem Update überschrieben. Rangfolge (höchste zuerst):
+ * Zugangsdaten zur Datenbank und zum Mailversand bitte NICHT hier eintragen –
+ * diese Datei wird bei jedem Update überschrieben. Rangfolge (höchste zuerst):
  *   1. pninc/config.local.php (legt der Web-Installer install.php an)
  *   2. Umgebungsvariablen PN_DB_HOST, PN_DB_PORT, PN_DB_USER, PN_DB_PASS, PN_DB_NAME
+ *      und PN_MAIL_TRANSPORT, PN_MAIL_HOST, PN_MAIL_PORT, PN_MAIL_ENCRYPTION,
+ *      PN_MAIL_USER, PN_MAIL_PASS
  *   3. Vorgaben aus PowerNews\LocalConfig::DEFAULT_DB (localhost, root, powernews)
+ *      bzw. DEFAULT_MAIL (Versand mit der PHP-Funktion mail() des Servers)
  * Details: INSTALLATION.md, Abschnitt „Konfiguration“.
  */
+
+require_once __DIR__ . '/version.inc.php';
 
 // Error logging configuration
 ini_set('log_errors', '1');
@@ -58,6 +63,9 @@ $pn_config['acpuffer'] = true;
 
 // Select your language for PowerNews (german-du, german-sie, english) - config.local.php may override it
 $pn_config['language'] = $pn_local['language'];
+
+// Mailversand: PHP-Funktion mail() (Standard) oder SMTP-Server – siehe PowerNews\Mailer
+$pn_config['mail'] = $pn_local['mail'];
 unset($pn_local);
 
 // Array with targets for related links - example: $pn_config['rltargets'] = array("_blank", "_main", "_top");
@@ -65,7 +73,8 @@ $pn_config['rltargets'] = ['_blank', '_main'];
 
 // Please DO NOT EDIT the following code
 
-$pn_config['version'] = '3.11';
+// Versionsnummer: einzige Quelle ist PN_VERSION in pninc/version.inc.php
+$pn_config['version'] = PN_VERSION;
 
 // Connect to mySQL Server and select database
 if (!isset($pn_handler)) {

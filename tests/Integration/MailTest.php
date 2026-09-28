@@ -6,6 +6,7 @@ namespace PowerNews\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\Test;
 use PowerNews\Tests\DatabaseTestCase;
+use PowerNews\Tests\Helpers\MockSmtpServer;
 
 /**
  * Regressionstests für B21: Zeichensatz-Kopfzeilen, Absender aus der Konfiguration und
@@ -13,6 +14,62 @@ use PowerNews\Tests\DatabaseTestCase;
  */
 class MailTest extends DatabaseTestCase
 {
+    use MockSmtpServer;
+
+    #[Test]
+    public function send_mail_uses_the_configured_smtp_server(): void
+    {
+        global $pn_config;
+
+        $saved = $pn_config['mail'] ?? null;
+
+        try {
+            [$sent, $transcript] = $this->converse('8bitmime', static function (int $port) use (&$pn_config): bool {
+                $pn_config['mail'] = ['transport' => 'smtp', 'host' => '127.0.0.1', 'port' => $port, 'encryption' => 'none', 'user' => '', 'password' => ''];
+
+                return pn_send_mail('max@example.org', 'PowerNews-Benachrichtigung', "Hallo Max,\n.\nEnde", 'PowerNews', 'news@example.org');
+            });
+        } finally {
+            $pn_config['mail'] = $saved;
+        }
+
+        $this->assertTrue($sent);
+        $this->assertSame(['EHLO', 'MAIL FROM:<news@example.org> BODY=8BITMIME', 'RCPT TO:<max@example.org>', 'DATA', 'QUIT'], $this->commands($transcript));
+        $data = $this->data($transcript);
+        $this->assertStringContainsString("From: PowerNews <news@example.org>\nTo: max@example.org\nReply-To: news@example.org\nSubject: PowerNews-Benachrichtigung", $data);
+        $this->assertStringContainsString("Hallo Max,\n..\nEnde", $data, 'Punktverdopplung');
+    }
+
+    #[Test]
+    public function send_mail_without_mail_settings_keeps_using_php_mail(): void
+    {
+        global $pn_config;
+
+        $sendmail = (string) ini_get('sendmail_path');
+
+        if (preg_match('#^tee -a (/tmp/\S+\.log)#', $sendmail, $match) !== 1) {
+            $this->markTestSkipped('mail() schreibt hier nicht in eine Datei (sendmail_path) – geprüft wird das im Test-Container.');
+        }
+
+        $saved = $pn_config['mail'] ?? null;
+        unset($pn_config['mail']);
+        $before = (int) @filesize($match[1]);
+
+        try {
+            $this->assertTrue(pn_send_mail('max@example.org', 'Grüße', 'Hallo Max Müller', 'PowerNews', 'news@example.org'));
+        } finally {
+            $pn_config['mail'] = $saved;
+        }
+
+        clearstatcache();
+        $written = (string) file_get_contents($match[1], false, null, $before);
+        $this->assertStringContainsString('To: max@example.org', $written);
+        $this->assertStringContainsString('Subject: =?UTF-8?B?' . base64_encode('Grüße') . '?=', $written);
+        $this->assertStringContainsString('From: PowerNews <news@example.org>', $written);
+        $this->assertStringContainsString('Reply-To: news@example.org', $written);
+        $this->assertStringContainsString('Hallo Max Müller', $written);
+    }
+
     #[Test]
     public function mails_declare_utf8_and_encode_the_sender_name(): void
     {

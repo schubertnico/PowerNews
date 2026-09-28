@@ -14,6 +14,7 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/version.inc.php';
+require_once __DIR__ . '/mailer.inc.php';
 
 /**
  * Ersetzt Platzhalter wie {TITLE} in einem Template.
@@ -613,34 +614,29 @@ function pn_relatedlinks_from_input(array $titles, array $urls, array $targets, 
 }
 
 /**
- * Verschickt eine Text-Mail mit korrekten Kopfzeilen (B21): UTF-8, MIME-Version,
- * kodierter Betreff und Absendername. Absender und Empfänger werden geprüft, damit
- * keine zusätzlichen Kopfzeilen eingeschleust werden können.
+ * Verschickt eine Text-Mail (B21) über den eingestellten Weg: PHP-Funktion mail() des
+ * Servers (Standard) oder SMTP-Server, siehe $pn_config['mail'] (config.local.php bzw.
+ * PN_MAIL_*). Kopfzeilen in UTF-8, Betreff und Absendername nach RFC 2047 kodiert,
+ * Reply-To = Absender. Absender und Empfänger werden geprüft, damit keine zusätzlichen
+ * Kopfzeilen eingeschleust werden können. Fehler landen mit Grund im Fehlerprotokoll.
  */
 function pn_send_mail(string $to, string $subject, string $body, string $fromName, string $fromAddress): bool
 {
-    if (filter_var($to, FILTER_VALIDATE_EMAIL) === false || filter_var($fromAddress, FILTER_VALIDATE_EMAIL) === false) {
-        return false;
-    }
+    global $pn_config;
 
-    return mail($to, mb_encode_mimeheader($subject, 'UTF-8', 'B'), str_replace("\r\n", "\n", $body), pn_mail_headers($fromName, $fromAddress));
+    $settings = is_array($pn_config['mail'] ?? null) ? $pn_config['mail'] : [];
+
+    return PowerNews\Mailer::fromConfig($settings)->send($to, $subject, $body, $fromAddress, $fromName);
 }
 
 /**
- * Kopfzeilen einer PowerNews-Mail.
+ * Kopfzeilen einer PowerNews-Mail beim Versand mit mail().
  *
  * @return array<string, string>
  */
 function pn_mail_headers(string $fromName, string $fromAddress): array
 {
-    $fromName = trim(str_replace(["\r", "\n"], ' ', $fromName));
-
-    return [
-        'From' => mb_encode_mimeheader($fromName, 'UTF-8', 'B') . ' <' . str_replace(["\r", "\n"], '', $fromAddress) . '>',
-        'MIME-Version' => '1.0',
-        'Content-Type' => 'text/plain; charset=UTF-8',
-        'Content-Transfer-Encoding' => '8bit',
-    ];
+    return PowerNews\MailMessage::headers($fromName, $fromAddress);
 }
 
 /**
