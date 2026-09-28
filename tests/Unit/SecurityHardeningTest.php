@@ -166,4 +166,18 @@ class SecurityHardeningTest extends TestCase
         $_SESSION = [];
         $this->assertFalse(pn_csrf_verify('anything'));
     }
+
+    #[Test]
+    public function categoryPictureDirectoryServesOnlyImagesAndNeverRunsScripts(): void
+    {
+        // B08: Auch wenn eine Datei mit PHP-Endung in pngfx/categories/ landet, wird sie
+        // weder ausgeliefert noch ausgeführt.
+        $htaccess = (string) file_get_contents(__DIR__ . '/../../pngfx/categories/.htaccess');
+
+        $this->assertMatchesRegularExpression('/^Require all denied$/m', $htaccess);
+        $this->assertMatchesRegularExpression('/<FilesMatch "\(\?i\)\\\\\.\(gif\|jpe\?g\|png\)\$">\s+Require all granted\s+<\/FilesMatch>/', $htaccess);
+        $this->assertStringContainsString('php_flag engine off', $htaccess);
+        $this->assertMatchesRegularExpression('/^RemoveHandler \.php .*\.phar/m', $htaccess);
+        $this->assertMatchesRegularExpression('/^Options -Indexes -ExecCGI$/m', $htaccess);
+    }
 }

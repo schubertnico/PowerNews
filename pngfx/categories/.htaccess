@@ -1,0 +1,26 @@
+# PowerNews – Kategoriebilder (Upload im Adminbereich, Befund B08).
+# Ausgeliefert werden nur Bilder. Skripte werden hier nie ausgeführt – auch
+# dann nicht, wenn eine Datei mit PHP-Endung oder Doppelendung wie
+# „bild.php.png“ in dieses Verzeichnis gelangt.
+# nginx wertet diese Datei nicht aus, siehe INSTALLATION.md („Webserver“).
+
+# 1) Grundsätzlich nichts ausliefern …
+Require all denied
+
+# 2) … außer Bildern mit den Endungen, die der Upload erlaubt.
+<FilesMatch "(?i)\.(gif|jpe?g|png)$">
+    Require all granted
+</FilesMatch>
+
+# 3) PHP und andere Skript-Handler abschalten, kein Verzeichnis-Listing.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht .phps .cgi .pl .py .sh
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht .phps
+Options -Indexes -ExecCGI
+
+# 4) Bilder nie als etwas anderes deuten lassen.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
