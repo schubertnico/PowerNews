@@ -347,6 +347,8 @@ define('L_NEWS_CHOOSECAT', 'Choose category');
 define('L_NEWS_NOCATSAVAILABLE', 'No categories available yet!');
 define('L_NEWS_ADDINGFAILED', 'The news could not be added!');
 define('L_NEWS_BADCAT', 'Invalid category');
+define('L_NEWS_CATINACTIVE', 'deactivated');
+define('L_NEWS_CATNOTACTIVE', 'The selected category is deactivated or does not exist. Please choose an active category.');
 define('L_NEWS_NONEWS', 'No news in the database');
 define('L_NEWS_NOCOMMENTS', 'No comments in the database');
 define('L_NEWS_DELETECOMMENT', 'Delete');

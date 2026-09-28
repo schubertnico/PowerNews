@@ -174,6 +174,48 @@ function pnadmin_quicklinks(array $pnadmin): array
 }
 
 /**
+ * Kategorien für die Auswahl beim Schreiben bzw. Bearbeiten einer News: alle aktiven und
+ * zusätzlich die aktuelle Kategorie $currentCatid, auch wenn sie deaktiviert ist.
+ *
+ * @return list<array{id: int, name: string, active: bool}>
+ */
+function pnadmin_news_categories(int $currentCatid): array
+{
+    global $pn_config, $pn_handler;
+
+    $stmt = mysqli_prepare($pn_handler, 'SELECT id, name, status FROM ' . $pn_config['cattable'] . " WHERE status = 'Activated' OR id = ? ORDER BY name");
+    mysqli_stmt_bind_param($stmt, 'i', $currentCatid);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $categories = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $categories[] = ['id' => (int) $row['id'], 'name' => (string) $row['name'], 'active' => $row['status'] === 'Activated'];
+    }
+
+    return $categories;
+}
+
+/**
+ * Darf eine News in diese Kategorie gespeichert werden? Erlaubt sind aktive Kategorien, die
+ * bisherige Kategorie der News (auch deaktiviert) und 0 (Kategorien abgeschaltet).
+ */
+function pnadmin_category_selectable(int $catid, int $currentCatid): bool
+{
+    if ($catid === 0 || $catid === $currentCatid) {
+        return true;
+    }
+
+    foreach (pnadmin_news_categories(0) as $category) {
+        if ($category['id'] === $catid) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Gespeicherter Text eines Kommentars oder null.
  */
 function pnadmin_comment_text(int $commentid): ?string
@@ -1991,26 +2033,32 @@ class news
     /** Anzahl der beim letzten editcomment() gelöschten Kommentare. */
     public int $commentsdeleted = 0;
 
+    /**
+     * Auswahl der Kategorie. Neue News ($catid = 0) bieten nur aktive Kategorien an. Beim
+     * Bearbeiten bleibt die aktuelle Kategorie auch dann auswählbar und vorgewählt, wenn sie
+     * deaktiviert ist (gekennzeichnet); sonst wanderte die News beim Speichern still in die
+     * erste aktive Kategorie. Gibt es die Kategorie nicht mehr, ist „Kategorie wählen“ vorgewählt.
+     */
     public function getcatdropdown(int $catid = 0): void
     {
-        global $pn_config, $pn_handler;
+        $categories = pnadmin_news_categories($catid);
 
-        $result = mysqli_query($pn_handler, 'SELECT * FROM ' . $pn_config['cattable'] . " WHERE status = 'Activated' ORDER BY name");
-        $num = mysqli_num_rows($result);
-
-        if ($num > 0) {
-            ?><select class="form-select" name="catid" id="pn_catid" aria-label="<?php echo L_NEWS_CATEGORY; ?>"><?php
-            if ($catid === 0) {
-                ?><option value=""><?php echo L_NEWS_CHOOSECAT; ?></option><?php
-            }
-
-            while ($row = mysqli_fetch_array($result)) {
-                ?><option value="<?php echo (int) $row['id']; ?>" <?php if ($catid == $row['id']) { ?>selected<?php } ?>><?php echo pnadmin_escape((string) $row['name']); ?></option><?php
-            }
-            ?></select><?php
-        } else {
+        if ($categories === []) {
             ?><div class="alert alert-warning mb-0" role="alert"><?php echo L_NEWS_NOCATSAVAILABLE; ?></div><?php
+
+            return;
         }
+
+        ?><select class="form-select" name="catid" id="pn_catid" aria-label="<?php echo L_NEWS_CATEGORY; ?>"><?php
+        if (!in_array($catid, array_column($categories, 'id'), true)) {
+            ?><option value="" selected><?php echo L_NEWS_CHOOSECAT; ?></option><?php
+        }
+
+        foreach ($categories as $category) {
+            $label = pnadmin_escape($category['name']) . ($category['active'] ? '' : ' (' . L_NEWS_CATINACTIVE . ')');
+            ?><option value="<?php echo $category['id']; ?>"<?php echo $category['id'] === $catid ? ' selected' : ''; ?>><?php echo $label; ?></option><?php
+        }
+        ?></select><?php
     }
 
     public function addnews(string $title, string $text, int $catid = 0, string $moretext = '', array $rl_title = [], array $rl_url = [], array $rl_target = [], array $time = []): string
@@ -2023,6 +2071,10 @@ class news
 
         if ($invalidLinks) {
             return L_NEWS_INVALIDLINK;
+        }
+
+        if (!pnadmin_category_selectable($catid, 0)) {
+            return L_NEWS_CATNOTACTIVE;
         }
 
         $relatedlinks = pn_relatedlinks_encode($links);
@@ -2337,6 +2389,10 @@ class news
 
         if ($current === null) {
             return L_NEWS_CHOOSENEWS;
+        }
+
+        if (!pnadmin_category_selectable($catid, (int) $current['catid'])) {
+            return L_NEWS_CATNOTACTIVE;
         }
 
         $relatedlinks = (string) $current['relatedlinks'];
