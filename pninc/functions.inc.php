@@ -273,7 +273,7 @@ class pn_news
 
         if ($num == 1) {
             // News exists, fetch comments
-            $cstmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? AND time <= ? ORDER BY time');
+            $cstmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? AND time <= ? ORDER BY time ASC, id ASC');
             mysqli_stmt_bind_param($cstmt, 'ii', $newsid, $now);
             mysqli_stmt_execute($cstmt);
             $cresult = mysqli_stmt_get_result($cstmt);

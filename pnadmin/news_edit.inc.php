@@ -49,6 +49,13 @@ if ($pnadmin['canreadnews'] == 'YES' && $pnadmin['canwritenews'] == 'YES') {
                                 <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACKTOFORM; ?></a></div>
                             </div>
                             <?php
+                        } elseif ($editnews->commentschanged === 0 && $editnews->commentsdeleted === 0) {
+                            ?>
+                            <div class="alert alert-info" role="alert">
+                                <?php echo L_NEWS_NOCOMMENTCHANGES; ?>
+                                <div class="mt-2"><a href="index.php?page=news&amp;subpage=edit&amp;newsid=<?php echo pn_int($newsid); ?>" class="btn btn-sm btn-outline-secondary"><?php echo L_ALL_BACK; ?></a></div>
+                            </div>
+                            <?php
                         } else {
                             ?>
                             <div class="alert alert-success" role="alert">

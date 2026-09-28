@@ -326,6 +326,7 @@ define('L_NEWS_OFF', 'off');
 define('L_NEWS_LONGTEXT', 'Long text');
 define('L_NEWS_LONGTEXT_DESC', 'The long text of the news entry');
 define('L_NEWS_COMMENTSEDITED', 'The comments were edited successfully!');
+define('L_NEWS_NOCOMMENTCHANGES', 'No comment was changed.');
 define('L_NEWS_NEWSDELETED', 'The news entry was deleted successfully!');
 define('L_NEWS_NEWSEDITED', 'The news entry was edited successfully!');
 define('L_NEWS_DELETE', 'Delete');

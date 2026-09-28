@@ -174,6 +174,27 @@ function pnadmin_quicklinks(array $pnadmin): array
 }
 
 /**
+ * Gespeicherter Text eines Kommentars oder null.
+ */
+function pnadmin_comment_text(int $commentid): ?string
+{
+    global $pn_config, $pn_handler;
+
+    $result = pn_query_by_id($pn_handler, 'SELECT text FROM ' . $pn_config['commenttable'] . ' WHERE id = ?', $commentid);
+    $row = $result instanceof mysqli_result ? mysqli_fetch_row($result) : null;
+
+    return is_array($row) ? (string) $row[0] : null;
+}
+
+/**
+ * Gleicher Text? Formulare schicken Zeilenenden als CRLF, gespeichert sein kann LF.
+ */
+function pnadmin_same_text(string $posted, ?string $stored): bool
+{
+    return $stored !== null && str_replace("\r\n", "\n", $posted) === str_replace("\r\n", "\n", $stored);
+}
+
+/**
  * Führt ein Prepared Statement aus und fängt Datenbankfehler ab. Statt eines HTTP-500
  * (Fatal Error durch mysqli_sql_exception) erhält der Aufrufer false und kann eine
  * verständliche Meldung anzeigen. Die technische Ursache landet im Fehlerlog.
@@ -1964,6 +1985,12 @@ class news
     /** Status, nach denen sich die News-Liste filtern lässt. */
     public const STATUSES = ['Activated', 'Unchecked', 'Deactivated'];
 
+    /** Anzahl der beim letzten editcomment() geänderten Kommentare. */
+    public int $commentschanged = 0;
+
+    /** Anzahl der beim letzten editcomment() gelöschten Kommentare. */
+    public int $commentsdeleted = 0;
+
     public function getcatdropdown(int $catid = 0): void
     {
         global $pn_config, $pn_handler;
@@ -2245,34 +2272,46 @@ class news
         return $error;
     }
 
+    /**
+     * Speichert die Kommentare aus dem Formular „Kommentare editieren“. Gespeichert werden nur
+     * Kommentare, deren Text sich geändert hat (Zeilenenden zählen nicht); zum Löschen
+     * markierte werden gelöscht statt gespeichert. Die Anzahlen stehen danach in
+     * $commentschanged und $commentsdeleted.
+     */
     public function editcomment(array $commentid, array $commenttext, array $commentdelete): string
     {
         global $pn_config, $pn_handler;
         $error = '';
         $counter = count($commentid);
+        $delete = array_map('intval', $commentdelete);
+        $this->commentschanged = 0;
+        $this->commentsdeleted = 0;
 
         for ($i = 0; $i < $counter; ++$i) {
             $cid = (int) $commentid[$i];
+
+            if (in_array($cid, $delete, true)) {
+                $stmt = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['commenttable'] . ' WHERE id = ?');
+                mysqli_stmt_bind_param($stmt, 'i', $cid);
+                $error = pnadmin_execute($stmt) ? $error : L_NEWS_COMMENTEDITERROR;
+                $this->commentsdeleted += $error === '' ? 1 : 0;
+
+                continue;
+            }
+
             $ctext = (string) ($commenttext[$i] ?? '');
+
+            if (pnadmin_same_text($ctext, pnadmin_comment_text($cid))) {
+                continue;
+            }
 
             $stmt = mysqli_prepare($pn_handler, 'UPDATE ' . $pn_config['commenttable'] . ' SET text = ? WHERE id = ?');
             mysqli_stmt_bind_param($stmt, 'si', $ctext, $cid);
 
             if (!pnadmin_execute($stmt)) {
                 $error = L_NEWS_COMMENTEDITERROR;
-            }
-
-            $commentDeleteCount = count($commentdelete);
-
-            for ($i2 = 0; $i2 < $commentDeleteCount; ++$i2) {
-                if ((int) $commentdelete[$i2] === $cid) {
-                    $stmt2 = mysqli_prepare($pn_handler, 'DELETE FROM ' . $pn_config['commenttable'] . ' WHERE id = ?');
-                    mysqli_stmt_bind_param($stmt2, 'i', $cid);
-
-                    if (!pnadmin_execute($stmt2)) {
-                        $error = L_NEWS_COMMENTEDITERROR;
-                    }
-                }
+            } else {
+                ++$this->commentschanged;
             }
         }
 
@@ -2513,7 +2552,8 @@ class news
 
         $editable = $mode === 'edit';
 
-        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? ORDER BY id DESC');
+        // Chronologisch aufsteigend wie im Frontend.
+        $stmt = mysqli_prepare($pn_handler, 'SELECT * FROM ' . $pn_config['commenttable'] . ' WHERE newsid = ? ORDER BY time ASC, id ASC');
         mysqli_stmt_bind_param($stmt, 'i', $newsid);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
