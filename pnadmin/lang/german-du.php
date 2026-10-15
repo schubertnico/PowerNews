@@ -317,7 +317,7 @@ define('L_NEWS_TITLEANDTEXTNEEDED', 'Es muss ein Newstitel und ein Newstext ange
 define('L_NEWS_ALSOCATEGORY', 'sowie eine Kategorie gewählt werden');
 define('L_NEWS_NEWSADDED', 'News wurden erfolgreich geschrieben!');
 define('L_NEWS_CATEGORY', 'Kategorie');
-define('L_NEWS_CATEGORY_DESC', 'Die Kategorie unter der der Newseintrag erscheinen soll');
+define('L_NEWS_CATEGORY_DESC', 'Die Kategorie, unter der der Newseintrag erscheinen soll');
 define('L_NEWS_TITLE', 'Titel');
 define('L_NEWS_TITLE_DESC', 'Der Titel des Newseintrags');
 define('L_NEWS_TEXT', 'Text');
