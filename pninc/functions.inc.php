@@ -119,38 +119,6 @@ function pn_format_date(int $timestamp, string $format): string
 }
 
 /**
- * Helper function for prepared statement with single integer parameter.
- */
-function pn_query_by_id(mysqli $handler, string $query, int $id): mysqli_result|false
-{
-    $stmt = mysqli_prepare($handler, $query);
-
-    if (!$stmt) {
-        return false;
-    }
-    mysqli_stmt_bind_param($stmt, 'i', $id);
-    mysqli_stmt_execute($stmt);
-
-    return mysqli_stmt_get_result($stmt);
-}
-
-/**
- * Helper function for prepared statement with single string parameter.
- */
-function pn_query_by_string(mysqli $handler, string $query, string $value): mysqli_result|false
-{
-    $stmt = mysqli_prepare($handler, $query);
-
-    if (!$stmt) {
-        return false;
-    }
-    mysqli_stmt_bind_param($stmt, 's', $value);
-    mysqli_stmt_execute($stmt);
-
-    return mysqli_stmt_get_result($stmt);
-}
-
-/**
  * Check if password is legacy base64 encoded (not bcrypt).
  */
 function pn_is_legacy_password(string $hash): bool

@@ -37,6 +37,38 @@ function pn_template_fill(string $template, array $values): string
 }
 
 /**
+ * Prepared Statement mit genau einem Integer-Parameter (Frontend und Adminbereich).
+ */
+function pn_query_by_id(mysqli $handler, string $query, int $id): mysqli_result|false
+{
+    $stmt = mysqli_prepare($handler, $query);
+
+    if (!$stmt) {
+        return false;
+    }
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    mysqli_stmt_execute($stmt);
+
+    return mysqli_stmt_get_result($stmt);
+}
+
+/**
+ * Prepared Statement mit genau einem String-Parameter (Frontend und Adminbereich).
+ */
+function pn_query_by_string(mysqli $handler, string $query, string $value): mysqli_result|false
+{
+    $stmt = mysqli_prepare($handler, $query);
+
+    if (!$stmt) {
+        return false;
+    }
+    mysqli_stmt_bind_param($stmt, 's', $value);
+    mysqli_stmt_execute($stmt);
+
+    return mysqli_stmt_get_result($stmt);
+}
+
+/**
  * Gültiger bcrypt-Hash eines zufälligen, verworfenen Passworts. Wird geprüft, wenn ein
  * Nickname nicht existiert, damit die Antwortzeit keinen Hinweis auf vorhandene Konten gibt.
  */
