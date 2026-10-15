@@ -1,4 +1,4 @@
-# PowerNews 3.12
+# PowerNews 3.12.1
 
 [![PHP](https://img.shields.io/badge/PHP-8.4-blue)](https://www.php.net/)
 [![tests](https://img.shields.io/badge/tests-1145%20passing-brightgreen)](#tests)
@@ -7,6 +7,8 @@
 [![license](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
 Ein schlankes, auf PHP 8.4 und MariaDB modernisiertes News-System mit Benutzer-, Kategorie-, Kommentar- und Templateverwaltung. Frontend und Adminbereich sind komplett auf **Bootstrap 5.3** umgestellt – responsiv, barrierearm, ohne CDN.
+
+**3.12.1** behebt einen Fehler im Adminbereich: „Kommentare editieren“ brach mit HTTP 500 ab, Kommentare ließen sich dort weder ändern noch löschen.
 
 **Neu in 3.12:** Web-Installer, E-Mail-Versand wahlweise über einen SMTP-Server (STARTTLS/SSL, Anmeldung), „Passwort vergessen“ mit Einmal-Link, zahlreiche Sicherheits- und Fehlerkorrekturen – alle Änderungen im [CHANGELOG](CHANGELOG.md).
 
@@ -274,6 +276,8 @@ Commits werden geblockt, wenn Tests rot sind oder PHPStan Fehler meldet.
 ## Update
 
 Update von 3.11 auf 3.12: Datensicherung, Zugangsdaten nach `pninc/config.local.php` übernehmen, Dateien hochladen (ohne `install.php`), als Admin `update.php` aufrufen – es legt fehlende Tabellen an (u. a. `pn_password_resets`) und führt die Migrationen aus. Schritt für Schritt in [INSTALLATION.md](INSTALLATION.md#update-von-311-auf-312). Bestehende Benutzer mit Legacy-Passwort werden beim ersten Login transparent auf bcrypt umgestellt. Updates von 2.x werden nicht mehr unterstützt.
+
+Update von 3.12 auf 3.12.1: Dateien ersetzen, die Datenbank ändert sich nicht – siehe [INSTALLATION.md](INSTALLATION.md#update-von-312-auf-3121).
 
 **Default-Template auf Bootstrap 5 heben** (nur bei Installationen von vor Mai 2026; ein Update von 3.11 erledigt `update.php`): Beim Update von einer Vor-2026-05-Version müssen die Felder
    `news`, `headline`, `comment`, `commentform`, `loginform`, `registerform`, `profileform`,

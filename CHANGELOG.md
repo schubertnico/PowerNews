@@ -1,5 +1,33 @@
 # Changelog
 
+## 3.12.1 – 15.10.2026
+
+### Fehlerbehebungen
+
+- **Kommentare im Adminbereich:** „News bearbeiten“ > „Kommentare editieren“
+  brach beim Speichern mit HTTP 500 ab; Kommentare ließen sich im Admin weder
+  ändern noch löschen. Ursache war die Hilfsfunktion `pn_query_by_id()`, die
+  nur das Frontend lädt. Sie steht jetzt zusammen mit `pn_query_by_string()`
+  in `pninc/core.inc.php`, die Frontend und Adminbereich gemeinsam einbinden.
+- Hilfetext zur Kategorie beim Schreiben und Bearbeiten einer News (Du- und
+  Sie-Form) mit Komma: „Die Kategorie, unter der der Newseintrag erscheinen
+  soll“.
+
+### Tests
+
+- Neuer Test `LoadPathTest`: Für Adminbereich, `update.php` und Frontend lädt
+  ein eigener PHP-Prozess nur die Dateien, die der jeweilige Einstieg auch im
+  Betrieb einbindet, und prüft, dass jede aufgerufene Funktion und jede
+  verwendete Klasse dort definiert ist. Die übrigen Tests laden Frontend und
+  Admin gemeinsam, deshalb war der Fehler dort nicht aufgefallen.
+
+### Update
+
+- Die Datenbank ändert sich nicht. Von 3.12 aus genügt es, die Dateien zu
+  ersetzen; `update.php` meldet danach „Die Datenbank ist auf dem aktuellen
+  Stand.“ Von 3.11 aus gilt die Anleitung für 3.12, siehe
+  [INSTALLATION.md](INSTALLATION.md#update-von-312-auf-3121).
+
 ## 3.12 – 28.09.2026
 
 ### Video-Anleitungen

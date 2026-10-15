@@ -1,8 +1,9 @@
-# PowerNews 3.12 – Installation und Update
+# PowerNews 3.12.1 – Installation und Update
 
 Diese Anleitung beschreibt die Installation mit dem Web-Installer (auch auf
 Shared Hosting ohne Shell), die Installation per Kommandozeile, die
-Konfiguration samt E-Mail-Versand und das Update von 3.11 auf 3.12.
+Konfiguration samt E-Mail-Versand und das Update von 3.12 auf 3.12.1 sowie
+von 3.11.
 
 Video-Anleitungen (Installation, Grundeinstellungen, Kategorien, News schreiben,
 Redakteure und Rechte, Leser/Kommentare/Einsendungen, Einbinden, Templates):
@@ -15,10 +16,11 @@ Redakteure und Rechte, Leser/Kommentare/Einsendungen, Einbinden, Templates):
 3. [Sperre des Installers](#sperre-des-installers)
 4. [Konfiguration](#konfiguration)
 5. [Installation ohne Web-Installer (Kommandozeile)](#installation-ohne-web-installer-kommandozeile)
-6. [Update von 3.11 auf 3.12](#update-von-311-auf-312)
-7. [Webserver: Apache und nginx](#webserver-apache-und-nginx)
-8. [Docker-Entwicklungsumgebung](#docker-entwicklungsumgebung)
-9. [Release-Archiv erstellen](#release-archiv-erstellen)
+6. [Update von 3.12 auf 3.12.1](#update-von-312-auf-3121)
+7. [Update von 3.11 auf 3.12](#update-von-311-auf-312)
+8. [Webserver: Apache und nginx](#webserver-apache-und-nginx)
+9. [Docker-Entwicklungsumgebung](#docker-entwicklungsumgebung)
+10. [Release-Archiv erstellen](#release-archiv-erstellen)
 
 ---
 
@@ -251,6 +253,24 @@ so eingerichtete Datenbank ist bereits auf dem Stand 3.12.
 
 4. `pninc/config.local.php` anlegen (siehe [Konfiguration](#konfiguration)).
 5. `install.php` löschen.
+
+---
+
+## Update von 3.12 auf 3.12.1
+
+3.12.1 ist eine Fehlerkorrektur und ändert die Datenbank nicht.
+
+1. **Datensicherung** von Datenbank und Dateien anlegen.
+2. **Dateien hochladen** und dabei vorhandene überschreiben – `install.php`
+   weglassen. `pninc/config.local.php` gehört nicht zum Paket und bleibt, wie
+   sie ist. Eigene Anpassungen an `header.inc.php` und `footer.inc.php` vorher
+   sichern.
+3. **Optional `update.php` aufrufen** (als Admin mit dem Recht „Konfiguration
+   schreiben“): Alle Schritte stehen auf „erledigt“, die Seite meldet „Die
+   Datenbank ist auf dem aktuellen Stand.“
+
+Von 3.11 aus gelten die Schritte im nächsten Abschnitt; sie führen direkt auf
+3.12.1.
 
 ---
 
